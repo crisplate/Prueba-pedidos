@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Pedidos Comunidad</title>
+  <title>Dale pué - Pedidos</title>
   <style>
     body {
       font-family: Arial;
@@ -13,6 +13,7 @@
 
     h1 {
       text-align: center;
+      color: #d9232d; /* Un colorcito más llamativo para comida */
     }
 
     .container {
@@ -26,6 +27,9 @@
       margin: 10px 0;
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     button {
@@ -35,6 +39,19 @@
       padding: 8px 12px;
       border-radius: 5px;
       cursor: pointer;
+      font-weight: bold;
+    }
+    
+    button:hover {
+      background: #218838;
+    }
+
+    .btn-enviar {
+      background: #007bff;
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
     }
 
     #carrito {
@@ -43,40 +60,54 @@
       background: #fff3cd;
       border-radius: 10px;
     }
+    
+    .total-container {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 10px;
+      border-top: 2px solid #ccc;
+      padding-top: 10px;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Pedidos Comunidad 🍔</h1>
+    <h1>Dale pué 🍔🛵</h1>
 
     <div id="menu"></div>
 
     <div id="carrito">
-      <h3>🛒 Carrito</h3>
+      <h3>🛒 Mi Carrito</h3>
       <ul id="listaCarrito"></ul>
+      <div class="total-container" id="totalCarrito">Total: $0</div>
+      <button class="btn-enviar" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
     </div>
   </div>
 
   <script>
     const productos = [
-      { nombre: "Hamburguesa", precio: 2500 },
-      { nombre: "Pizza", precio: 4000 },
-      { nombre: "Empanadas", precio: 1500 }
+      { nombre: "Hamburguesa Completa", precio: 2500 },
+      { nombre: "Pizza Especial", precio: 4000 },
+      { nombre: "Docena de Empanadas", precio: 3500 } // Ajusté un poco el precio de la docena!
     ];
 
     const carrito = [];
 
     const menuDiv = document.getElementById("menu");
     const listaCarrito = document.getElementById("listaCarrito");
+    const totalDiv = document.getElementById("totalCarrito");
 
     function mostrarMenu() {
       productos.forEach((prod, index) => {
         const div = document.createElement("div");
         div.className = "card";
         div.innerHTML = `
-          <h3>${prod.nombre}</h3>
-          <p>$${prod.precio}</p>
+          <div>
+            <h3 style="margin: 0;">${prod.nombre}</h3>
+            <p style="margin: 5px 0 0 0;">$${prod.precio}</p>
+          </div>
           <button onclick="agregarAlCarrito(${index})">Agregar</button>
         `;
         menuDiv.appendChild(div);
@@ -90,11 +121,25 @@
 
     function renderCarrito() {
       listaCarrito.innerHTML = "";
+      let total = 0;
+
       carrito.forEach(item => {
         const li = document.createElement("li");
         li.textContent = item.nombre + " - $" + item.precio;
         listaCarrito.appendChild(li);
+        total += item.precio; // Sumamos el precio al total
       });
+
+      totalDiv.textContent = "Total: $" + total;
+    }
+
+    function enviarPedido() {
+      if(carrito.length === 0) {
+        alert("¡El carrito está vacío! Agregá algo antes de pedir.");
+        return;
+      }
+      alert("Acá se abriría la API de WhatsApp con el detalle del pedido.");
+      // Lógica futura para WhatsApp
     }
 
     mostrarMenu();
