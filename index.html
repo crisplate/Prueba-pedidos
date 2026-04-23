@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dale pué - Pedidos</title>
+  <title>Pedidos Comunidad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #f5f5f5;
       margin: 0;
       padding: 20px;
@@ -13,7 +14,7 @@
 
     h1 {
       text-align: center;
-      color: #d9232d; /* Un colorcito más llamativo para comida */
+      color: #333;
     }
 
     .container {
@@ -36,21 +37,18 @@
       background: #28a745;
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
     }
-    
-    button:hover {
-      background: #218838;
-    }
 
+    /* Estilo para el botón de WhatsApp */
     .btn-enviar {
-      background: #007bff;
+      background: #25D366; 
       width: 100%;
       margin-top: 15px;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
     }
 
@@ -60,7 +58,7 @@
       background: #fff3cd;
       border-radius: 10px;
     }
-    
+
     .total-container {
       font-size: 18px;
       font-weight: bold;
@@ -74,7 +72,7 @@
 <body>
 
   <div class="container">
-    <h1>Dale pué 🍔🛵</h1>
+    <h1>Pedidos Comunidad 🍔🛵</h1>
 
     <div id="menu"></div>
 
@@ -82,15 +80,15 @@
       <h3>🛒 Mi Carrito</h3>
       <ul id="listaCarrito"></ul>
       <div class="total-container" id="totalCarrito">Total: $0</div>
-      <button class="btn-enviar" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
+      <button class="btn-enviar" onclick="enviarPedido()">Enviar pedido por WhatsApp</button>
     </div>
   </div>
 
   <script>
     const productos = [
-      { nombre: "Hamburguesa Completa", precio: 2500 },
-      { nombre: "Pizza Especial", precio: 4000 },
-      { nombre: "Docena de Empanadas", precio: 3500 } // Ajusté un poco el precio de la docena!
+      { nombre: "Hamburguesa", precio: 2500 },
+      { nombre: "Pizza", precio: 4000 },
+      { nombre: "Empanadas", precio: 1500 }
     ];
 
     const carrito = [];
@@ -127,7 +125,7 @@
         const li = document.createElement("li");
         li.textContent = item.nombre + " - $" + item.precio;
         listaCarrito.appendChild(li);
-        total += item.precio; // Sumamos el precio al total
+        total += item.precio;
       });
 
       totalDiv.textContent = "Total: $" + total;
@@ -138,8 +136,26 @@
         alert("¡El carrito está vacío! Agregá algo antes de pedir.");
         return;
       }
-      alert("Acá se abriría la API de WhatsApp con el detalle del pedido.");
-      // Lógica futura para WhatsApp
+
+      // 1. Armamos el texto del mensaje que te va a llegar
+      let mensaje = "Hola! Quiero hacer el siguiente pedido:%0A";
+      let total = 0;
+
+      carrito.forEach(item => {
+        mensaje += `- ${item.nombre} ($${item.precio})%0A`;
+        total += item.precio;
+      });
+
+      mensaje += `%0A*Total: $${total}*%0A`;
+      mensaje += "Gracias!";
+
+      // 2. ACA PONÉ TU NÚMERO DE TELÉFONO
+      // Formato: 54 + 9 + código de área + número. Sin espacios ni signos.
+      const numeroWhatsApp = "5491124500967"; 
+      
+      // 3. Abrimos WhatsApp con el mensaje armado
+      const url = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+      window.open(url, "_blank");
     }
 
     mostrarMenu();
