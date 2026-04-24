@@ -200,6 +200,7 @@
     // CONFIGURACIÓN DE LOS LOCALES
     const locales = {
       eloeste: {
+        id: "eloeste",
         nombre: "El Oeste",
         horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
         whatsapp: "5491124500967",
@@ -254,8 +255,8 @@
         }
       },
       mamacora: {
+        id: "mamacora",
         nombre: "Mama Cora",
-        // HORARIO MODIFICADO TEMPORALMENTE PARA PROBAR (18:00 a 00:00)
         horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
         whatsapp: "5491124500967", 
         menu: {
@@ -277,7 +278,6 @@
         estaAbierto: function() {
           const ahora = new Date();
           let h = ahora.getHours() * 100 + ahora.getMinutes();
-          // SE MODIFICÓ ESTA LÍNEA (h >= 1800 en lugar de 2000)
           return (h >= 1200 && h < 1700) || (h >= 1800 && h <= 2359);
         }
       }
@@ -290,6 +290,26 @@
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
+
+    // --- CARGAR DATOS DEL CLIENTE (MEMORIA) ---
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
+      document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
+    });
+
+    // --- GUARDAR DATOS DEL CLIENTE MIENTRAS ESCRIBE ---
+    document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
+    document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
+
+    // --- NAVEGACIÓN "ATRÁS" DEL CELULAR ---
+    window.addEventListener('popstate', (e) => {
+      // Si el historial cambió y ya no estamos en el hash "#menu"
+      if (window.location.hash !== '#menu') {
+        document.getElementById('vista-menu').style.display = 'none';
+        document.getElementById('vista-locales').style.display = 'block';
+        actualizarPantallaPrincipal();
+      }
+    });
 
     function actualizarPantallaPrincipal() {
       for (let id in locales) {
@@ -306,9 +326,31 @@
 
     function abrirLocal(id) {
       localActivo = locales[id];
+      
+      // --- LÓGICA DEL CARRITO INTELIGENTE (5 MINUTOS Y POR LOCAL) ---
+      let carritoGuardado = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
+      if (carritoGuardado) {
+        let tiempoPasado = Date.now() - carritoGuardado.tiempo;
+        // Si pasaron más de 5 min (300,000 ms) o si el carrito era de otro local -> BORRAMOS
+        if (tiempoPasado > 300000 || carritoGuardado.localId !== localActivo.id) {
+          carrito = [];
+          localStorage.removeItem('dp_carrito');
+        } else {
+          carrito = carritoGuardado.items; // Recuperamos carrito intacto
+        }
+      } else {
+        carrito = [];
+      }
+      actualizarCarrito(); // Refresca visualmente el carrito al entrar
+
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
+
+      // Truco del Historial para el botón Atrás del celu
+      if(window.location.hash !== '#menu') {
+        history.pushState({ vista: 'menu' }, '', '#menu');
+      }
 
       document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
       document.getElementById('menu-horarios').innerHTML = localActivo.horariosTxt;
@@ -358,10 +400,9 @@
     }
 
     function volverInicio() {
-      document.getElementById('vista-menu').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-      actualizarPantallaPrincipal();
-      window.scrollTo(0,0);
+      // Al llamar a history.back(), se dispara el evento 'popstate' que definimos arriba
+      // y eso se encarga de cambiar la pantalla. Es como apretar el botón físico del celu.
+      history.back();
     }
 
     function agregarDirecto(p) {
@@ -377,6 +418,7 @@
       aderezosLista.forEach(a => { 
         contAderezos.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; 
       });
+      
       document.getElementById("contenedor-adicionales").innerHTML = `
         <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
         <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
@@ -407,6 +449,7 @@
       lista.innerHTML = "";
       let total = 0;
       if (carrito.length > 0) { btnVaciar.style.display = "block"; } else { btnVaciar.style.display = "none"; }
+      
       carrito.forEach((item, i) => {
         let txt = "";
         if (item.aderezos && item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
@@ -420,6 +463,15 @@
         total += item.precioFinal;
       });
       document.getElementById("totalCarrito").innerText = "Total: $" + total;
+
+      // GUARDAMOS EL ESTADO ACTUAL DEL CARRITO EN LA MEMORIA CON SU HORA EXACTA
+      if(localActivo) {
+        localStorage.setItem('dp_carrito', JSON.stringify({
+          items: carrito,
+          tiempo: Date.now(),
+          localId: localActivo.id
+        }));
+      }
     }
 
     function confirmarVaciarCarrito() {
@@ -501,6 +553,9 @@
       if(observaciones) {
         m += `%0A📝 *Observaciones:* ${observaciones}%0A`;
       }
+      
+      // Borramos el carrito de la memoria porque el pedido ya se hizo con éxito
+      localStorage.removeItem('dp_carrito');
       
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
