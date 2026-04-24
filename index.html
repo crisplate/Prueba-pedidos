@@ -137,7 +137,6 @@
       <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModal()">Cancelar</button>
     </div>
   </div>
-
   <script>
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
 
@@ -244,7 +243,7 @@
         let txt = `<small>Aderezos: ${item.aderezos.join(", ") || "Ninguno"}</small>`;
         item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
-          <div style="display:flex; justify-content:space-between"><strong>${item.nombre}</strong><span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red">X</b></span></div>${txt}
+          <div style="display:flex; justify-content:space-between"><strong>${item.nombre}</strong><span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer;">X</b></span></div>${txt}
         </div>`;
         total += item.precioFinal;
       });
@@ -253,19 +252,37 @@
 
     function toggleDireccion() { document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; }
 
+    // ACÁ ESTÁ LA CORRECCIÓN DEL GPS
     function obtenerUbicacion() {
       const btn = document.getElementById("btnGPS");
-      btn.innerText = "⏳ Obteniendo...";
-      navigator.geolocation.getCurrentPosition(p => {
-        linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-        btn.innerText = "✅ Ubicación guardada";
-        btn.className = "btn-gps exito";
-      }, () => { alert("Error al obtener GPS"); btn.innerText = "📍 Reintentar"; });
+      btn.innerText = "⏳ Obteniendo ubicación...";
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            // Link oficial de Google Maps con la latitud y longitud correctas
+            linkGPS = `https://maps.google.com/?q=${lat},${lon}`;
+            btn.innerText = "✅ Ubicación guardada";
+            btn.className = "btn-gps exito";
+          },
+          (error) => {
+            alert("No se pudo obtener la ubicación. Revisá los permisos de tu navegador.");
+            btn.innerText = "📍 Reintentar GPS";
+          }
+        );
+      } else {
+        alert("Tu navegador no soporta GPS.");
+      }
     }
 
     function enviarPedido() {
-      const n = document.getElementById("nombreCliente").value;
-      if(!n || carrito.length === 0) return alert("Completá tu nombre y el carrito");
+      const n = document.getElementById("nombreCliente").value.trim();
+      if(!n || carrito.length === 0) {
+        alert("Por favor, completá tu nombre y agregá algo al carrito.");
+        return;
+      }
       let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
       carrito.forEach(i => {
@@ -274,11 +291,15 @@
         t += i.precioFinal;
       });
       m += `%0A💰 *TOTAL: $${t}*%0A💳 *Pago:* ${document.getElementById("metodoPago").value}%0A🛵 *Entrega:* ${document.getElementById("tipoEntrega").value}%0A`;
-      if(linkGPS) m += `📍 *GPS:* ${linkGPS}`;
+      
+      const direccion = document.getElementById("direccionCliente").value.trim();
+      if(direccion) m += `🏠 *Dirección:* ${direccion}%0A`;
+      if(linkGPS) m += `📍 *Ubicación GPS:* ${linkGPS}`;
+      
       window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
     }
 
     renderizarMenu();
   </script>
-</body>
+  </body>
 </html>
