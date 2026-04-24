@@ -2,14 +2,39 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dale pué - El Oeste Sandwichería</title>
+  <title>Dale pué - Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
     
-    .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+    /* ESTILOS DE LA PANTALLA PRINCIPAL (LOCALES) */
+    .header-plataforma { text-align: center; margin-bottom: 30px; }
+    .header-plataforma h1 { color: #d9232d; font-size: 2.5rem; margin: 0; }
+    .header-plataforma p { color: #555; margin: 5px 0; }
+
+    .tarjeta-local {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      border-left: 6px solid #d9232d;
+    }
+    .tarjeta-local:active { background: #f8f8f8; }
+    .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
+    .tarjeta-local p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; }
+    .btn-entrar { background: #d9232d; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+
+    /* ESTILOS DEL MENÚ (EL OESTE) */
+    .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .header-local h1 { margin: 0; font-size: 2rem; }
     .header-local p { margin: 5px 0 0 0; color: #fff; }
+    
+    .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
     .container { max-width: 800px; margin: auto; }
     .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; }
@@ -20,81 +45,114 @@
     .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
     .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; font-size: 1.1rem; }
 
-    button { background: #111; color: #ffb800; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button { border: none; cursor: pointer; font-family: inherit; }
+    .btn-agregar { background: #111; color: #ffb800; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
     
     #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     
-    /* Formulario de Checkout */
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; color: #333; }
     .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
     
-    .btn-gps { background: #e0e0e0; color: #333; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-gps { background: #e0e0e0; color: #333; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px; border-radius: 8px; }
     .btn-gps.exito { background: #28a745; color: white; }
     
-    .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; }
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
     .item-carrito { padding: 8px 0; border-bottom: 1px dashed #ccc; }
     
-    /* Modal para Extras */
     #modalExtras { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
     .modal-content h3 { margin-top: 0; }
     .opcion-extra { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
-    .btn-cerrar-modal { background: #dc3545; color: white; margin-top: 10px; width: 100%; }
+    .btn-cerrar-modal { background: #dc3545; color: white; margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; }
+    .btn-aceptar-modal { width: 100%; margin-top: 15px; background: #28a745; color: white; padding: 10px; border-radius: 8px; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="header-local">
-      <h1>EL OESTE</h1>
-      <p>Sandwichería - Leguizamón 1594</p>
-      <p style="font-size: 0.8rem; color: #aaa;">Pedí por <strong>Dale pué</strong></p>
-    </div>
-
-    <h2 class="categoria-titulo">Tu Sándwich Favorito 🥪</h2>
-    <div id="menu-sandwiches"></div>
-
-    <h2 class="categoria-titulo">Nuestras Minutas 🍽️</h2>
-    <div id="menu-minutas"></div>
-
-    <div id="carrito">
-      <h3 style="margin-top:0;">🛒 Tu Pedido</h3>
-      <div id="listaCarrito"></div>
-      <div class="total" id="totalCarrito">Total: $0</div>
-      
-      <div class="form-group">
-        <label>Nombre y Apellido:</label>
-        <input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez">
+    
+    <div id="vista-locales">
+      <div class="header-plataforma">
+        <h1>Dale pué 🛵</h1>
+        <p>Pedí a los mejores locales de Salta</p>
       </div>
 
-      <div class="form-group">
-        <label>Forma de entrega:</label>
-        <select id="tipoEntrega" onchange="toggleDireccion()">
-          <option value="delivery">Envío a domicilio (¡Gratis!)</option>
-          <option value="retiro">Retiro por el local</option>
-        </select>
-      </div>
-
-      <div id="seccionDireccion">
-        <div class="form-group">
-          <label>Dirección (Calle y altura):</label>
-          <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
-          <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacion()">📍 Usar mi ubicación GPS actual</button>
+      <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
+        <div>
+          <h2>El Oeste</h2>
+          <p>Sandwichería • Minutas • Bebidas</p>
+          <p style="color: #888; font-size: 0.8rem;">📍 Leguizamón 1594</p>
         </div>
+        <div class="btn-entrar">Ver menú</div>
       </div>
 
-      <div class="form-group">
-        <label>Método de pago:</label>
-        <select id="metodoPago">
-          <option value="Transferencia">Transferencia / Billetera Virtual</option>
-          <option value="Efectivo">Efectivo</option>
-        </select>
+      <div class="tarjeta-local" onclick="alert('Próximamente agregaremos este local!')">
+        <div>
+          <h2>Pizzería Ejemplo</h2>
+          <p>Pizzas a la piedra • Empanadas</p>
+          <p style="color: #888; font-size: 0.8rem;">📍 Calle Falsa 123</p>
+        </div>
+        <div class="btn-entrar" style="background:#888;">Ver menú</div>
       </div>
-
-      <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
     </div>
+
+
+    <div id="vista-menu" style="display: none;">
+      <div class="header-local">
+        <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
+        <h1>EL OESTE</h1>
+        <p>Sandwichería - Leguizamón 1594</p>
+      </div>
+
+      <h2 class="categoria-titulo">Tu Sándwich Favorito 🥪</h2>
+      <div id="menu-sandwiches"></div>
+
+      <h2 class="categoria-titulo">Nuestras Minutas 🍽️</h2>
+      <div id="menu-minutas"></div>
+
+      <h2 class="categoria-titulo">Bebidas 🥤</h2>
+      <div id="menu-bebidas"></div>
+
+      <div id="carrito">
+        <h3 style="margin-top:0;">🛒 Tu Pedido en El Oeste</h3>
+        <div id="listaCarrito"></div>
+        <div class="total" id="totalCarrito">Total: $0</div>
+        
+        <div class="form-group">
+          <label>Nombre y Apellido:</label>
+          <input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez">
+        </div>
+
+        <div class="form-group">
+          <label>Forma de entrega:</label>
+          <select id="tipoEntrega" onchange="toggleDireccion()">
+            <option value="delivery">Envío a domicilio (¡Gratis!)</option>
+            <option value="retiro">Retiro por el local</option>
+          </select>
+        </div>
+
+        <div id="seccionDireccion">
+          <div class="form-group">
+            <label>Dirección (Calle y altura):</label>
+            <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
+            <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacion()">📍 Usar mi ubicación GPS actual</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Método de pago:</label>
+          <select id="metodoPago">
+            <option value="Transferencia">Transferencia / Billetera Virtual</option>
+            <option value="Efectivo">Efectivo</option>
+          </select>
+        </div>
+
+        <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
+      </div>
+    </div>
+
   </div>
 
   <div id="modalExtras">
@@ -115,46 +173,71 @@
         <label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label>
       </div>
 
-      <button style="width: 100%; margin-top: 15px; background: #28a745;" onclick="confirmarExtras()">Aceptar y Agregar</button>
+      <button class="btn-aceptar-modal" onclick="confirmarExtras()">Aceptar y Agregar</button>
       <button class="btn-cerrar-modal" onclick="cerrarModal()">Cancelar</button>
     </div>
   </div>
 
   <script>
+    // --- LÓGICA DE NAVEGACIÓN ENTRE PANTALLAS ---
+    function abrirLocal(idLocal) {
+      if(idLocal === 'eloeste') {
+        document.getElementById('vista-locales').style.display = 'none';
+        document.getElementById('vista-menu').style.display = 'block';
+        window.scrollTo(0, 0); // Sube la pantalla arriba de todo
+      }
+    }
+
+    function volverInicio() {
+      document.getElementById('vista-menu').style.display = 'none';
+      document.getElementById('vista-locales').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // --- BASE DE DATOS DEL MENÚ ---
     const menuElOeste = {
       sandwiches: [
         { nombre: "Milanesa clásica", desc: "1 milanesa de 120g + papas", precio: 12000 },
         { nombre: "Milanesa gigante p/2", desc: "1 milanesa de 200g + papas", precio: 17000 },
-        { nombre: "Milanesa súper tucumana", desc: "3 milanesas de 120g + papas", precio: 18000 }
+        { nombre: "Milanesa súper tucumana", desc: "3 milanesas de 120g + papas", precio: 18000 },
+        { nombre: "Patynesa", desc: "1 medallón de 130g + papas", precio: 12000 },
+        { nombre: "Lomo XL", desc: "1 porción de carne de 450g + papas", precio: 25000 }
       ],
       minutas: [
         { nombre: "Milanesa al plato", desc: "Clásica al plato", precio: 11500 },
+        { nombre: "Milanesa napolitana", desc: "Con salsa, jamón y queso", precio: 12500 },
         { nombre: "Lomo a la frontera", desc: "Especialidad de la casa", precio: 11500 }
+      ],
+      bebidas: [
+        { nombre: "Agua 500 ml", desc: "Mineral o saborizada", precio: 2000 },
+        { nombre: "Coca o Coca zero 500 ml", desc: "Línea Coca Cola", precio: 3000 },
+        { nombre: "Gaseosa 1.5 L", desc: "Coca, Zero, Sprite o Fanta", precio: 7000 },
+        { nombre: "Pepsi o Seven Up 2 L", desc: "Línea Pepsi", precio: 6000 },
+        { nombre: "Cerveza 710 ml", desc: "Rubia o negra", precio: 5000 }
       ]
     };
 
     const carrito = [];
-    let productoTemporal = null; // Guarda el producto mientras elegimos los extras
-    let linkGPS = ""; // Acá guardamos el link de Google Maps
+    let productoTemporal = null; 
+    let linkGPS = ""; 
 
-    // Mostrar menú
     function renderizarCategoria(arrayProductos, contenedorId) {
       const contenedor = document.getElementById(contenedorId);
+      contenedor.innerHTML = ""; // Limpia por si entramos y salimos
       arrayProductos.forEach((prod) => {
         const div = document.createElement("div");
         div.className = "card";
-        const productoJSON = JSON.stringify(prod).replace(/"/g, '&quot;');
+        const productoJSON = JSON.stringify(prod).replace(/"/g, '"');
         div.innerHTML = `
           <div class="info-producto">
             <h3>${prod.nombre}</h3><p class="desc">${prod.desc}</p><p class="precio">$${prod.precio}</p>
           </div>
-          <button onclick="abrirModal(${productoJSON})">Agregar</button>
+          <button class="btn-agregar" onclick='abrirModal(${productoJSON})'>Agregar</button>
         `;
         contenedor.appendChild(div);
       });
     }
 
-    // Funciones del Modal de Extras
     function abrirModal(producto) {
       productoTemporal = producto;
       document.getElementById("modalTitulo").innerText = "Personalizar " + producto.nombre;
@@ -172,11 +255,9 @@
       let productoFinal = { ...productoTemporal, extras: [] };
       let precioTotalProducto = productoFinal.precio;
 
-      // Leer aderezos
       const aderezos = document.getElementById("aderezosInput").value;
       if(aderezos) productoFinal.aderezos = aderezos;
 
-      // Leer extras pagos
       document.querySelectorAll(".extra-cb:checked").forEach(cb => {
         const precioExtra = parseInt(cb.value);
         productoFinal.extras.push({ nombre: cb.getAttribute("data-nombre"), precio: precioExtra });
@@ -190,7 +271,6 @@
       actualizarCarrito();
     }
 
-    // Funciones del Carrito
     function actualizarCarrito() {
       const lista = document.getElementById("listaCarrito");
       const divTotal = document.getElementById("totalCarrito");
@@ -230,7 +310,6 @@
       actualizarCarrito();
     }
 
-    // Funciones de Envío y GPS
     function toggleDireccion() {
       const tipo = document.getElementById("tipoEntrega").value;
       document.getElementById("seccionDireccion").style.display = (tipo === "retiro") ? "none" : "block";
@@ -245,12 +324,12 @@
           (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
-            linkGPS = `https://www.google.com/maps?q=${lat},${lon}`;
+            linkGPS = `http://googleusercontent.com/maps.google.com/2{lat},${lon}`;
             btn.innerText = "✅ Ubicación guardada";
             btn.className = "btn-gps exito";
           },
           (error) => {
-            alert("No se pudo obtener la ubicación. Revisá si le diste permisos al navegador.");
+            alert("No se pudo obtener la ubicación. Revisá permisos.");
             btn.innerText = "📍 Reintentar GPS";
           }
         );
@@ -268,7 +347,7 @@
       if(carrito.length === 0) { alert("¡El carrito está vacío!"); return; }
       if(nombre === "") { alert("Por favor, ingresá tu nombre."); return; }
       if(tipoEntrega === "delivery" && direccion === "" && linkGPS === "") { 
-        alert("Por favor, ingresá tu dirección o usá el botón de GPS."); return; 
+        alert("Por favor, ingresá tu dirección o usá el GPS."); return; 
       }
 
       let mensaje = `¡Hola *El Oeste Sandwichería*! 👋%0ASoy *${nombre}* y este es mi pedido a través de Dale pué:%0A%0A`;
@@ -294,12 +373,16 @@
         if(linkGPS) mensaje += `🗺️ *Ubicación GPS:* ${linkGPS}%0A`;
       }
 
+      // TU NÚMERO DE PRUEBA CONFIGURADO
       const numeroWhatsApp = "5491124500967"; 
+      
       window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, "_blank");
     }
 
+    // Inicializamos cargando las tres categorías
     renderizarCategoria(menuElOeste.sandwiches, "menu-sandwiches");
     renderizarCategoria(menuElOeste.minutas, "menu-minutas");
+    renderizarCategoria(menuElOeste.bebidas, "menu-bebidas"); // <- BEBIDAS AGREGADAS
     actualizarCarrito();
   </script>
 </body>
