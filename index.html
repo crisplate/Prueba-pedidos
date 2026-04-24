@@ -5,6 +5,10 @@
   <title>Dale pué - Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d9232d">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1046/1046784.png">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -20,19 +24,15 @@
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
     .btn-entrar { background: #d9232d; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
 
-    /* BADGE DE ESTADO (ABIERTO/CERRADO) EN PANTALLA PRINCIPAL */
+    /* BADGE DE ESTADO EN PANTALLA PRINCIPAL */
     .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
     .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .badge-cerrado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-    /* ESTADO DEL LOCAL (CARTEL DENTRO DEL MENU) */
-    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
-
     /* VISTA MENÚ */
+    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
-    
-    /* TEXTO DE HORARIOS EN EL MENU */
     .horarios-texto { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; margin-top: 10px; padding: 8px; border-radius: 8px; font-style: normal; display: inline-block; text-align: left;}
 
     .container { max-width: 800px; margin: auto; }
@@ -70,9 +70,21 @@
     .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
 
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
+
+    /* BANNER DE INSTALACIÓN COMO APP */
+    .banner-instalacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); display: none; align-items: center; justify-content: space-between; width: 90%; max-width: 400px; z-index: 2000; border: 2px solid #d9232d; }
+    .banner-instalacion p { margin: 0; font-weight: bold; color: #111; font-size: 0.95rem; flex-grow: 1; padding-right: 10px; }
+    .btn-instalar { background: #d9232d; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-cerrar-banner { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; padding: 0 0 0 10px; }
   </style>
 </head>
 <body>
+
+  <div id="bannerInstalacion" class="banner-instalacion">
+    <p>📲 ¡Instalá la app de Dale pué y pedí más rápido al toque!</p>
+    <button class="btn-instalar" id="btnInstalar">Instalar</button>
+    <button class="btn-cerrar-banner" onclick="cerrarBanner()">✖</button>
+  </div>
 
   <div class="container">
     
@@ -91,14 +103,12 @@
         </div>
         <div class="btn-entrar">Ver menú</div>
       </div>
-
     </div>
 
     <div id="vista-menu" style="display: none;">
       <div class="header-local">
         <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
         <h1 style="margin-bottom: 5px;">EL OESTE</h1>
-        
         <div class="horarios-texto">
             🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br>
             🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM
@@ -249,7 +259,6 @@
       return horaActual >= abre || horaActual < cierra;
     }
 
-    // --- ACTUALIZAR PANTALLA PRINCIPAL ---
     function actualizarPantallaPrincipal() {
       const badge = document.getElementById('badge-eloeste');
       if (verificarAbierto()) {
@@ -294,7 +303,7 @@
     function volverInicio() {
       document.getElementById('vista-menu').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
-      actualizarPantallaPrincipal(); // Refresca por si cruzó el horario estando adentro
+      actualizarPantallaPrincipal(); 
       window.scrollTo(0,0);
     }
 
@@ -453,6 +462,41 @@
       
       window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
     }
+
+    // --- PWA: REGISTRO DE SERVICE WORKER Y LÓGICA DE INSTALACIÓN ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registrado!', reg))
+          .catch(err => console.log('Error registrando Service Worker', err));
+      });
+    }
+
+    let eventoInstalacion = null;
+    const banner = document.getElementById('bannerInstalacion');
+    const btnInstalar = document.getElementById('btnInstalar');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      eventoInstalacion = e;
+      // Esperamos 2 segundos antes de mostrarle el cartel para no ser tan pesados
+      setTimeout(() => { banner.style.display = 'flex'; }, 2000);
+    });
+
+    btnInstalar.addEventListener('click', () => {
+      banner.style.display = 'none';
+      if (eventoInstalacion) {
+        eventoInstalacion.prompt();
+        eventoInstalacion.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('El usuario instaló la app Dale pué');
+          }
+          eventoInstalacion = null;
+        });
+      }
+    });
+
+    function cerrarBanner() { banner.style.display = 'none'; }
 
     // Inicialización al cargar la página
     renderizarMenu();
