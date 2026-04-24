@@ -65,10 +65,21 @@
       <h3>🛒 Tu Pedido</h3>
       <div id="listaCarrito"></div>
       <h3 id="totalCarrito" style="text-align:right">Total: $0</h3>
-      <div class="form-group"><label>Nombre:</label><input type="text" id="nombreCliente"></div>
-      <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Delivery (Gratis)</option><option value="retiro">Retiro</option></select></div>
+      
+      <div class="form-group"><label>Nombre y Apellido:</label><input type="text" id="nombreCliente"></div>
+      
+      <div class="form-group">
+        <label>Forma de Pago:</label>
+        <select id="metodoPago">
+            <option value="Efectivo 💵">Efectivo 💵</option>
+            <option value="Transferencia / Billetera Virtual 💳">Transferencia / Billetera Virtual 💳</option>
+        </select>
+      </div>
+
+      <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Delivery (Gratis)</option><option value="retiro">Retiro en Local</option></select></div>
+      
       <div id="seccionDireccion">
-        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente">
+        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
         <div class="grid-botones-ubicacion">
           <button class="btn-gps" id="btnGPS" onclick="obtenerGPS()">📍 GPS</button>
           <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Mapa</button>
@@ -97,9 +108,9 @@
 
 <div id="modalMapa" class="modal-overlay">
   <div class="modal-content">
-    <h3>Ubicá tu domicilio</h3>
+    <h3>Ubicá tu domicilio 🏠</h3>
     <div id="map"></div>
-    <button class="btn-whatsapp" style="background:#28a745" onclick="confirmarMapa()">Confirmar Ubicación</button>
+    <button class="btn-whatsapp" style="background:#28a745" onclick="confirmarMapa()">✅ Confirmar Ubicación</button>
     <button class="btn-gps" style="width:100%; margin-top:10px" onclick="cerrarModalMapa()">Cerrar</button>
   </div>
 </div>
@@ -126,7 +137,7 @@
     ]
   };
 
-  let carrito = []; let prodTemp = null; let linkGPS = ""; let mapa, marcador, coords;
+  let carrito = []; let prodTemp = null; let linkGPS = ""; let mapa, marcador;
 
   function abrirLocal(id) { document.getElementById('vista-locales').style.display='none'; document.getElementById('vista-menu').style.display='block'; renderMenu(); }
   function volverInicio() { document.getElementById('vista-menu').style.display='none'; document.getElementById('vista-locales').style.display='block'; }
@@ -172,8 +183,8 @@
     const l = document.getElementById("listaCarrito"); l.innerHTML = ""; let t = 0;
     carrito.forEach((item, i) => {
       l.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px 0">
-        <b>${item.n}</b> ($${item.pf}) <span onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer">X</span><br>
-        <small>${item.ad.join(", ")} ${item.ex.length?'+ '+item.ex.join(', '):''}</small>
+        <b>${item.n}</b> ($${item.pf}) <span onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer"> (Borrar)</span><br>
+        <small>${item.ad.length ? '🧂 ' + item.ad.join(", ") : ''} ${item.ex.length?' ➕ '+item.ex.join(', '):''}</small>
       </div>`;
       t += item.pf;
     });
@@ -185,7 +196,8 @@
   function obtenerGPS() {
     navigator.geolocation.getCurrentPosition(p => {
       linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-      document.getElementById("btnGPS").className += " exito";
+      document.getElementById("btnGPS").classList.add("exito");
+      document.getElementById("btnGPS").innerText = "✅ GPS Listo";
     });
   }
 
@@ -202,16 +214,33 @@
   function confirmarMapa() {
     const c = marcador.getLatLng();
     linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
-    document.getElementById("btnMapa").className += " exito";
+    document.getElementById("btnMapa").classList.add("exito");
+    document.getElementById("btnMapa").innerText = "✅ Mapa Listo";
     document.getElementById("modalMapa").style.display="none";
   }
 
   function enviarPedido() {
     const nom = document.getElementById("nombreCliente").value;
-    if(!nom || !carrito.length) return alert("Faltan datos");
-    let m = `¡Hola! Soy *${nom}*. Pedido Dale pué:%0A`;
-    carrito.forEach(i => m += `- ${i.n} ($${i.pf})%0A  ${i.ad.join(', ')}%0A`);
-    m += `%0A*TOTAL: ${document.getElementById("totalCarrito").innerText}*%0A📍 Ubicación: ${linkGPS}`;
+    const pago = document.getElementById("metodoPago").value;
+    const entrega = document.getElementById("tipoEntrega").value;
+    const dir = document.getElementById("direccionCliente").value;
+    
+    if(!nom || !carrito.length) return alert("Por favor, poné tu nombre y agregá algo al carrito.");
+    
+    let m = `¡Hola *El Oeste*! 👋 Soy *${nom}*. Pedido desde *Dale pué*:%0A%0A`;
+    carrito.forEach(i => {
+      m += `🍔 *${i.n}* ($${i.pf})%0A`;
+      if(i.ad.length) m += `   🧂 _${i.ad.join(', ')}_%0A`;
+      if(i.ex.length) m += `   ➕ _${i.ex.join(', ')}_%0A`;
+    });
+    
+    m += `%0A💰 *TOTAL: ${document.getElementById("totalCarrito").innerText}*%0A💳 *Pago:* ${pago}%0A🛵 *Entrega:* ${entrega === 'delivery' ? 'Envío a domicilio' : 'Retiro en local'}`;
+    
+    if(entrega === 'delivery') {
+        if(dir) m += `%0A🏠 *Dirección:* ${dir}`;
+        if(linkGPS) m += `%0A📍 *Mapa:* ${linkGPS}`;
+    }
+    
     window.open(`https://wa.me/5491124500967?text=${m}`);
   }
 </script>
