@@ -240,7 +240,10 @@
         arr.forEach(p => {
           const d = document.createElement("div");
           d.className = "card";
-          const pSeguro = JSON.stringify(p).replace(/"/g, '"');
+          
+          // SOLUCIÓN CLAVE 1: Usamos &quot; para que no rompa el atributo HTML
+          const pSeguro = JSON.stringify(p).replace(/"/g, '&quot;');
+          
           const accionBtn = conExtras ? `abrirModalExtras(${pSeguro})` : `agregarDirecto(${pSeguro})`;
           
           d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div><button class="btn-agregar" onclick="${accionBtn}">Agregar</button>`;
@@ -336,8 +339,8 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            // CORRECCIÓN DEFINITIVA DE LA URL DE GOOGLE MAPS
-            linkGPS = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            // SOLUCIÓN CLAVE 2: URL real de Google Maps con las variables correctas
+            linkGPS = `https://www.google.com/maps/search/?api=1&query=${pos.coords.latitude},${pos.coords.longitude}`;
             btn.innerText = "✅ GPS Listo";
             btn.className = "btn-gps exito";
             document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
@@ -383,8 +386,8 @@
 
     function confirmarMapa() {
       if (coordsTemp) {
-        // CORRECCIÓN DEFINITIVA DE LA URL DE GOOGLE MAPS
-        linkGPS = `https://maps.google.com/?q=${coordsTemp.lat},${coordsTemp.lng}`;
+        // SOLUCIÓN CLAVE 2: URL real de Google Maps con las variables correctas
+        linkGPS = `https://www.google.com/maps/search/?api=1&query=${coordsTemp.lat},${coordsTemp.lng}`;
         
         const btnM = document.getElementById("btnMapa");
         btnM.innerText = "✅ Mapa Guardado";
