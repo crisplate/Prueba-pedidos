@@ -336,8 +336,8 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            // CORRECCIÓN DE LA URL DE GOOGLE MAPS Y SINTAXIS DE VARIABLES
-            linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            // CORRECCIÓN DEFINITIVA DE LA URL DE GOOGLE MAPS
+            linkGPS = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
             btn.innerText = "✅ GPS Listo";
             btn.className = "btn-gps exito";
             document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
@@ -383,8 +383,8 @@
 
     function confirmarMapa() {
       if (coordsTemp) {
-        // CORRECCIÓN DE LA URL DE GOOGLE MAPS Y SINTAXIS DE VARIABLES
-        linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
+        // CORRECCIÓN DEFINITIVA DE LA URL DE GOOGLE MAPS
+        linkGPS = `https://maps.google.com/?q=${coordsTemp.lat},${coordsTemp.lng}`;
         
         const btnM = document.getElementById("btnMapa");
         btnM.innerText = "✅ Mapa Guardado";
