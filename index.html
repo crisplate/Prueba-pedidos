@@ -56,6 +56,9 @@
     .btn-gps.exito { background: #28a745; color: white; }
     .btn-mapa { background: #007bff; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
     
+    /* BOTÓN PARA ABRIR UBICACIÓN DEL LOCAL EN MAPS */
+    .btn-ubi-local { background: #17a2b8; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px; width: 100%; display: none; }
+
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
 
@@ -105,12 +108,11 @@
         <div>
           <h2>Mama Cora</h2>
           <p>Empanadas Salteñas • Pizzas</p>
-          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Dirección Fantasía 123</p>
+          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Centro de Salta</p>
           <div id="badge-mamacora" class="badge-estado">Cargando...</div>
         </div>
         <div class="btn-entrar" style="background: #ffb800; color: #111;">Ver menú</div>
       </div>
-
     </div>
 
     <div id="vista-menu" style="display: none;">
@@ -142,6 +144,7 @@
             <option value="delivery">Envío a domicilio</option>
             <option value="retiro">Retiro por el local</option>
           </select>
+          <button id="btnUbiLocal" class="btn-ubi-local" onclick="abrirUbicacionLocal()">📍 Ver ubicación del local en Google Maps</button>
         </div>
         
         <div id="seccionDireccion">
@@ -162,7 +165,7 @@
 
         <div class="form-group">
           <label>Observaciones (Opcional):</label>
-          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas de carne sin pasas, la hamburguesa sin lechuga, etc."></textarea>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, sin lechuga, etc."></textarea>
         </div>
         
         <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
@@ -204,19 +207,21 @@
         nombre: "El Oeste",
         horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
         whatsapp: "5491124500967",
+        coords: { lat: -24.7865, lng: -65.4190 }, 
+        mapaUrl: "https://maps.google.com/?q=-24.7865,-65.4190", // URL para el cliente que retira
         menu: {
           "Tu Sándwich Favorito 🥪": {
             items: [
               { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
               { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, lechuga, tomate, cebolla + 300g papas", precio: 18000, tipo: "comida", conExtras: true },
-              { nombre: "Gigante tucumana", desc: "2 milanesas 200g, lechuga, tomate, huevo, cebolla + 500g papas", precio: 22000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa XL", desc: "300g carne, lechuga, tomate, huevo, cebolla + 600g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, completa + 300g papas", precio: 18000, tipo: "comida", conExtras: true },
+              { nombre: "Gigante tucumana", desc: "2 milanesas 200g, completa + 500g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa XL", desc: "300g carne, completa + 600g papas", precio: 22000, tipo: "comida", conExtras: true },
               { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
               { nombre: "Hamburguesa Paty", desc: "1 medallón 125g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
               { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo gigante p/2", desc: "350g carne, lechuga, tomate, huevo + 500g papas", precio: 19000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo XL", desc: "450g carne, lechuga, tomate, huevo + 600g papas", precio: 25000, tipo: "comida", conExtras: true }
+              { nombre: "Lomo gigante p/2", desc: "350g carne, completa + 500g papas", precio: 19000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo XL", desc: "450g carne, completa + 600g papas", precio: 25000, tipo: "comida", conExtras: true }
             ]
           },
           "Nuestras Minutas 🍽️": {
@@ -235,12 +240,7 @@
           "Bebidas 🥤": {
             items: [
               { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Mirinda Manzana 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Agua 500ml", desc: "", precio: 2000, tipo: "sinalcohol", conExtras: false },
               { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Gaseosa 2L", desc: "Línea Pepsi", precio: 6000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Agua 2L / Saborizada 1.5L", desc: "", precio: 4000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Cerveza 473ml", desc: "Rubia/Negra", precio: 3000, tipo: "alcohol", conExtras: false },
               { nombre: "Cerveza 710ml", desc: "", precio: 5000, tipo: "alcohol", conExtras: false }
             ]
           }
@@ -259,6 +259,8 @@
         nombre: "Mama Cora",
         horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
         whatsapp: "5491124500967", 
+        coords: { lat: -24.7821, lng: -65.4232 }, 
+        mapaUrl: "https://maps.google.com/?q=-24.7821,-65.4232", // URL para Mama Cora
         menu: {
           "Empanadas Salteñas 🥟": {
             items: [
@@ -290,20 +292,20 @@
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
+    
+    // Variables para enviar la info al cajero sin mostrarla al cliente
+    let distanciaKm = 0;
+    let tiempoMin = 0;
 
-    // --- CARGAR DATOS DEL CLIENTE (MEMORIA) ---
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
     });
 
-    // --- GUARDAR DATOS DEL CLIENTE MIENTRAS ESCRIBE ---
     document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
     document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
 
-    // --- NAVEGACIÓN "ATRÁS" DEL CELULAR ---
     window.addEventListener('popstate', (e) => {
-      // Si el historial cambió y ya no estamos en el hash "#menu"
       if (window.location.hash !== '#menu') {
         document.getElementById('vista-menu').style.display = 'none';
         document.getElementById('vista-locales').style.display = 'block';
@@ -327,30 +329,37 @@
     function abrirLocal(id) {
       localActivo = locales[id];
       
-      // --- LÓGICA DEL CARRITO INTELIGENTE (5 MINUTOS Y POR LOCAL) ---
+      distanciaKm = 0;
+      tiempoMin = 0;
+      linkGPS = "";
+      document.getElementById("btnGPS").innerText = "📍 Usar GPS";
+      document.getElementById("btnGPS").className = "btn-gps";
+      document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
+      document.getElementById("btnMapa").className = "btn-mapa";
+
+      // Reseteamos el selector de entrega a "delivery" por defecto al entrar
+      document.getElementById("tipoEntrega").value = "delivery";
+      toggleDireccion(); 
+
       let carritoGuardado = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
       if (carritoGuardado) {
         let tiempoPasado = Date.now() - carritoGuardado.tiempo;
-        // Si pasaron más de 5 min (300,000 ms) o si el carrito era de otro local -> BORRAMOS
         if (tiempoPasado > 300000 || carritoGuardado.localId !== localActivo.id) {
           carrito = [];
           localStorage.removeItem('dp_carrito');
         } else {
-          carrito = carritoGuardado.items; // Recuperamos carrito intacto
+          carrito = carritoGuardado.items;
         }
       } else {
         carrito = [];
       }
-      actualizarCarrito(); // Refresca visualmente el carrito al entrar
+      actualizarCarrito();
 
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
 
-      // Truco del Historial para el botón Atrás del celu
-      if(window.location.hash !== '#menu') {
-        history.pushState({ vista: 'menu' }, '', '#menu');
-      }
+      if(window.location.hash !== '#menu') history.pushState({ vista: 'menu' }, '', '#menu');
 
       document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
       document.getElementById('menu-horarios').innerHTML = localActivo.horariosTxt;
@@ -378,32 +387,10 @@
         contCat.appendChild(contItems);
       }
 
-      const btnWA = document.getElementById('btnEnviarWhatsapp');
-      let cartel = document.getElementById('cartel-estado-local');
-      if (!localActivo.estaAbierto()) {
-        if (!cartel) {
-          cartel = document.createElement('div');
-          cartel.id = 'cartel-estado-local';
-          cartel.className = 'cartel-cerrado';
-          cartel.innerHTML = '⛔ Local CERRADO. Mirá el menú, pero no se toman pedidos ahora.';
-          document.getElementById('menu-header').insertAdjacentElement('afterend', cartel);
-        }
-        btnWA.innerText = "Local Cerrado ⛔";
-        btnWA.disabled = true;
-        btnWA.style.background = "#999";
-      } else {
-        if (cartel) cartel.remove();
-        btnWA.innerText = "Hacer pedido por WhatsApp";
-        btnWA.disabled = false;
-        btnWA.style.background = "#25D366";
-      }
+      validarBotonEnviar();
     }
 
-    function volverInicio() {
-      // Al llamar a history.back(), se dispara el evento 'popstate' que definimos arriba
-      // y eso se encarga de cambiar la pantalla. Es como apretar el botón físico del celu.
-      history.back();
-    }
+    function volverInicio() { history.back(); }
 
     function agregarDirecto(p) {
       carrito.push({ ...p, extras: [], aderezos: [], precioFinal: p.precio });
@@ -418,7 +405,6 @@
       aderezosLista.forEach(a => { 
         contAderezos.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; 
       });
-      
       document.getElementById("contenedor-adicionales").innerHTML = `
         <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
         <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
@@ -464,13 +450,8 @@
       });
       document.getElementById("totalCarrito").innerText = "Total: $" + total;
 
-      // GUARDAMOS EL ESTADO ACTUAL DEL CARRITO EN LA MEMORIA CON SU HORA EXACTA
       if(localActivo) {
-        localStorage.setItem('dp_carrito', JSON.stringify({
-          items: carrito,
-          tiempo: Date.now(),
-          localId: localActivo.id
-        }));
+        localStorage.setItem('dp_carrito', JSON.stringify({ items: carrito, tiempo: Date.now(), localId: localActivo.id }));
       }
     }
 
@@ -478,7 +459,59 @@
       if (confirm("¿Vaciar todo el pedido?")) { carrito = []; actualizarCarrito(); }
     }
 
-    function toggleDireccion() { document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; }
+    // --- NUEVO COMPORTAMIENTO: TOGGLE DIRECCIÓN Y BOTÓN DE RETIRO ---
+    function toggleDireccion() { 
+      const tipo = document.getElementById("tipoEntrega").value;
+      const seccionDir = document.getElementById("seccionDireccion");
+      const btnUbi = document.getElementById("btnUbiLocal");
+      
+      if (tipo === "retiro") {
+        seccionDir.style.display = "none";
+        btnUbi.style.display = "block";
+      } else {
+        seccionDir.style.display = "block";
+        btnUbi.style.display = "none";
+      }
+      validarBotonEnviar();
+    }
+
+    function abrirUbicacionLocal() {
+      if (localActivo && localActivo.mapaUrl) {
+        window.open(localActivo.mapaUrl, '_blank');
+      }
+    }
+
+    function calcularDistanciaLineal(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2-lat1) * Math.PI / 180;
+      const dLon = (lon2-lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    async function analizarRuta(latCli, lngCli) {
+      const latLoc = localActivo.coords.lat;
+      const lngLoc = localActivo.coords.lng;
+      
+      try {
+        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${lngLoc},${latLoc};${lngCli},${latCli}?overview=false`);
+        const data = await res.json();
+        
+        if (data.routes && data.routes.length > 0) {
+          distanciaKm = (data.routes[0].distance / 1000);
+          tiempoMin = Math.ceil(data.routes[0].duration / 60);
+        } else { throw new Error("No route"); }
+      } catch (error) {
+        console.log("OSRM falló, usando cálculo lineal");
+        let distLineal = calcularDistanciaLineal(latLoc, lngLoc, latCli, lngCli);
+        distanciaKm = distLineal * 1.3; 
+        tiempoMin = Math.ceil((distanciaKm / 30) * 60); 
+      }
+
+      distanciaKm = parseFloat(distanciaKm.toFixed(1));
+      validarBotonEnviar();
+    }
 
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
@@ -489,6 +522,10 @@
             linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
             btn.innerText = "✅ GPS Listo";
             btn.className = "btn-gps exito";
+            document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
+            document.getElementById("btnMapa").className = "btn-mapa";
+            // Calcula en silencio, sin mostrarle al cliente
+            analizarRuta(pos.coords.latitude, pos.coords.longitude);
           },
           () => { alert("No se pudo obtener la ubicación."); btn.innerText = "📍 Reintentar GPS"; }
         );
@@ -497,7 +534,8 @@
 
     function abrirModalMapa() {
       document.getElementById("modalMapaContenedor").style.display = "flex";
-      const latSalta = -24.7821; const lngSalta = -65.4232;
+      const latSalta = localActivo.coords.lat; 
+      const lngSalta = localActivo.coords.lng;
       if (!mapaInstance) {
         mapaInstance = L.map('map').setView([latSalta, lngSalta], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapaInstance);
@@ -505,6 +543,10 @@
         coordsTemp = { lat: latSalta, lng: lngSalta };
         marcador.on('dragend', function(e) { coordsTemp = marcador.getLatLng(); });
         mapaInstance.on('click', function(e) { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
+      } else {
+        mapaInstance.setView([latSalta, lngSalta], 14);
+        marcador.setLatLng([latSalta, lngSalta]);
+        coordsTemp = { lat: latSalta, lng: lngSalta };
       }
       setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
     }
@@ -514,14 +556,31 @@
         linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
         document.getElementById("btnMapa").innerText = "✅ Mapa Guardado";
         document.getElementById("btnMapa").className = "btn-mapa exito";
+        document.getElementById("btnGPS").innerText = "📍 Usar GPS";
+        document.getElementById("btnGPS").className = "btn-gps";
+        analizarRuta(coordsTemp.lat, coordsTemp.lng);
       }
       cerrarModalMapa();
     }
 
     function cerrarModalMapa() { document.getElementById("modalMapaContenedor").style.display = "none"; }
 
+    function validarBotonEnviar() {
+      const btnWA = document.getElementById('btnEnviarWhatsapp');
+      
+      if (!localActivo.estaAbierto()) {
+        btnWA.innerText = "Local Cerrado ⛔";
+        btnWA.disabled = true;
+        btnWA.style.background = "#999";
+        return;
+      }
+
+      btnWA.innerText = "Hacer pedido por WhatsApp";
+      btnWA.disabled = false;
+      btnWA.style.background = "#25D366";
+    }
+
     function enviarPedido() {
-      if (!localActivo.estaAbierto()) { alert("¡Uh! El local ya cerró."); return; }
       const n = document.getElementById("nombreCliente").value.trim();
       const selectEntrega = document.getElementById("tipoEntrega");
       const direccion = document.getElementById("direccionCliente").value.trim();
@@ -529,7 +588,11 @@
 
       if(!n) { alert("Ingresá tu nombre."); return; }
       if(carrito.length === 0) { alert("Agregá algo al carrito."); return; }
-      if(selectEntrega.value === "delivery" && !direccion) { alert("Falta la dirección."); return; }
+      
+      if(selectEntrega.value === "delivery") {
+        if(!direccion) { alert("Falta escribir la dirección."); return; }
+        if(!linkGPS) { alert("Por favor, tocá en 'Usar GPS' o 'Buscar en Mapa' para confirmar tu ubicación."); return; }
+      }
       
       let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
@@ -545,24 +608,24 @@
       
       const pago = document.getElementById("metodoPago").value;
       m += `💳 *Pago:* ${pago} ${pago.includes("Efectivo") ? "💵" : "📱"}%0A`;
-      m += `🛵 *Entrega:* ${selectEntrega.options[selectEntrega.selectedIndex].text}%0A`;
       
-      if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
-      if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}%0A`;
-
-      if(observaciones) {
-        m += `%0A📝 *Observaciones:* ${observaciones}%0A`;
+      if(selectEntrega.value === "delivery") {
+        // La distancia solo va para el cajero
+        let txtDistancia = (distanciaKm > 0) ? `(${distanciaKm} km - Aprox ${tiempoMin} min)` : "";
+        m += `🛵 *Entrega:* A domicilio ${txtDistancia}%0A`;
+        m += `🏠 *Dirección:* ${direccion}%0A`;
+        m += `📍 *Mapa:* ${linkGPS}%0A`;
+      } else {
+        m += `🛵 *Entrega:* Retiro por el local%0A`;
       }
+
+      if(observaciones) { m += `%0A📝 *Observaciones:* ${observaciones}%0A`; }
       
-      // Borramos el carrito de la memoria porque el pedido ya se hizo con éxito
       localStorage.removeItem('dp_carrito');
-      
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
-    }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     let eventoInstalacion = null;
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacion = e; setTimeout(() => { document.getElementById('bannerInstalacion').style.display = 'flex'; }, 2000); });
     document.getElementById('btnInstalar').addEventListener('click', () => { if (eventoInstalacion) { eventoInstalacion.prompt(); eventoInstalacion = null; } document.getElementById('bannerInstalacion').style.display = 'none'; });
