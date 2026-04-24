@@ -34,6 +34,7 @@
     .btn-gps, .btn-mapa { padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; }
     .btn-gps { background: #e0e0e0; }
     .btn-mapa { background: #007bff; color: white; }
+    .btn-vaciar { background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
     .exito { background: #28a745 !important; color: white !important; }
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
@@ -41,6 +42,7 @@
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
     #map { height: 300px; width: 100%; border-radius: 10px; border: 2px solid #ccc; }
+    .total-container { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #eee; margin-top: 15px; padding-top: 10px; }
   </style>
 </head>
 <body>
@@ -67,7 +69,11 @@
     <div id="carrito">
       <h3>🛒 Tu Pedido</h3>
       <div id="listaCarrito"></div>
-      <h3 id="totalCarrito" style="text-align:right">Total: $0</h3>
+      
+      <div class="total-container">
+        <button class="btn-vaciar" onclick="vaciarCarrito()">🗑️ Vaciar Carrito</button>
+        <h3 id="totalCarrito" style="margin:0">Total: $0</h3>
+      </div>
       
       <div class="form-group"><label>Nombre:</label><input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez"></div>
       
@@ -126,7 +132,6 @@
 </div>
 
 <script>
-  // REGISTRO PWA
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
@@ -155,7 +160,7 @@
     ]
   };
 
-  let carrito = []; let prodTemp = null; let linkGPS = ""; let mapa, marcador, coords;
+  let carrito = []; let prodTemp = null; let linkGPS = ""; let mapa, marcador;
 
   function abrirLocal(id) { 
     document.getElementById('vista-locales').style.display='none'; 
@@ -221,6 +226,14 @@
     actualizarCarrito();
   }
 
+  function vaciarCarrito() {
+    if(carrito.length === 0) return;
+    if(confirm("¿Seguro que querés vaciar el carrito?")) {
+      carrito = [];
+      actualizarCarrito();
+    }
+  }
+
   function actualizarCarrito() {
     const l = document.getElementById("listaCarrito"); l.innerHTML = ""; let t = 0;
     carrito.forEach((item, i) => {
@@ -242,13 +255,13 @@
 
   function obtenerGPS() {
     const btn = document.getElementById("btnGPS");
-    btn.innerText = "⏳ Obteniendo...";
+    btn.innerText = "⏳...";
     navigator.geolocation.getCurrentPosition(p => {
       linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-      btn.innerText = "✅ GPS Listo";
+      btn.innerText = "✅ GPS";
       btn.classList.add("exito");
     }, () => {
-      alert("No se pudo obtener el GPS. Probá con el mapa manual.");
+      alert("Error GPS");
       btn.innerText = "📍 Reintentar";
     });
   }
@@ -269,7 +282,7 @@
     const c = marcador.getLatLng();
     linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
     document.getElementById("btnMapa").classList.add("exito");
-    document.getElementById("btnMapa").innerText = "✅ Mapa Guardado";
+    document.getElementById("btnMapa").innerText = "✅ Mapa";
     cerrarModalMapa();
   }
 
@@ -278,7 +291,7 @@
     const pago = document.getElementById("metodoPago").value;
     const entrega = document.getElementById("tipoEntrega").value;
     
-    if(!nom || !carrito.length) return alert("Por favor, poné tu nombre y agregá algo al carrito.");
+    if(!nom || !carrito.length) return alert("Faltan datos.");
     
     let m = `¡Hola *El Oeste*! 👋 Soy *${nom}*. Pedido Dale pué:%0A%0A`;
     carrito.forEach(i => {
