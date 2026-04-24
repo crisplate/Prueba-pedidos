@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dale Pue Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    button { background: #d9232d; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    #carrito { margin-top: 20px; background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #d9232d; }
+  </style>
+</head>
+<body>
+  <h1>Dale pué - Test 🛵</h1>
+  <div id="menu"></div>
+  <div id="carrito">
+    <h3>🛒 Carrito</h3>
+    <ul id="lista"></ul>
+    <p id="total">Total: $0</p>
+    <button onclick="enviar()">Enviar a WhatsApp</button>
+  </div>
+
+  <script>
+    const productos = [
+      { n: "Milanesa Clásica", p: 12000 },
+      { n: "Lomo XL", p: 25000 },
+      { n: "Coca Cola 500ml", p: 3000 }
+    ];
+
+    let carrito = [];
+
+    function render() {
+      const divMenu = document.getElementById("menu");
+      divMenu.innerHTML = "";
+      productos.forEach((prod, i) => {
+        divMenu.innerHTML += `
+          <div class="card">
+            <div><strong>${prod.n}</strong><br>$${prod.p}</div>
+            <button onclick="agregar(${i})">Agregar</button>
+          </div>`;
+      });
+    }
+
+    function agregar(i) {
+      carrito.push(productos[i]);
+      actualizar();
+    }
+
+    function actualizar() {
+      const lista = document.getElementById("lista");
+      const totalLabel = document.getElementById("total");
+      lista.innerHTML = "";
+      let t = 0;
+      carrito.forEach(item => {
+        lista.innerHTML += `<li>${item.n} - $${item.p}</li>`;
+        t += item.p;
+      });
+      totalLabel.innerText = "Total: $" + t;
+    }
+
+    function enviar() {
+      if(carrito.length === 0) return alert("Carrito vacío");
+      let m = "Hola! Mi pedido:%0A";
+      carrito.forEach(i => m += "- " + i.n + "%0A");
+      window.open("https://wa.me/5491124500967?text=" + m);
+    }
+
+    render();
+  </script>
+</body>
+</html>
