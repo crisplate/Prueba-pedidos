@@ -177,7 +177,6 @@
   <script>
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // AGREGAMOS LA PROPIEDAD "tipo" A CADA PRODUCTO
     const menuElOeste = {
       sandwiches: [
         { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida" },
@@ -218,7 +217,6 @@
     let productoTemporal = null;
     let linkGPS = "";
     
-    // Variables del mapa Leaflet
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
@@ -242,7 +240,7 @@
         arr.forEach(p => {
           const d = document.createElement("div");
           d.className = "card";
-          const pSeguro = JSON.stringify(p).replace(/"/g, '&quot;');
+          const pSeguro = JSON.stringify(p).replace(/"/g, '"');
           const accionBtn = conExtras ? `abrirModalExtras(${pSeguro})` : `agregarDirecto(${pSeguro})`;
           
           d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div><button class="btn-agregar" onclick="${accionBtn}">Agregar</button>`;
@@ -298,7 +296,6 @@
       lista.innerHTML = "";
       let total = 0;
       
-      // Mostrar u ocultar botón de vaciar carrito
       if (carrito.length > 0) {
         btnVaciar.style.display = "block";
       } else {
@@ -321,7 +318,6 @@
       document.getElementById("totalCarrito").innerText = "Total: $" + total;
     }
 
-    // NUEVA FUNCIÓN PARA VACIAR CARRITO CON REAFIRMACIÓN
     function confirmarVaciarCarrito() {
       if (confirm("¿Estás seguro de que querés vaciar todo tu pedido?")) {
         carrito = [];
@@ -340,7 +336,8 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            linkGPS = `https://maps.google.com/?q=$${pos.coords.latitude},${pos.coords.longitude}`;
+            // CORRECCIÓN DE LA URL DE GOOGLE MAPS Y SINTAXIS DE VARIABLES
+            linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
             btn.innerText = "✅ GPS Listo";
             btn.className = "btn-gps exito";
             document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
@@ -386,7 +383,8 @@
 
     function confirmarMapa() {
       if (coordsTemp) {
-        linkGPS = `https://maps.google.com/?q=$${coordsTemp.lat},${coordsTemp.lng}`;
+        // CORRECCIÓN DE LA URL DE GOOGLE MAPS Y SINTAXIS DE VARIABLES
+        linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
         
         const btnM = document.getElementById("btnMapa");
         btnM.innerText = "✅ Mapa Guardado";
@@ -411,13 +409,12 @@
       let t = 0;
       
       carrito.forEach(i => {
-        // LÓGICA DE EMOJIS SEGÚN EL TIPO DE PRODUCTO
-        let iconoItem = "🍔"; // Por defecto comida
+        let iconoItem = "🍔"; 
         if(i.tipo === "sinalcohol") iconoItem = "🥤";
         if(i.tipo === "alcohol") iconoItem = "🍺";
 
         m += `${iconoItem} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ ${i.aderezos.join(", ")}%0A`; // Símbolo de atención para aderezos
+        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ ${i.aderezos.join(", ")}%0A`; 
         if (i.extras && i.extras.length > 0) i.extras.forEach(e => m += `   ➕ ${e.n}%0A`);
         t += i.precioFinal;
       });
