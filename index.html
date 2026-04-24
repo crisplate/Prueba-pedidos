@@ -48,7 +48,9 @@
     
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    /* Agregamos textarea al estilo */
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+    .form-group textarea { resize: vertical; } /* Deja que se pueda agrandar solo para abajo */
     
     .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
@@ -158,6 +160,11 @@
           <label>Pago:</label>
           <select id="metodoPago"><option>Efectivo</option><option>Transferencia / Billetera Virtual</option></select>
         </div>
+
+        <div class="form-group">
+          <label>Observaciones (Opcional):</label>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas de carne sin pasas, la hamburguesa sin lechuga, etc."></textarea>
+        </div>
         
         <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
       </div>
@@ -201,12 +208,26 @@
           "Tu Sándwich Favorito 🥪": {
             items: [
               { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo + papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa gigante p/2", desc: "200g carne, completa + papas", precio: 17000, tipo: "comida", conExtras: true }
+              { nombre: "Milanesa gigante p/2", desc: "200g carne, completa + papas", precio: 17000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, completa + 300g papas", precio: 18000, tipo: "comida", conExtras: true },
+              { nombre: "Gigante tucumana", desc: "2 milanesas 200g, completa + 500g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa XL", desc: "300g carne, completa + 600g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + papas", precio: 12000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + papas", precio: 12000, tipo: "comida", conExtras: true }
+            ]
+          },
+          "Nuestras Minutas 🍽️": {
+            items: [
+              { nombre: "Milanesa al plato", desc: "Clásica", precio: 11500, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa napolitana especial", desc: "Completa", precio: 13500, tipo: "comida", conExtras: true },
+              { nombre: "Chacarero p/2", desc: "Para compartir", precio: 18000, tipo: "comida", conExtras: true }
             ]
           },
           "Bebidas 🥤": {
             items: [
-              { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false }
+              { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
+              { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol", conExtras: false },
+              { nombre: "Cerveza 710ml", desc: "Rubia/Negra", precio: 5000, tipo: "alcohol", conExtras: false }
             ]
           }
         },
@@ -234,7 +255,8 @@
           "Pizzas 🍕": {
             items: [
               { nombre: "Muzzarella", desc: "8 porciones", precio: 9000, tipo: "comida", conExtras: false },
-              { nombre: "Especial", desc: "Jamón y morrón", precio: 11000, tipo: "comida", conExtras: false }
+              { nombre: "Especial", desc: "Jamón y morrón", precio: 11000, tipo: "comida", conExtras: false },
+              { nombre: "Calabresa", desc: "Con longaniza", precio: 12000, tipo: "comida", conExtras: false }
             ]
           }
         },
@@ -435,6 +457,7 @@
       const n = document.getElementById("nombreCliente").value.trim();
       const selectEntrega = document.getElementById("tipoEntrega");
       const direccion = document.getElementById("direccionCliente").value.trim();
+      const observaciones = document.getElementById("observacionesCliente").value.trim(); // NUEVO CAMPO
 
       if(!n) { alert("Ingresá tu nombre."); return; }
       if(carrito.length === 0) { alert("Agregá algo al carrito."); return; }
@@ -446,29 +469,4 @@
         let icono = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : "🍔";
         if (localActivo.nombre === "Mama Cora" && i.tipo === "comida") icono = "🥟";
         m += `${icono} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
-        if (i.extras && i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
-        t += i.precioFinal;
-      });
-      m += `%0A💰 *TOTAL: $${t}*%0A`;
-      const pago = document.getElementById("metodoPago").value;
-      m += `💳 *Pago:* ${pago} ${pago.includes("Efectivo") ? "💵" : "📱"}%0A`;
-      m += `🛵 *Entrega:* ${selectEntrega.options[selectEntrega.selectedIndex].text}%0A`;
-      if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
-      if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}`;
-      
-      window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
-    }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
-    }
-    let eventoInstalacion = null;
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacion = e; setTimeout(() => { document.getElementById('bannerInstalacion').style.display = 'flex'; }, 2000); });
-    document.getElementById('btnInstalar').addEventListener('click', () => { if (eventoInstalacion) { eventoInstalacion.prompt(); eventoInstalacion = null; } document.getElementById('bannerInstalacion').style.display = 'none'; });
-    function cerrarBanner() { document.getElementById('bannerInstalacion').style.display = 'none'; }
-
-    actualizarPantallaPrincipal();
-  </script>
-</body>
-</html>
+        if (i.aderezos && i.aderezos.length > 0)
