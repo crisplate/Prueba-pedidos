@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dalepue-v1';
+const CACHE_NAME = 'dalepue-v2'; // Le subimos la versión
 const urlsToCache = [
   './',
   './index.html',
@@ -11,12 +11,27 @@ self.addEventListener('install', event => {
       return cache.addAll(urlsToCache);
     })
   );
+  self.skipWaiting(); // Obliga a actualizar al instante
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName); // Borra la versión vieja
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
+  // Ahora siempre busca primero en internet. Si no hay señal, recién ahí usa la memoria.
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
