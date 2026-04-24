@@ -20,6 +20,9 @@
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
     .btn-entrar { background: #d9232d; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
 
+    /* ESTADO DEL LOCAL (HORARIOS) */
+    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
+
     /* VISTA MENÚ */
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
@@ -71,7 +74,7 @@
     <div id="vista-locales">
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
-        <p>Los mejores locales en un toque</p>
+        <p>Lo nuestro, al toque</p>
       </div>
       <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
         <div>
@@ -221,10 +224,60 @@
     let marcador = null;
     let coordsTemp = null;
 
+    // --- LÓGICA DE HORARIOS ---
+    function verificarAbierto() {
+      const ahora = new Date();
+      let diaActual = ahora.getDay(); // 0: Dom, 1: Lun, ..., 5: Vie, 6: Sab
+      let hora = ahora.getHours();
+      let min = ahora.getMinutes();
+      let horaActual = hora * 100 + min;
+
+      // Determinamos a qué "turno" pertenece la hora actual.
+      // Como el local abre a las 12:00, cualquier hora anterior a las 12:00 pertenece a la trasnoche del día anterior.
+      let diaTurno = diaActual;
+      if (hora < 12) {
+        diaTurno = diaActual === 0 ? 6 : diaActual - 1;
+      }
+
+      const abre = 1200; // 12:00
+      // Si el turno es de Viernes (5) o Sábado (6), cierra a las 07:00. Resto de días a las 04:00.
+      const cierra = (diaTurno === 5 || diaTurno === 6) ? 700 : 400;
+
+      // Como siempre cruzamos la medianoche (1200 > 700 o 400), usamos ||
+      return horaActual >= abre || horaActual < cierra;
+    }
+
     function abrirLocal(id) {
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
+
+      // Chequeo de horario y control del botón WhatsApp
+      const btnWhatsApp = document.querySelector('.btn-whatsapp');
+      let cartelCerrado = document.getElementById('cartel-estado-local');
+
+      if (!verificarAbierto()) {
+        if (!cartelCerrado) {
+          cartelCerrado = document.createElement('div');
+          cartelCerrado.id = 'cartel-estado-local';
+          cartelCerrado.className = 'cartel-cerrado';
+          cartelCerrado.innerHTML = '⛔ El local está CERRADO. Podés mirar el menú, pero no se toman pedidos en este momento.';
+          
+          const headerLocal = document.querySelector('.header-local');
+          headerLocal.insertAdjacentElement('afterend', cartelCerrado);
+        }
+        
+        btnWhatsApp.innerText = "Local Cerrado ⛔";
+        btnWhatsApp.disabled = true;
+        btnWhatsApp.style.background = "#999";
+        btnWhatsApp.style.cursor = "not-allowed";
+      } else {
+        if (cartelCerrado) cartelCerrado.remove();
+        btnWhatsApp.innerText = "Hacer pedido por WhatsApp";
+        btnWhatsApp.disabled = false;
+        btnWhatsApp.style.background = "#25D366";
+        btnWhatsApp.style.cursor = "pointer";
+      }
     }
 
     function volverInicio() {
@@ -233,7 +286,6 @@
       window.scrollTo(0,0);
     }
 
-    // ARREGLO DEFINITIVO DE LA FUNCIÓN QUE ROPMÍA LOS BOTONES
     function renderizarMenu() {
       const render = (arr, id, conExtras) => {
         const cont = document.getElementById(id);
@@ -243,15 +295,12 @@
           const d = document.createElement("div");
           d.className = "card";
           
-          // Agregamos la información en texto limpio
           d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
           
-          // Creamos el botón "a mano" usando JavaScript. Esto EVITA que haya errores por chocar las comillas
           const btn = document.createElement("button");
           btn.className = "btn-agregar";
           btn.innerText = "Agregar";
           
-          // Le decimos exactamente qué hacer cuando se hace clic, sin pasarlo como texto
           btn.onclick = () => {
             if (conExtras) {
               abrirModalExtras(p);
@@ -260,7 +309,6 @@
             }
           };
           
-          // Metemos el botón adentro de la tarjeta
           d.appendChild(btn);
           cont.appendChild(d);
         });
@@ -347,7 +395,6 @@
       document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; 
     }
 
-    // ARREGLO DE LA URL DEL GPS BASADO EN TU CAPTURA DE WHATSAPP
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
@@ -395,7 +442,6 @@
       setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
     }
 
-    // ARREGLO DE LA URL DEL MAPA BASADO EN TU CAPTURA DE WHATSAPP
     function confirmarMapa() {
       if (coordsTemp) {
         linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
@@ -411,7 +457,17 @@
       cerrarModalMapa();
     }
 
+    function cerrarModalMapa() {
+      document.getElementById("modalMapaContenedor").style.display = "none";
+    }
+
     function enviarPedido() {
+      // Bloqueo de seguridad al enviar
+      if (!verificarAbierto()) {
+        alert("¡Uh! El local ya cerró. Te esperamos mañana en nuestro horario de atención.");
+        return;
+      }
+
       const n = document.getElementById("nombreCliente").value.trim();
       
       if(!n || carrito.length === 0) {
@@ -451,9 +507,9 @@
       m += `🛵 *Entrega:* ${txtEntrega}%0A`;
       
       const direccion = document.getElementById("direccionCliente").value.trim();
-      if(direccion) m += `🏠 *Dirección:* ${direccion}%0A`;
+      if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
       
-      if(linkGPS) m += `📍 *Mapa:* ${linkGPS}`;
+      if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}`;
       
       const numeroWhatsApp = "5491124500967";
       
