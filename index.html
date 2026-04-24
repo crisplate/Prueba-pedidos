@@ -23,7 +23,12 @@
     .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.8rem; line-height: 1.2; }
     .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; }
     .btn-agregar { background: #111; color: #ffb800; padding: 8px 12px; border-radius: 8px; font-weight: bold; border:none; cursor: pointer; }
+    
+    /* CARRITO */
     #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header-carrito { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .btn-vaciar { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
+    
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
     .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
@@ -33,6 +38,8 @@
     .btn-mapa { background: #007bff; color: white; }
     .exito { background: #28a745 !important; color: white !important; }
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer; }
+    
+    /* MODALES */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -62,7 +69,10 @@
       <h2 class="categoria-titulo">Bebidas 🥤</h2><div id="menu-bebidas"></div>
     </div>
     <div id="carrito">
-      <h3>🛒 Tu Pedido</h3>
+      <div class="header-carrito">
+        <h3 style="margin:0;">🛒 Tu Pedido</h3>
+        <button class="btn-vaciar" onclick="vaciarCarrito()">🗑️ Vaciar Carrito</button>
+      </div>
       <div id="listaCarrito"></div>
       <h3 id="totalCarrito" style="text-align:right">Total: $0</h3>
       
@@ -176,13 +186,8 @@
 
   function clickProd(cat, index, conExtras) {
     const p = menuData[cat][index];
-    if(conExtras) { 
-      prodTemp = p; 
-      abrirModalExtras(); 
-    } else { 
-      carrito.push({...p, ad:[], ex:[], pf:p.p}); 
-      actualizarCarrito(); 
-    }
+    if(conExtras) { prodTemp = p; abrirModalExtras(); } 
+    else { carrito.push({...p, ad:[], ex:[], pf:p.p}); actualizarCarrito(); }
   }
 
   function abrirModalExtras() {
@@ -200,6 +205,14 @@
     document.querySelectorAll(".extra-cb:checked").forEach(cb => { exs.push(cb.getAttribute("data-nombre")); pf += parseInt(cb.value); });
     carrito.push({...prodTemp, ad:ads, ex:exs, pf:pf});
     cerrarModalExtras(); actualizarCarrito();
+  }
+
+  function vaciarCarrito() {
+    if(carrito.length === 0) return;
+    if(confirm("¿Estás seguro que querés vaciar el carrito?")) {
+        carrito = [];
+        actualizarCarrito();
+    }
   }
 
   function actualizarCarrito() {
@@ -240,14 +253,12 @@
     setTimeout(() => mapa.invalidateSize(), 200);
   }
 
-  function cerrarModalMapa() { document.getElementById("modalMapa").style.display="none"; }
-
   function confirmarMapa() {
     const c = marcador.getLatLng();
     linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
     document.getElementById("btnMapa").classList.add("exito");
     document.getElementById("btnMapa").innerText = "✅ Mapa Listo";
-    cerrarModalMapa();
+    document.getElementById("modalMapa").style.display="none";
   }
 
   function enviarPedido() {
@@ -263,8 +274,9 @@
     carrito.forEach(i => {
       let icon = "🍔"; if(i.t === "gaseosa") icon = "🥤"; if(i.t === "alcohol") icon = "🍺";
       m += `${icon} *${i.n}* ($${i.pf})%0A`;
-      if(i.ad.length) m += `   🧂 _${i.ad.join(', ')}_%0A`;
-      if(i.ex.length) m += `   ➕ _${i.ex.join(', ')}_%0A`;
+      // ACÁ ESTÁ EL CAMBIO DEL EMOJI ⚠️ PARA LOS AGREGADOS
+      if(i.ad.length) m += `   ⚠️ _Aderezos: ${i.ad.join(', ')}_%0A`;
+      if(i.ex.length) m += `   ⚠️ _Extras: ${i.ex.join(', ')}_%0A`;
     });
     
     m += `%0A💰 *TOTAL: ${document.getElementById("totalCarrito").innerText}*%0A💳 *Pago:* ${pago}%0A🛵 *Entrega:* ${entrega === 'delivery' ? 'Envío a domicilio' : 'Retiro en local'}`;
