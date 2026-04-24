@@ -233,17 +233,35 @@
       window.scrollTo(0,0);
     }
 
+    // ARREGLO DEFINITIVO DE LA FUNCIÓN QUE ROPMÍA LOS BOTONES
     function renderizarMenu() {
       const render = (arr, id, conExtras) => {
         const cont = document.getElementById(id);
         cont.innerHTML = "";
+        
         arr.forEach(p => {
           const d = document.createElement("div");
           d.className = "card";
-          const pSeguro = JSON.stringify(p).replace(/"/g, '"');
-          const accionBtn = conExtras ? `abrirModalExtras(${pSeguro})` : `agregarDirecto(${pSeguro})`;
           
-          d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div><button class="btn-agregar" onclick="${accionBtn}">Agregar</button>`;
+          // Agregamos la información en texto limpio
+          d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
+          
+          // Creamos el botón "a mano" usando JavaScript. Esto EVITA que haya errores por chocar las comillas
+          const btn = document.createElement("button");
+          btn.className = "btn-agregar";
+          btn.innerText = "Agregar";
+          
+          // Le decimos exactamente qué hacer cuando se hace clic, sin pasarlo como texto
+          btn.onclick = () => {
+            if (conExtras) {
+              abrirModalExtras(p);
+            } else {
+              agregarDirecto(p);
+            }
+          };
+          
+          // Metemos el botón adentro de la tarjeta
+          d.appendChild(btn);
           cont.appendChild(d);
         });
       };
@@ -329,6 +347,7 @@
       document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; 
     }
 
+    // ARREGLO DE LA URL DEL GPS BASADO EN TU CAPTURA DE WHATSAPP
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
@@ -336,7 +355,6 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            // FORMATO CORRECTO Y OFICIAL PARA GOOGLE MAPS
             linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
             btn.innerText = "✅ GPS Listo";
             btn.className = "btn-gps exito";
@@ -377,13 +395,9 @@
       setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
     }
 
-    function cerrarModalMapa() {
-      document.getElementById("modalMapaContenedor").style.display = "none";
-    }
-
+    // ARREGLO DE LA URL DEL MAPA BASADO EN TU CAPTURA DE WHATSAPP
     function confirmarMapa() {
       if (coordsTemp) {
-        // FORMATO CORRECTO Y OFICIAL PARA GOOGLE MAPS
         linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
         
         const btnM = document.getElementById("btnMapa");
@@ -415,7 +429,6 @@
 
         m += `${iconoItem} *${i.nombre}* ($${i.precioFinal})%0A`;
         
-        // ESTRUCTURA IDENTICA A LA CAPTURA PARA ADEREZOS Y EXTRAS
         if (i.aderezos && i.aderezos.length > 0) {
           m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
         }
@@ -427,7 +440,7 @@
         t += i.precioFinal;
       });
       
-      m += `%0A💰 *TOTAL: $${t}*%0A`;
+      m += `%0A💰 *TOTAL: Total: $${t}*%0A`;
       
       const selectMetodo = document.getElementById("metodoPago").value;
       const iconoPago = selectMetodo.includes("Efectivo") ? "💵" : "📱";
