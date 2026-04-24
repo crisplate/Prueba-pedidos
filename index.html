@@ -66,7 +66,7 @@
       <div id="listaCarrito"></div>
       <h3 id="totalCarrito" style="text-align:right">Total: $0</h3>
       
-      <div class="form-group"><label>Nombre y Apellido:</label><input type="text" id="nombreCliente"></div>
+      <div class="form-group"><label>Nombre y Apellido:</label><input type="text" id="nombreCliente" placeholder="Ej: Cristian"></div>
       
       <div class="form-group">
         <label>Forma de Pago:</label>
@@ -79,7 +79,7 @@
       <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Envío a domicilio (Gratis)</option><option value="retiro">Retiro en local</option></select></div>
       
       <div id="seccionDireccion">
-        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
+        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Leguizamón 123">
         <div class="grid-botones-ubicacion">
           <button class="btn-gps" id="btnGPS" onclick="obtenerGPS()">📍 GPS</button>
           <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Mapa</button>
@@ -117,7 +117,8 @@
 
 <script>
   const aderezos = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
-  const menu = {
+  
+  const menuData = {
     sandwiches: [
       { n: "Milanesa clásica", d: "120g carne, lechuga, tomate, huevo, cebolla + papas", p: 12000, t: "comida" },
       { n: "Milanesa gigante p/2", d: "200g carne, lechuga, tomate, huevo, cebolla + papas", p: 17000, t: "comida" },
@@ -159,23 +160,29 @@
   function volverInicio() { document.getElementById('vista-menu').style.display='none'; document.getElementById('vista-locales').style.display='block'; }
 
   function renderMenu() {
-    const r = (arr, id, extras) => {
+    const r = (arr, id, extras, catName) => {
       const c = document.getElementById(id); c.innerHTML = "";
-      arr.forEach(p => {
+      arr.forEach((p, i) => {
         const div = document.createElement("div"); div.className="card";
-        const pS = JSON.stringify(p).replace(/"/g, '"');
         div.innerHTML = `<div class="info-producto"><h3>${p.n}</h3><p class="desc">${p.d}</p><p class="precio">$${p.p}</p></div>
-        <button class="btn-agregar" onclick="clickProd('${pS}', ${extras})">Agregar</button>`;
+        <button class="btn-agregar" onclick="clickProd('${catName}', ${i}, ${extras})">Agregar</button>`;
         c.appendChild(div);
       });
     };
-    r(menu.sandwiches, "menu-sandwiches", true); r(menu.minutas, "menu-minutas", true); r(menu.bebidas, "menu-bebidas", false);
+    r(menuData.sandwiches, "menu-sandwiches", true, "sandwiches");
+    r(menuData.minutas, "menu-minutas", true, "minutas");
+    r(menuData.bebidas, "menu-bebidas", false, "bebidas");
   }
 
-  function clickProd(pS, extras) {
-    const p = JSON.parse(pS.replace(/"/g, '"'));
-    if(extras) { prodTemp = p; abrirModalExtras(); } 
-    else { carrito.push({...p, ad:[], ex:[], pf:p.p}); actualizarCarrito(); }
+  function clickProd(cat, index, conExtras) {
+    const p = menuData[cat][index];
+    if(conExtras) { 
+      prodTemp = p; 
+      abrirModalExtras(); 
+    } else { 
+      carrito.push({...p, ad:[], ex:[], pf:p.p}); 
+      actualizarCarrito(); 
+    }
   }
 
   function abrirModalExtras() {
@@ -200,7 +207,10 @@
     carrito.forEach((item, i) => {
       let icon = "🍔"; if(item.t === "gaseosa") icon = "🥤"; if(item.t === "alcohol") icon = "🍺";
       l.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px 0">
-        <b>${icon} ${item.n}</b> ($${item.pf}) <span onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer"> (X)</span><br>
+        <div style="display:flex; justify-content:space-between">
+          <span><b>${icon} ${item.n}</b> ($${item.pf})</span>
+          <span onclick="borrarItem(${i})" style="color:red; cursor:pointer; font-weight:bold; padding:0 10px;">X</span>
+        </div>
         <small>${item.ad.length ? '🧂 ' + item.ad.join(", ") : ''} ${item.ex.length?' ➕ '+item.ex.join(', '):''}</small>
       </div>`;
       t += item.pf;
@@ -208,14 +218,16 @@
     document.getElementById("totalCarrito").innerText = "Total: $" + t;
   }
 
+  function borrarItem(i) { carrito.splice(i,1); actualizarCarrito(); }
+
   function toggleDireccion() { document.getElementById("seccionDireccion").style.display = document.getElementById("tipoEntrega").value==="retiro"?"none":"block"; }
 
   function obtenerGPS() {
+    const btn = document.getElementById("btnGPS"); btn.innerText = "⏳...";
     navigator.geolocation.getCurrentPosition(p => {
       linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-      document.getElementById("btnGPS").classList.add("exito");
-      document.getElementById("btnGPS").innerText = "✅ Listo";
-    });
+      btn.classList.add("exito"); btn.innerText = "✅ GPS Listo";
+    }, () => { alert("Error al obtener GPS."); btn.innerText = "📍 GPS"; });
   }
 
   function abrirModalMapa() {
@@ -228,21 +240,24 @@
     setTimeout(() => mapa.invalidateSize(), 200);
   }
 
+  function cerrarModalMapa() { document.getElementById("modalMapa").style.display="none"; }
+
   function confirmarMapa() {
     const c = marcador.getLatLng();
     linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
     document.getElementById("btnMapa").classList.add("exito");
-    document.getElementById("btnMapa").innerText = "✅ Listo";
-    document.getElementById("modalMapa").style.display="none";
+    document.getElementById("btnMapa").innerText = "✅ Mapa Listo";
+    cerrarModalMapa();
   }
 
   function enviarPedido() {
-    const nom = document.getElementById("nombreCliente").value;
+    const nom = document.getElementById("nombreCliente").value.trim();
     const pago = document.getElementById("metodoPago").value;
     const entrega = document.getElementById("tipoEntrega").value;
-    const dir = document.getElementById("direccionCliente").value;
+    const dir = document.getElementById("direccionCliente").value.trim();
     
-    if(!nom || !carrito.length) return alert("Por favor, poné tu nombre y agregá algo al carrito.");
+    if(!nom) return alert("Por favor, poné tu nombre.");
+    if(carrito.length === 0) return alert("El carrito está vacío.");
     
     let m = `¡Hola *El Oeste*! 👋 Soy *${nom}*. Pedido desde *Dale pué*:%0A%0A`;
     carrito.forEach(i => {
