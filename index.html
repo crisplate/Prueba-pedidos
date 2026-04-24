@@ -15,7 +15,6 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
     
-    /* VISTA PRINCIPAL */
     .header-plataforma { text-align: center; margin-bottom: 30px; }
     .header-plataforma h1 { color: #d9232d; font-size: 2.5rem; margin: 0; }
     .header-plataforma p { color: #555; margin: 5px 0; }
@@ -28,7 +27,6 @@
     .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .badge-cerrado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-    /* VISTA MENÚ */
     .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
@@ -212,7 +210,6 @@
             ]
           }
         },
-        // Lógica de horarios específica
         estaAbierto: function() {
           const ahora = new Date();
           let dia = ahora.getDay(); 
@@ -225,7 +222,7 @@
       mamacora: {
         nombre: "Mama Cora",
         horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 20:00 a 00:00",
-        whatsapp: "5491124500967", // Cambiar por el número de Mama Cora
+        whatsapp: "5491124500967", 
         menu: {
           "Empanadas Salteñas 🥟": {
             items: [
@@ -244,7 +241,6 @@
         estaAbierto: function() {
           const ahora = new Date();
           let h = ahora.getHours() * 100 + ahora.getMinutes();
-          // 12:00 a 17:00 (1200 a 1700) O 20:00 a 00:00 (2000 a 2359)
           return (h >= 1200 && h < 1700) || (h >= 2000 && h <= 2359);
         }
       }
@@ -277,11 +273,9 @@
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
 
-      // Seteo de info del local
       document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
       document.getElementById('menu-horarios').innerHTML = localActivo.horariosTxt;
 
-      // Render del Menú
       const contCat = document.getElementById('contenedor-categorias');
       contCat.innerHTML = "";
       for (let cat in localActivo.menu) {
@@ -305,7 +299,6 @@
         contCat.appendChild(contItems);
       }
 
-      // Chequeo horario para botón WhatsApp
       const btnWA = document.getElementById('btnEnviarWhatsapp');
       let cartel = document.getElementById('cartel-estado-local');
       if (!localActivo.estaAbierto()) {
@@ -347,7 +340,6 @@
       aderezosLista.forEach(a => { 
         contAderezos.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; 
       });
-      // Adicionales específicos (se pueden personalizar por local si se quiere)
       document.getElementById("contenedor-adicionales").innerHTML = `
         <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
         <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
@@ -468,7 +460,6 @@
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
 
-    // PWA & INIT
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
     }
