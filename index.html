@@ -2,71 +2,57 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dale pué - Pedidos</title>
+  <title>Dale pué - El Oeste Sandwichería</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
     
-    /* ESTILOS DE LA PANTALLA PRINCIPAL (LOCALES) */
+    /* VISTA PRINCIPAL */
     .header-plataforma { text-align: center; margin-bottom: 30px; }
     .header-plataforma h1 { color: #d9232d; font-size: 2.5rem; margin: 0; }
     .header-plataforma p { color: #555; margin: 5px 0; }
 
     .tarjeta-local {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      border-left: 6px solid #d9232d;
+      background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-between; 
+      align-items: center; cursor: pointer; border-left: 6px solid #d9232d;
     }
-    .tarjeta-local:active { background: #f8f8f8; }
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
-    .tarjeta-local p { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; }
     .btn-entrar { background: #d9232d; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
 
-    /* ESTILOS DEL MENÚ (EL OESTE) */
+    /* VISTA MENÚ */
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
-    .header-local h1 { margin: 0; font-size: 2rem; }
-    .header-local p { margin: 5px 0 0 0; color: #fff; }
-    
-    .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; }
 
     .container { max-width: 800px; margin: auto; }
     .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; }
 
     .card { background: white; margin-bottom: 15px; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ffb800; }
-    .info-producto { flex-grow: 1; padding-right: 15px; }
-    .info-producto h3 { margin: 0; color: #111; font-size: 1.2rem; }
-    .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.85rem; line-height: 1.3; }
-    .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; font-size: 1.1rem; }
+    .info-producto { flex-grow: 1; padding-right: 10px; }
+    .info-producto h3 { margin: 0; color: #111; font-size: 1.1rem; }
+    .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.8rem; line-height: 1.2; }
+    .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; }
 
-    button { border: none; cursor: pointer; font-family: inherit; }
-    .btn-agregar { background: #111; color: #ffb800; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+    .btn-agregar { background: #111; color: #ffb800; padding: 8px 12px; border-radius: 8px; font-weight: bold; border:none; }
     
     #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
-    .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; color: #333; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
+    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
     
-    .btn-gps { background: #e0e0e0; color: #333; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px; border-radius: 8px; }
+    .btn-gps { background: #e0e0e0; margin-top: 10px; padding: 10px; border-radius: 8px; border:none; width: 100%; font-weight: bold; }
     .btn-gps.exito { background: #28a745; color: white; }
     
-    .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; }
+    .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; }
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
-    .item-carrito { padding: 8px 0; border-bottom: 1px dashed #ccc; }
-    
-    #modalExtras { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
-    .modal-content h3 { margin-top: 0; }
-    .opcion-extra { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
-    .btn-cerrar-modal { background: #dc3545; color: white; margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; }
-    .btn-aceptar-modal { width: 100%; margin-top: 15px; background: #28a745; color: white; padding: 10px; border-radius: 8px; font-weight: bold; }
+
+    /* MODAL DE ADEREZOS Y EXTRAS */
+    #modalExtras { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
+    .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
+    .opcion-check input { transform: scale(1.2); }
+    .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
   </style>
 </head>
 <body>
@@ -76,9 +62,8 @@
     <div id="vista-locales">
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
-        <p>Pedí a los mejores locales de Salta</p>
+        <p>Los mejores sándwiches de Salta en un toque</p>
       </div>
-
       <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
         <div>
           <h2>El Oeste</h2>
@@ -87,17 +72,7 @@
         </div>
         <div class="btn-entrar">Ver menú</div>
       </div>
-
-      <div class="tarjeta-local" onclick="alert('Próximamente agregaremos este local!')">
-        <div>
-          <h2>Pizzería Ejemplo</h2>
-          <p>Pizzas a la piedra • Empanadas</p>
-          <p style="color: #888; font-size: 0.8rem;">📍 Calle Falsa 123</p>
-        </div>
-        <div class="btn-entrar" style="background:#888;">Ver menú</div>
-      </div>
     </div>
-
 
     <div id="vista-menu" style="display: none;">
       <div class="header-local">
@@ -116,274 +91,194 @@
       <div id="menu-bebidas"></div>
 
       <div id="carrito">
-        <h3 style="margin-top:0;">🛒 Tu Pedido en El Oeste</h3>
+        <h3 style="margin-top:0;">🛒 Tu Pedido</h3>
         <div id="listaCarrito"></div>
         <div class="total" id="totalCarrito">Total: $0</div>
         
+        <div class="form-group"><label>Nombre:</label><input type="text" id="nombreCliente"></div>
         <div class="form-group">
-          <label>Nombre y Apellido:</label>
-          <input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez">
-        </div>
-
-        <div class="form-group">
-          <label>Forma de entrega:</label>
+          <label>Entrega:</label>
           <select id="tipoEntrega" onchange="toggleDireccion()">
-            <option value="delivery">Envío a domicilio (¡Gratis!)</option>
+            <option value="delivery">Envío a domicilio (Gratis)</option>
             <option value="retiro">Retiro por el local</option>
           </select>
         </div>
-
         <div id="seccionDireccion">
           <div class="form-group">
-            <label>Dirección (Calle y altura):</label>
-            <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
-            <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacion()">📍 Usar mi ubicación GPS actual</button>
+            <label>Dirección:</label><input type="text" id="direccionCliente">
+            <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacion()">📍 Usar mi ubicación GPS</button>
           </div>
         </div>
-
         <div class="form-group">
-          <label>Método de pago:</label>
-          <select id="metodoPago">
-            <option value="Transferencia">Transferencia / Billetera Virtual</option>
-            <option value="Efectivo">Efectivo</option>
-          </select>
+          <label>Pago:</label>
+          <select id="metodoPago"><option>Transferencia / Billetera Virtual</option><option>Efectivo</option></select>
         </div>
-
         <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
       </div>
     </div>
-
   </div>
 
   <div id="modalExtras">
     <div class="modal-content">
-      <h3 id="modalTitulo">Personalizar</h3>
+      <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
       
-      <h4>Aderezos (Gratis)</h4>
-      <input type="text" id="aderezosInput" style="width: 100%; padding: 8px; box-sizing: border-box;" placeholder="Ej: Mayonesa, mostaza, sin verduras...">
-      
-      <h4>Adicionales</h4>
-      <div class="opcion-extra">
-        <label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label>
-      </div>
-      <div class="opcion-extra">
-        <label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label>
-      </div>
-      <div class="opcion-extra">
-        <label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label>
+      <div class="seccion-modal-titulo"><h4>Aderezos (Seleccioná los que quieras)</h4></div>
+      <div class="grid-aderezos" id="contenedor-aderezos">
+        </div>
+
+      <div class="seccion-modal-titulo"><h4>Adicionales (Opcional)</h4></div>
+      <div id="contenedor-adicionales">
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
+        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
+        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
       </div>
 
-      <button class="btn-aceptar-modal" onclick="confirmarExtras()">Aceptar y Agregar</button>
-      <button class="btn-cerrar-modal" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
+      <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModal()">Cancelar</button>
     </div>
   </div>
 
   <script>
-    // --- LÓGICA DE NAVEGACIÓN ENTRE PANTALLAS ---
-    function abrirLocal(idLocal) {
-      if(idLocal === 'eloeste') {
-        document.getElementById('vista-locales').style.display = 'none';
-        document.getElementById('vista-menu').style.display = 'block';
-        window.scrollTo(0, 0); // Sube la pantalla arriba de todo
-      }
+    const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
+
+    const menuElOeste = {
+      sandwiches: [
+        { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000 },
+        { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000 },
+        { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, lechuga, tomate, cebolla + 300g papas", precio: 18000 },
+        { nombre: "Gigante tucumana", desc: "2 milanesas 200g, lechuga, tomate, huevo, cebolla + 500g papas", precio: 22000 },
+        { nombre: "Milanesa XL", desc: "300g carne, lechuga, tomate, huevo, cebolla + 600g papas", precio: 22000 },
+        { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000 },
+        { nombre: "Hamburguesa Paty", desc: "1 medallón 125g, lechuga, tomate, huevo + 300g papas", precio: 12000 },
+        { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + 300g papas", precio: 12000 },
+        { nombre: "Lomo gigante p/2", desc: "350g carne, lechuga, tomate, huevo + 500g papas", precio: 19000 },
+        { nombre: "Lomo XL", desc: "450g carne, lechuga, tomate, huevo + 600g papas", precio: 25000 }
+      ],
+      minutas: [
+        { nombre: "Milanesa al plato", desc: "Clásica", precio: 11500 },
+        { nombre: "Milanesa a caballo", desc: "Con dos huevos fritos", precio: 12500 },
+        { nombre: "Milanesa napolitana", desc: "Salsa, jamón y queso", precio: 12500 },
+        { nombre: "Milanesa napolitana especial", desc: "Completa", precio: 13500 },
+        { nombre: "Lomo al plato", desc: "Porción de carne", precio: 10000 },
+        { nombre: "Lomo a caballo", desc: "Con huevos fritos", precio: 11500 },
+        { nombre: "Lomo a la frontera", desc: "Especialidad", precio: 11500 },
+        { nombre: "Chacarero p/2", desc: "Para compartir", precio: 18000 },
+        { nombre: "Napolitana para compartir", desc: "Súper tamaño", precio: 20000 }
+      ],
+      bebidas: [
+        { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000 },
+        { nombre: "Mirinda Manzana 500ml", desc: "", precio: 3000 },
+        { nombre: "Agua 500ml", desc: "", precio: 2000 },
+        { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000 },
+        { nombre: "Gaseosa 2L", desc: "Línea Pepsi", precio: 6000 },
+        { nombre: "Agua 2L / Saborizada 1.5L", desc: "", precio: 4000 },
+        { nombre: "Cerveza 473ml", desc: "Rubia/Negra", precio: 3000 },
+        { nombre: "Cerveza 710ml", desc: "", precio: 5000 }
+      ]
+    };
+
+    let carrito = [];
+    let productoTemporal = null;
+    let linkGPS = "";
+
+    function abrirLocal(id) {
+      document.getElementById('vista-locales').style.display = 'none';
+      document.getElementById('vista-menu').style.display = 'block';
+      window.scrollTo(0,0);
     }
 
     function volverInicio() {
       document.getElementById('vista-menu').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
-      window.scrollTo(0, 0);
     }
 
-    // --- BASE DE DATOS DEL MENÚ ---
-    const menuElOeste = {
-      sandwiches: [
-        { nombre: "Milanesa clásica", desc: "1 milanesa de 120g + papas", precio: 12000 },
-        { nombre: "Milanesa gigante p/2", desc: "1 milanesa de 200g + papas", precio: 17000 },
-        { nombre: "Milanesa súper tucumana", desc: "3 milanesas de 120g + papas", precio: 18000 },
-        { nombre: "Patynesa", desc: "1 medallón de 130g + papas", precio: 12000 },
-        { nombre: "Lomo XL", desc: "1 porción de carne de 450g + papas", precio: 25000 }
-      ],
-      minutas: [
-        { nombre: "Milanesa al plato", desc: "Clásica al plato", precio: 11500 },
-        { nombre: "Milanesa napolitana", desc: "Con salsa, jamón y queso", precio: 12500 },
-        { nombre: "Lomo a la frontera", desc: "Especialidad de la casa", precio: 11500 }
-      ],
-      bebidas: [
-        { nombre: "Agua 500 ml", desc: "Mineral o saborizada", precio: 2000 },
-        { nombre: "Coca o Coca zero 500 ml", desc: "Línea Coca Cola", precio: 3000 },
-        { nombre: "Gaseosa 1.5 L", desc: "Coca, Zero, Sprite o Fanta", precio: 7000 },
-        { nombre: "Pepsi o Seven Up 2 L", desc: "Línea Pepsi", precio: 6000 },
-        { nombre: "Cerveza 710 ml", desc: "Rubia o negra", precio: 5000 }
-      ]
-    };
+    function renderizarMenu() {
+      const render = (arr, id) => {
+        const cont = document.getElementById(id);
+        cont.innerHTML = "";
+        arr.forEach(p => {
+          const d = document.createElement("div");
+          d.className = "card";
+          d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div><button class="btn-agregar" onclick='abrirModal(${JSON.stringify(p)})'>Agregar</button>`;
+          cont.appendChild(d);
+        });
+      };
+      render(menuElOeste.sandwiches, "menu-sandwiches");
+      render(menuElOeste.minutas, "menu-minutas");
+      render(menuElOeste.bebidas, "menu-bebidas");
+    }
 
-    const carrito = [];
-    let productoTemporal = null; 
-    let linkGPS = ""; 
-
-    function renderizarCategoria(arrayProductos, contenedorId) {
-      const contenedor = document.getElementById(contenedorId);
-      contenedor.innerHTML = ""; // Limpia por si entramos y salimos
-      arrayProductos.forEach((prod) => {
-        const div = document.createElement("div");
-        div.className = "card";
-        const productoJSON = JSON.stringify(prod).replace(/"/g, '"');
-        div.innerHTML = `
-          <div class="info-producto">
-            <h3>${prod.nombre}</h3><p class="desc">${prod.desc}</p><p class="precio">$${prod.precio}</p>
-          </div>
-          <button class="btn-agregar" onclick='abrirModal(${productoJSON})'>Agregar</button>
-        `;
-        contenedor.appendChild(div);
+    function abrirModal(p) {
+      productoTemporal = p;
+      document.getElementById("modalTitulo").innerText = p.nombre;
+      const contAderezos = document.getElementById("contenedor-aderezos");
+      contAderezos.innerHTML = "";
+      aderezosLista.forEach(a => {
+        contAderezos.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`;
       });
-    }
-
-    function abrirModal(producto) {
-      productoTemporal = producto;
-      document.getElementById("modalTitulo").innerText = "Personalizar " + producto.nombre;
-      document.getElementById("aderezosInput").value = "";
       document.querySelectorAll(".extra-cb").forEach(cb => cb.checked = false);
       document.getElementById("modalExtras").style.display = "flex";
     }
 
-    function cerrarModal() {
-      document.getElementById("modalExtras").style.display = "none";
-      productoTemporal = null;
-    }
+    function cerrarModal() { document.getElementById("modalExtras").style.display = "none"; }
 
     function confirmarExtras() {
-      let productoFinal = { ...productoTemporal, extras: [] };
-      let precioTotalProducto = productoFinal.precio;
-
-      const aderezos = document.getElementById("aderezosInput").value;
-      if(aderezos) productoFinal.aderezos = aderezos;
-
+      let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
+      let totalP = pFinal.precio;
+      document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
       document.querySelectorAll(".extra-cb:checked").forEach(cb => {
-        const precioExtra = parseInt(cb.value);
-        productoFinal.extras.push({ nombre: cb.getAttribute("data-nombre"), precio: precioExtra });
-        precioTotalProducto += precioExtra;
+        pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
+        totalP += parseInt(cb.value);
       });
-
-      productoFinal.precioFinal = precioTotalProducto;
-      carrito.push(productoFinal);
-      
+      pFinal.precioFinal = totalP;
+      carrito.push(pFinal);
       cerrarModal();
       actualizarCarrito();
     }
 
     function actualizarCarrito() {
       const lista = document.getElementById("listaCarrito");
-      const divTotal = document.getElementById("totalCarrito");
       lista.innerHTML = "";
       let total = 0;
-
-      if(carrito.length === 0) {
-        lista.innerHTML = "<p style='color:#888; text-align:center;'>Tu carrito está vacío</p>";
-      } else {
-        carrito.forEach((item, index) => {
-          let textoExtras = "";
-          if (item.aderezos) textoExtras += `<br><small style="color:#666">📝 Notas: ${item.aderezos}</small>`;
-          if (item.extras && item.extras.length > 0) {
-            item.extras.forEach(ext => textoExtras += `<br><small style="color:#d9232d">+ ${ext.nombre}</small>`);
-          }
-
-          const div = document.createElement("div");
-          div.className = "item-carrito";
-          div.innerHTML = `
-            <div style="width: 100%;">
-              <div style="display:flex; justify-content:space-between;">
-                <strong>${item.nombre}</strong>
-                <span>$${item.precioFinal} <strong style="color:red; cursor:pointer;" onclick="eliminarDelCarrito(${index})">X</strong></span>
-              </div>
-              ${textoExtras}
-            </div>
-          `;
-          lista.appendChild(div);
-          total += item.precioFinal;
-        });
-      }
-      divTotal.textContent = "Total: $" + total;
+      carrito.forEach((item, i) => {
+        let txt = `<small>Aderezos: ${item.aderezos.join(", ") || "Ninguno"}</small>`;
+        item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
+        lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
+          <div style="display:flex; justify-content:space-between"><strong>${item.nombre}</strong><span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red">X</b></span></div>${txt}
+        </div>`;
+        total += item.precioFinal;
+      });
+      document.getElementById("totalCarrito").innerText = "Total: $" + total;
     }
 
-    function eliminarDelCarrito(index) {
-      carrito.splice(index, 1);
-      actualizarCarrito();
-    }
-
-    function toggleDireccion() {
-      const tipo = document.getElementById("tipoEntrega").value;
-      document.getElementById("seccionDireccion").style.display = (tipo === "retiro") ? "none" : "block";
-    }
+    function toggleDireccion() { document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; }
 
     function obtenerUbicacion() {
       const btn = document.getElementById("btnGPS");
-      btn.innerText = "⏳ Obteniendo ubicación...";
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            linkGPS = `http://googleusercontent.com/maps.google.com/2{lat},${lon}`;
-            btn.innerText = "✅ Ubicación guardada";
-            btn.className = "btn-gps exito";
-          },
-          (error) => {
-            alert("No se pudo obtener la ubicación. Revisá permisos.");
-            btn.innerText = "📍 Reintentar GPS";
-          }
-        );
-      } else {
-        alert("Tu navegador no soporta GPS.");
-      }
+      btn.innerText = "⏳ Obteniendo...";
+      navigator.geolocation.getCurrentPosition(p => {
+        linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+        btn.innerText = "✅ Ubicación guardada";
+        btn.className = "btn-gps exito";
+      }, () => { alert("Error al obtener GPS"); btn.innerText = "📍 Reintentar"; });
     }
 
     function enviarPedido() {
-      const nombre = document.getElementById("nombreCliente").value.trim();
-      const tipoEntrega = document.getElementById("tipoEntrega").value;
-      const direccion = document.getElementById("direccionCliente").value.trim();
-      const metodoPago = document.getElementById("metodoPago").value;
-
-      if(carrito.length === 0) { alert("¡El carrito está vacío!"); return; }
-      if(nombre === "") { alert("Por favor, ingresá tu nombre."); return; }
-      if(tipoEntrega === "delivery" && direccion === "" && linkGPS === "") { 
-        alert("Por favor, ingresá tu dirección o usá el GPS."); return; 
-      }
-
-      let mensaje = `¡Hola *El Oeste Sandwichería*! 👋%0ASoy *${nombre}* y este es mi pedido a través de Dale pué:%0A%0A`;
-      let total = 0;
-      
-      carrito.forEach(item => {
-        mensaje += `▪️ *${item.nombre}* ($${item.precioFinal})%0A`;
-        if (item.aderezos) mensaje += `   📝 ${item.aderezos}%0A`;
-        if (item.extras && item.extras.length > 0) {
-          item.extras.forEach(ext => mensaje += `   ➕ ${ext.nombre}%0A`);
-        }
-        total += item.precioFinal;
+      const n = document.getElementById("nombreCliente").value;
+      if(!n || carrito.length === 0) return alert("Completá tu nombre y el carrito");
+      let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
+      let t = 0;
+      carrito.forEach(i => {
+        m += `▪️ *${i.nombre}* ($${i.precioFinal})%0A   🧂 ${i.aderezos.join(", ") || "Sin aderezos"}%0A`;
+        i.extras.forEach(e => m += `   ➕ ${e.n}%0A`);
+        t += i.precioFinal;
       });
-
-      mensaje += `%0A💰 *TOTAL A PAGAR: $${total}*%0A%0A`;
-      mensaje += `💳 *Método de Pago:* ${metodoPago}%0A`;
-      
-      if(tipoEntrega === "retiro") {
-        mensaje += `🏃‍♂️ *Entrega:* Paso a retirar por el local.%0A`;
-      } else {
-        mensaje += `🛵 *Entrega:* Delivery (Envío Gratis)%0A`;
-        if(direccion) mensaje += `📍 *Dirección:* ${direccion}%0A`;
-        if(linkGPS) mensaje += `🗺️ *Ubicación GPS:* ${linkGPS}%0A`;
-      }
-
-      // TU NÚMERO DE PRUEBA CONFIGURADO
-      const numeroWhatsApp = "5491124500967"; 
-      
-      window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`, "_blank");
+      m += `%0A💰 *TOTAL: $${t}*%0A💳 *Pago:* ${document.getElementById("metodoPago").value}%0A🛵 *Entrega:* ${document.getElementById("tipoEntrega").value}%0A`;
+      if(linkGPS) m += `📍 *GPS:* ${linkGPS}`;
+      window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
     }
 
-    // Inicializamos cargando las tres categorías
-    renderizarCategoria(menuElOeste.sandwiches, "menu-sandwiches");
-    renderizarCategoria(menuElOeste.minutas, "menu-minutas");
-    renderizarCategoria(menuElOeste.bebidas, "menu-bebidas"); // <- BEBIDAS AGREGADAS
-    actualizarCarrito();
+    renderizarMenu();
   </script>
 </body>
 </html>
