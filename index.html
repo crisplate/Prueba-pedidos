@@ -439,8 +439,27 @@
 
     function enviarPedido() {
       if (!verificarAbierto()) { alert("¡Uh! El local ya cerró."); return; }
+      
       const n = document.getElementById("nombreCliente").value.trim();
-      if(!n || carrito.length === 0) { alert("Completá tu nombre y el carrito."); return; }
+      const selectEntrega = document.getElementById("tipoEntrega");
+      const direccion = document.getElementById("direccionCliente").value.trim();
+
+      // VALIDACIÓN OBLIGATORIA
+      if(!n) {
+        alert("Por favor, ingresá tu Nombre y Apellido.");
+        return;
+      }
+
+      if(carrito.length === 0) {
+        alert("Tu carrito está vacío. ¡Agregá algo rico!");
+        return;
+      }
+
+      // DIRECCIÓN OBLIGATORIA PARA DELIVERY
+      if(selectEntrega.value === "delivery" && !direccion) {
+        alert("¡Falta la dirección! Escribila para que el cadete pueda llegar.");
+        return;
+      }
       
       let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
@@ -454,9 +473,8 @@
       m += `%0A💰 *TOTAL: $${t}*%0A`;
       const selectMetodo = document.getElementById("metodoPago").value;
       m += `💳 *Pago:* ${selectMetodo} ${selectMetodo.includes("Efectivo") ? "💵" : "📱"}%0A`;
-      const selectEntrega = document.getElementById("tipoEntrega");
       m += `🛵 *Entrega:* ${selectEntrega.options[selectEntrega.selectedIndex].text}%0A`;
-      const direccion = document.getElementById("direccionCliente").value.trim();
+      
       if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
       if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}`;
       
@@ -479,7 +497,6 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       eventoInstalacion = e;
-      // Esperamos 2 segundos antes de mostrarle el cartel para no ser tan pesados
       setTimeout(() => { banner.style.display = 'flex'; }, 2000);
     });
 
