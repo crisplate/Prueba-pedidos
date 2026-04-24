@@ -5,9 +5,6 @@
   <title>Dale pué - Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d9232d">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -29,7 +26,7 @@
     #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
     .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-gps, .btn-mapa { padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; }
     .btn-gps { background: #e0e0e0; }
@@ -59,42 +56,24 @@
       <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
       <h1>EL OESTE</h1><p>Leguizamón 1594</p>
     </div>
-    
-    <h2 class="categoria-titulo">Sándwiches 🥪</h2><div id="menu-sandwiches"></div>
-    <h2 class="categoria-titulo">Minutas 🍽️</h2><div id="menu-minutas"></div>
-    <h2 class="categoria-titulo">Bebidas 🥤</h2><div id="menu-bebidas"></div>
-
+    <div id="categorias-menu">
+      <h2 class="categoria-titulo">Sándwiches 🥪</h2><div id="menu-sandwiches"></div>
+      <h2 class="categoria-titulo">Minutas 🍽️</h2><div id="menu-minutas"></div>
+      <h2 class="categoria-titulo">Bebidas 🥤</h2><div id="menu-bebidas"></div>
+    </div>
     <div id="carrito">
       <h3>🛒 Tu Pedido</h3>
       <div id="listaCarrito"></div>
       <h3 id="totalCarrito" style="text-align:right">Total: $0</h3>
-      
-      <div class="form-group"><label>Nombre:</label><input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez"></div>
-      
-      <div class="form-group">
-        <label>Entrega:</label>
-        <select id="tipoEntrega" onchange="toggleDireccion()">
-          <option value="delivery">Envío a domicilio</option>
-          <option value="retiro">Retiro por el local</option>
-        </select>
-      </div>
-
+      <div class="form-group"><label>Nombre:</label><input type="text" id="nombreCliente"></div>
+      <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Delivery (Gratis)</option><option value="retiro">Retiro</option></select></div>
       <div id="seccionDireccion">
-        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Calle y número">
+        <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente">
         <div class="grid-botones-ubicacion">
-          <button class="btn-gps" id="btnGPS" onclick="obtenerGPS()">📍 Usar GPS</button>
-          <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button>
+          <button class="btn-gps" id="btnGPS" onclick="obtenerGPS()">📍 GPS</button>
+          <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Mapa</button>
         </div></div>
       </div>
-
-      <div class="form-group">
-        <label>Forma de Pago:</label>
-        <select id="metodoPago">
-          <option value="Efectivo">Efectivo</option>
-          <option value="Transferencia / Billetera Virtual">Transferencia / Billetera Virtual</option>
-        </select>
-      </div>
-
       <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
     </div>
   </div>
@@ -126,15 +105,7 @@
 </div>
 
 <script>
-  // REGISTRO PWA
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-    });
-  }
-
   const aderezos = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
-  
   const menu = {
     sandwiches: [
       { n: "Milanesa clásica", d: "120g carne + papas", p: 12000 },
@@ -157,53 +128,33 @@
 
   let carrito = []; let prodTemp = null; let linkGPS = ""; let mapa, marcador, coords;
 
-  function abrirLocal(id) { 
-    document.getElementById('vista-locales').style.display='none'; 
-    document.getElementById('vista-menu').style.display='block'; 
-    renderMenu(); 
-  }
-  
-  function volverInicio() { 
-    document.getElementById('vista-menu').style.display='none'; 
-    document.getElementById('vista-locales').style.display='block'; 
-  }
+  function abrirLocal(id) { document.getElementById('vista-locales').style.display='none'; document.getElementById('vista-menu').style.display='block'; renderMenu(); }
+  function volverInicio() { document.getElementById('vista-menu').style.display='none'; document.getElementById('vista-locales').style.display='block'; }
 
   function renderMenu() {
-    const r = (arr, id, tieneExtras) => {
+    const r = (arr, id, extras) => {
       const c = document.getElementById(id); c.innerHTML = "";
-      arr.forEach((p, index) => {
-        const div = document.createElement("div"); 
-        div.className="card";
-        div.innerHTML = `
-          <div class="info-producto"><h3>${p.n}</h3><p class="desc">${p.d}</p><p class="precio">$${p.p}</p></div>
-          <button class="btn-agregar" onclick="seleccionarProducto('${id}', ${index}, ${tieneExtras})">Agregar</button>
-        `;
+      arr.forEach(p => {
+        const div = document.createElement("div"); div.className="card";
+        const pS = JSON.stringify(p).replace(/"/g, '&quot;');
+        div.innerHTML = `<div class="info-producto"><h3>${p.n}</h3><p class="desc">${p.d}</p><p class="precio">$${p.p}</p></div>
+        <button class="btn-agregar" onclick="clickProd('${pS}', ${extras})">Agregar</button>`;
         c.appendChild(div);
       });
     };
-    r(menu.sandwiches, "menu-sandwiches", true); 
-    r(menu.minutas, "menu-minutas", true); 
-    r(menu.bebidas, "menu-bebidas", false);
+    r(menu.sandwiches, "menu-sandwiches", true); r(menu.minutas, "menu-minutas", true); r(menu.bebidas, "menu-bebidas", false);
   }
 
-  function seleccionarProducto(catId, index, tieneExtras) {
-    const key = catId.replace("menu-", "");
-    const p = menu[key][index];
-    if(tieneExtras) { 
-      prodTemp = p; 
-      abrirModalExtras(); 
-    } else { 
-      carrito.push({...p, ad:[], ex:[], pf:p.p}); 
-      actualizarCarrito(); 
-    }
+  function clickProd(pS, extras) {
+    const p = JSON.parse(pS.replace(/&quot;/g, '"'));
+    if(extras) { prodTemp = p; abrirModalExtras(); } 
+    else { carrito.push({...p, ad:[], ex:[], pf:p.p}); actualizarCarrito(); }
   }
 
   function abrirModalExtras() {
     document.getElementById("modalExtras").style.display="flex";
     const c = document.getElementById("cont-aderezos"); c.innerHTML = "";
-    aderezos.forEach(a => {
-      c.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="ad-cb" value="${a}"> ${a}</label></div>`;
-    });
+    aderezos.forEach(a => c.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="ad-cb" value="${a}"> ${a}</label></div>`);
     document.querySelectorAll(".extra-cb").forEach(x => x.checked = false);
   }
 
@@ -212,44 +163,29 @@
   function confirmarExtras() {
     let pf = prodTemp.p; let ads = []; let exs = [];
     document.querySelectorAll(".ad-cb:checked").forEach(cb => ads.push(cb.value));
-    document.querySelectorAll(".extra-cb:checked").forEach(cb => { 
-      exs.push(cb.getAttribute("data-nombre")); 
-      pf += parseInt(cb.value); 
-    });
+    document.querySelectorAll(".extra-cb:checked").forEach(cb => { exs.push(cb.getAttribute("data-nombre")); pf += parseInt(cb.value); });
     carrito.push({...prodTemp, ad:ads, ex:exs, pf:pf});
-    cerrarModalExtras(); 
-    actualizarCarrito();
+    cerrarModalExtras(); actualizarCarrito();
   }
 
   function actualizarCarrito() {
     const l = document.getElementById("listaCarrito"); l.innerHTML = ""; let t = 0;
     carrito.forEach((item, i) => {
-      l.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <b>${item.n}</b> ($${item.pf})<br>
-          <small style="color:#666">${item.ad.join(", ")} ${item.ex.length ? ' + ' + item.ex.join(', ') : ''}</small>
-        </div>
-        <span onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; font-weight:bold; padding:5px;">X</span>
+      l.innerHTML += `<div style="border-bottom:1px solid #eee; padding:5px 0">
+        <b>${item.n}</b> ($${item.pf}) <span onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer">X</span><br>
+        <small>${item.ad.join(", ")} ${item.ex.length?'+ '+item.ex.join(', '):''}</small>
       </div>`;
       t += item.pf;
     });
     document.getElementById("totalCarrito").innerText = "Total: $" + t;
   }
 
-  function toggleDireccion() { 
-    document.getElementById("seccionDireccion").style.display = document.getElementById("tipoEntrega").value==="retiro"?"none":"block"; 
-  }
+  function toggleDireccion() { document.getElementById("seccionDireccion").style.display = document.getElementById("tipoEntrega").value==="retiro"?"none":"block"; }
 
   function obtenerGPS() {
-    const btn = document.getElementById("btnGPS");
-    btn.innerText = "⏳ Obteniendo...";
     navigator.geolocation.getCurrentPosition(p => {
       linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-      btn.innerText = "✅ GPS Listo";
-      btn.classList.add("exito");
-    }, () => {
-      alert("No se pudo obtener el GPS. Probá con el mapa manual.");
-      btn.innerText = "📍 Reintentar";
+      document.getElementById("btnGPS").className += " exito";
     });
   }
 
@@ -263,37 +199,20 @@
     setTimeout(() => mapa.invalidateSize(), 200);
   }
 
-  function cerrarModalMapa() { document.getElementById("modalMapa").style.display="none"; }
-
   function confirmarMapa() {
     const c = marcador.getLatLng();
     linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
-    document.getElementById("btnMapa").classList.add("exito");
-    document.getElementById("btnMapa").innerText = "✅ Mapa Guardado";
-    cerrarModalMapa();
+    document.getElementById("btnMapa").className += " exito";
+    document.getElementById("modalMapa").style.display="none";
   }
 
   function enviarPedido() {
-    const nom = document.getElementById("nombreCliente").value.trim();
-    const pago = document.getElementById("metodoPago").value;
-    const entrega = document.getElementById("tipoEntrega").value;
-    
-    if(!nom || !carrito.length) return alert("Por favor, poné tu nombre y agregá algo al carrito.");
-    
-    let m = `¡Hola *El Oeste*! 👋 Soy *${nom}*. Pedido Dale pué:%0A%0A`;
-    carrito.forEach(i => {
-      m += `▪️ *${i.n}* ($${i.pf})%0A`;
-      if(i.ad.length > 0) m += `  🧂 ${i.ad.join(', ')}%0A`;
-      if(i.ex.length > 0) m += `  ➕ ${i.ex.join(', ')}%0A`;
-    });
-    
-    m += `%0A💰 *TOTAL: ${document.getElementById("totalCarrito").innerText.split("$")[1]}*%0A💳 *Pago:* ${pago}%0A🛵 *Tipo:* ${entrega}%0A`;
-    
-    const dir = document.getElementById("direccionCliente").value.trim();
-    if(dir && entrega === "delivery") m += `🏠 *Dir:* ${dir}%0A`;
-    if(linkGPS && entrega === "delivery") m += `%0A📍 *Ubicación:* ${linkGPS}`;
-    
-    window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
+    const nom = document.getElementById("nombreCliente").value;
+    if(!nom || !carrito.length) return alert("Faltan datos");
+    let m = `¡Hola! Soy *${nom}*. Pedido Dale pué:%0A`;
+    carrito.forEach(i => m += `- ${i.n} ($${i.pf})%0A  ${i.ad.join(', ')}%0A`);
+    m += `%0A*TOTAL: ${document.getElementById("totalCarrito").innerText}*%0A📍 Ubicación: ${linkGPS}`;
+    window.open(`https://wa.me/5491124500967?text=${m}`);
   }
 </script>
 </body>
