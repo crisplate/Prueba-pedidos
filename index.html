@@ -469,4 +469,36 @@
         let icono = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : "🍔";
         if (localActivo.nombre === "Mama Cora" && i.tipo === "comida") icono = "🥟";
         m += `${icono} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos && i.aderezos.length > 0)
+        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
+        if (i.extras && i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
+        t += i.precioFinal;
+      });
+      m += `%0A💰 *TOTAL: $${t}*%0A`;
+      
+      const pago = document.getElementById("metodoPago").value;
+      m += `💳 *Pago:* ${pago} ${pago.includes("Efectivo") ? "💵" : "📱"}%0A`;
+      m += `🛵 *Entrega:* ${selectEntrega.options[selectEntrega.selectedIndex].text}%0A`;
+      
+      if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
+      if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}%0A`;
+
+      // SE AGREGA LA OBSERVACIÓN AL MENSAJE SI EXISTE
+      if(observaciones) {
+        m += `%0A📝 *Observaciones:* ${observaciones}%0A`;
+      }
+      
+      window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
+    }
+    let eventoInstalacion = null;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacion = e; setTimeout(() => { document.getElementById('bannerInstalacion').style.display = 'flex'; }, 2000); });
+    document.getElementById('btnInstalar').addEventListener('click', () => { if (eventoInstalacion) { eventoInstalacion.prompt(); eventoInstalacion = null; } document.getElementById('bannerInstalacion').style.display = 'none'; });
+    function cerrarBanner() { document.getElementById('bannerInstalacion').style.display = 'none'; }
+
+    actualizarPantallaPrincipal();
+  </script>
+</body>
+</html>
