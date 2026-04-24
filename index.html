@@ -16,13 +16,24 @@
     .header-plataforma h1 { color: #d9232d; font-size: 2.5rem; margin: 0; }
     .header-plataforma p { color: #555; margin: 5px 0; }
 
-    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 6px solid #d9232d; }
+    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 6px solid #d9232d; position: relative; }
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
     .btn-entrar { background: #d9232d; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+
+    /* BADGE DE ESTADO (ABIERTO/CERRADO) EN PANTALLA PRINCIPAL */
+    .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
+    .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .badge-cerrado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* ESTADO DEL LOCAL (CARTEL DENTRO DEL MENU) */
+    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
 
     /* VISTA MENÚ */
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
+    
+    /* TEXTO DE HORARIOS EN EL MENU */
+    .horarios-texto { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; margin-top: 10px; padding: 8px; border-radius: 8px; font-style: normal; display: inline-block; text-align: left;}
 
     .container { max-width: 800px; margin: auto; }
     .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; }
@@ -50,17 +61,14 @@
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
 
-    /* MODALES GENERALES */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
     
-    /* MODAL EXTRAS */
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
     .opcion-check input { transform: scale(1.2); }
     .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
 
-    /* MAPA */
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
   </style>
 </head>
@@ -71,23 +79,30 @@
     <div id="vista-locales">
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
-        <p>Los mejores locales en un toque</p>
+        <p>Lo nuestro, al toque</p>
       </div>
+      
       <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
         <div>
           <h2>El Oeste</h2>
-          <p>Sandwichería • Minutas • Bebidas</p>
-          <p style="color: #888; font-size: 0.8rem;">📍 Leguizamón 1594</p>
+          <p>Sandwichería • Minutas</p>
+          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Leguizamón 1594</p>
+          <div id="badge-eloeste" class="badge-estado">Cargando...</div>
         </div>
         <div class="btn-entrar">Ver menú</div>
       </div>
+
     </div>
 
     <div id="vista-menu" style="display: none;">
       <div class="header-local">
         <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
-        <h1>EL OESTE</h1>
-        <p>Sandwichería - Leguizamón 1594</p>
+        <h1 style="margin-bottom: 5px;">EL OESTE</h1>
+        
+        <div class="horarios-texto">
+            🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br>
+            🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM
+        </div>
       </div>
 
       <h2 class="categoria-titulo">Tu Sándwich Favorito 🥪</h2>
@@ -146,17 +161,14 @@
   <div id="modalExtras" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
-      
       <div class="seccion-modal-titulo"><h4>Aderezos (Seleccioná los que quieras)</h4></div>
       <div class="grid-aderezos" id="contenedor-aderezos"></div>
-      
       <div class="seccion-modal-titulo"><h4>Adicionales (Opcional)</h4></div>
       <div id="contenedor-adicionales">
         <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
         <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
         <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
       </div>
-      
       <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
       <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModalExtras()">Cancelar</button>
     </div>
@@ -166,9 +178,7 @@
     <div class="modal-content">
       <h3 style="margin-top:0;">Ubicá tu casa 🏠</h3>
       <p style="font-size: 0.85rem; color: #666;">Mové el mapa para ubicar el marcador rojo exactamente en tu domicilio.</p>
-      
       <div id="map"></div>
-      
       <button class="btn-whatsapp" style="background:#28a745; margin-top:10px;" onclick="confirmarMapa()">✅ Confirmar esta ubicación</button>
       <button class="btn-gps" style="background:#f1f1f1; margin-top:10px;" onclick="cerrarModalMapa()">Cancelar</button>
     </div>
@@ -216,56 +226,94 @@
     let carrito = [];
     let productoTemporal = null;
     let linkGPS = "";
-    
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
+
+    // --- LÓGICA DE HORARIOS ---
+    function verificarAbierto() {
+      const ahora = new Date();
+      let diaActual = ahora.getDay(); 
+      let hora = ahora.getHours();
+      let min = ahora.getMinutes();
+      let horaActual = hora * 100 + min;
+
+      let diaTurno = diaActual;
+      if (hora < 12) {
+        diaTurno = diaActual === 0 ? 6 : diaActual - 1;
+      }
+
+      const abre = 1200; 
+      const cierra = (diaTurno === 5 || diaTurno === 6) ? 700 : 400;
+
+      return horaActual >= abre || horaActual < cierra;
+    }
+
+    // --- ACTUALIZAR PANTALLA PRINCIPAL ---
+    function actualizarPantallaPrincipal() {
+      const badge = document.getElementById('badge-eloeste');
+      if (verificarAbierto()) {
+        badge.innerText = "Abierto ahora";
+        badge.className = "badge-estado badge-abierto";
+      } else {
+        badge.innerText = "Cerrado ahora";
+        badge.className = "badge-estado badge-cerrado";
+      }
+    }
 
     function abrirLocal(id) {
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
+
+      const btnWhatsApp = document.querySelector('.btn-whatsapp');
+      let cartelCerrado = document.getElementById('cartel-estado-local');
+
+      if (!verificarAbierto()) {
+        if (!cartelCerrado) {
+          cartelCerrado = document.createElement('div');
+          cartelCerrado.id = 'cartel-estado-local';
+          cartelCerrado.className = 'cartel-cerrado';
+          cartelCerrado.innerHTML = '⛔ El local está CERRADO. Podés mirar el menú, pero no se toman pedidos en este momento.';
+          const headerLocal = document.querySelector('.header-local');
+          headerLocal.insertAdjacentElement('afterend', cartelCerrado);
+        }
+        btnWhatsApp.innerText = "Local Cerrado ⛔";
+        btnWhatsApp.disabled = true;
+        btnWhatsApp.style.background = "#999";
+        btnWhatsApp.style.cursor = "not-allowed";
+      } else {
+        if (cartelCerrado) cartelCerrado.remove();
+        btnWhatsApp.innerText = "Hacer pedido por WhatsApp";
+        btnWhatsApp.disabled = false;
+        btnWhatsApp.style.background = "#25D366";
+        btnWhatsApp.style.cursor = "pointer";
+      }
     }
 
     function volverInicio() {
       document.getElementById('vista-menu').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
+      actualizarPantallaPrincipal(); // Refresca por si cruzó el horario estando adentro
       window.scrollTo(0,0);
     }
 
-    // ARREGLO DEFINITIVO DE LA FUNCIÓN QUE ROPMÍA LOS BOTONES
     function renderizarMenu() {
       const render = (arr, id, conExtras) => {
         const cont = document.getElementById(id);
         cont.innerHTML = "";
-        
         arr.forEach(p => {
           const d = document.createElement("div");
           d.className = "card";
-          
-          // Agregamos la información en texto limpio
           d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
-          
-          // Creamos el botón "a mano" usando JavaScript. Esto EVITA que haya errores por chocar las comillas
           const btn = document.createElement("button");
           btn.className = "btn-agregar";
           btn.innerText = "Agregar";
-          
-          // Le decimos exactamente qué hacer cuando se hace clic, sin pasarlo como texto
-          btn.onclick = () => {
-            if (conExtras) {
-              abrirModalExtras(p);
-            } else {
-              agregarDirecto(p);
-            }
-          };
-          
-          // Metemos el botón adentro de la tarjeta
+          btn.onclick = () => { if (conExtras) { abrirModalExtras(p); } else { agregarDirecto(p); } };
           d.appendChild(btn);
           cont.appendChild(d);
         });
       };
-      
       render(menuElOeste.sandwiches, "menu-sandwiches", true);
       render(menuElOeste.minutas, "menu-minutas", true);
       render(menuElOeste.bebidas, "menu-bebidas", false);
@@ -288,20 +336,16 @@
       document.getElementById("modalExtras").style.display = "flex";
     }
 
-    function cerrarModalExtras() { 
-      document.getElementById("modalExtras").style.display = "none"; 
-    }
+    function cerrarModalExtras() { document.getElementById("modalExtras").style.display = "none"; }
 
     function confirmarExtras() {
       let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
       let totalP = pFinal.precio;
-      
       document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
       document.querySelectorAll(".extra-cb:checked").forEach(cb => {
         pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
         totalP += parseInt(cb.value);
       });
-      
       pFinal.precioFinal = totalP;
       carrito.push(pFinal);
       cerrarModalExtras();
@@ -313,18 +357,11 @@
       const btnVaciar = document.getElementById("btnVaciar");
       lista.innerHTML = "";
       let total = 0;
-      
-      if (carrito.length > 0) {
-        btnVaciar.style.display = "block";
-      } else {
-        btnVaciar.style.display = "none";
-      }
-      
+      if (carrito.length > 0) { btnVaciar.style.display = "block"; } else { btnVaciar.style.display = "none"; }
       carrito.forEach((item, i) => {
         let txt = "";
         if (item.aderezos && item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
         if (item.extras && item.extras.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
-        
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
           <div style="display:flex; justify-content:space-between">
             <strong>${item.nombre}</strong>
@@ -343,15 +380,11 @@
       }
     }
 
-    function toggleDireccion() { 
-      document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; 
-    }
+    function toggleDireccion() { document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; }
 
-    // ARREGLO DE LA URL DEL GPS BASADO EN TU CAPTURA DE WHATSAPP
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
-      
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -361,106 +394,69 @@
             document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
             document.getElementById("btnMapa").className = "btn-mapa";
           },
-          () => { 
-            alert("No se pudo obtener la ubicación. Intentá con la opción 'Buscar en mapa'."); 
-            btn.innerText = "📍 Reintentar GPS"; 
-          }
+          () => { alert("No se pudo obtener la ubicación."); btn.innerText = "📍 Reintentar GPS"; }
         );
       }
     }
 
     function abrirModalMapa() {
       document.getElementById("modalMapaContenedor").style.display = "flex";
-      
-      const latSalta = -24.7821;
-      const lngSalta = -65.4232;
-
+      const latSalta = -24.7821; const lngSalta = -65.4232;
       if (!mapaInstance) {
         mapaInstance = L.map('map').setView([latSalta, lngSalta], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapaInstance);
-        
         marcador = L.marker([latSalta, lngSalta], { draggable: true }).addTo(mapaInstance);
         coordsTemp = { lat: latSalta, lng: lngSalta };
-
-        marcador.on('dragend', function(e) {
-          coordsTemp = marcador.getLatLng();
-        });
-        
-        mapaInstance.on('click', function(e) {
-          marcador.setLatLng(e.latlng);
-          coordsTemp = e.latlng;
-        });
+        marcador.on('dragend', function(e) { coordsTemp = marcador.getLatLng(); });
+        mapaInstance.on('click', function(e) { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
       }
-      
       setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
     }
 
-    // ARREGLO DE LA URL DEL MAPA BASADO EN TU CAPTURA DE WHATSAPP
     function confirmarMapa() {
       if (coordsTemp) {
         linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
-        
         const btnM = document.getElementById("btnMapa");
         btnM.innerText = "✅ Mapa Guardado";
         btnM.className = "btn-mapa exito";
         btnM.style.background = "#28a745";
-        
         document.getElementById("btnGPS").innerText = "📍 Usar GPS";
         document.getElementById("btnGPS").className = "btn-gps";
       }
       cerrarModalMapa();
     }
 
+    function cerrarModalMapa() { document.getElementById("modalMapaContenedor").style.display = "none"; }
+
     function enviarPedido() {
+      if (!verificarAbierto()) { alert("¡Uh! El local ya cerró."); return; }
       const n = document.getElementById("nombreCliente").value.trim();
-      
-      if(!n || carrito.length === 0) {
-        alert("Por favor, completá tu nombre y agregá algo al carrito.");
-        return;
-      }
+      if(!n || carrito.length === 0) { alert("Completá tu nombre y el carrito."); return; }
       
       let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
-      
       carrito.forEach(i => {
-        let iconoItem = "🍔"; 
-        if(i.tipo === "sinalcohol") iconoItem = "🥤";
-        if(i.tipo === "alcohol") iconoItem = "🍺";
-
+        let iconoItem = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : "🍔";
         m += `${iconoItem} *${i.nombre}* ($${i.precioFinal})%0A`;
-        
-        if (i.aderezos && i.aderezos.length > 0) {
-          m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
-        }
-        if (i.extras && i.extras.length > 0) {
-          let nombresExtras = i.extras.map(e => e.n).join(", ");
-          m += `   ⚠️ Extras: ${nombresExtras}%0A`;
-        }
-        
+        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
+        if (i.extras && i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
         t += i.precioFinal;
       });
-      
-      m += `%0A💰 *TOTAL: Total: $${t}*%0A`;
-      
+      m += `%0A💰 *TOTAL: $${t}*%0A`;
       const selectMetodo = document.getElementById("metodoPago").value;
-      const iconoPago = selectMetodo.includes("Efectivo") ? "💵" : "📱";
-      m += `💳 *Pago:* ${selectMetodo} ${iconoPago}%0A`;
-      
+      m += `💳 *Pago:* ${selectMetodo} ${selectMetodo.includes("Efectivo") ? "💵" : "📱"}%0A`;
       const selectEntrega = document.getElementById("tipoEntrega");
-      const txtEntrega = selectEntrega.options[selectEntrega.selectedIndex].text;
-      m += `🛵 *Entrega:* ${txtEntrega}%0A`;
-      
+      m += `🛵 *Entrega:* ${selectEntrega.options[selectEntrega.selectedIndex].text}%0A`;
       const direccion = document.getElementById("direccionCliente").value.trim();
-      if(direccion) m += `🏠 *Dirección:* ${direccion}%0A`;
+      if(direccion && selectEntrega.value === "delivery") m += `🏠 *Dirección:* ${direccion}%0A`;
+      if(linkGPS && selectEntrega.value === "delivery") m += `📍 *Mapa:* ${linkGPS}`;
       
-      if(linkGPS) m += `📍 *Mapa:* ${linkGPS}`;
-      
-      const numeroWhatsApp = "5491124500967";
-      
-      window.open(`https://wa.me/${numeroWhatsApp}?text=${m}`, "_blank");
+      window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
     }
 
+    // Inicialización al cargar la página
     renderizarMenu();
+    actualizarPantallaPrincipal();
   </script>
 </body>
 </html>
