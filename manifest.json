@@ -1,0 +1,17 @@
+{
+  "name": "Dale pué Pedidos",
+  "short_name": "Dale pué",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#d9232d",
+  "description": "Plataforma de pedidos locales de Salta",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3448/3448609.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
