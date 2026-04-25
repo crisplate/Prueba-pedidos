@@ -49,14 +49,13 @@
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
     .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
-    .form-group textarea { resize: vertical; }
     
     .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
-    .btn-gps.exito { background: #28a745; color: white; }
+    .btn-gps.exito { background: #28a745 !important; color: white !important; }
     .btn-mapa { background: #007bff; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
+    .btn-mapa.exito { background: #28a745 !important; color: white !important; }
     
-    /* BOTÓN PARA ABRIR UBICACIÓN DEL LOCAL EN MAPS */
     .btn-ubi-local { background: #17a2b8; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px; width: 100%; display: none; }
 
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
@@ -67,7 +66,6 @@
     
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
-    .opcion-check input { transform: scale(1.2); }
     .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
 
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
@@ -87,7 +85,6 @@
   </div>
 
   <div class="container">
-    
     <div id="vista-locales">
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
@@ -165,7 +162,7 @@
 
         <div class="form-group">
           <label>Observaciones (Opcional):</label>
-          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, sin lechuga, etc."></textarea>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, la hamburguesa sin lechuga..."></textarea>
         </div>
         
         <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
@@ -177,9 +174,9 @@
     <div class="modal-content">
       <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
       <div id="modal-cuerpo-extras">
-        <div class="seccion-modal-titulo"><h4>Aderezos (Seleccioná los que quieras)</h4></div>
+        <div class="seccion-modal-titulo"><h4>Aderezos</h4></div>
         <div class="grid-aderezos" id="contenedor-aderezos"></div>
-        <div class="seccion-modal-titulo"><h4>Adicionales (Opcional)</h4></div>
+        <div class="seccion-modal-titulo"><h4>Adicionales</h4></div>
         <div id="contenedor-adicionales"></div>
       </div>
       <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
@@ -200,16 +197,13 @@
   <script>
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // CONFIGURACIÓN DE LOS LOCALES
     const locales = {
       eloeste: {
         id: "eloeste",
         nombre: "El Oeste",
         horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
         whatsapp: "5491124500967",
-        coords: { lat: -24.7865, lng: -65.4190 }, 
-        // ACÁ PODÉS PEGAR EL LINK CORTO DE GOOGLE MAPS CUANDO LO TENGAS:
-        mapaUrl: "https://maps.app.goo.gl/upq8xzA8uxd9bDSb8", 
+        mapaUrl: "https://maps.app.goo.gl/9", 
         menu: {
           "Tu Sándwich Favorito 🥪": {
             items: [
@@ -242,17 +236,16 @@
             items: [
               { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
               { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Cerveza 710ml", desc: "", precio: 5000, tipo: "alcohol", conExtras: false }
+              { nombre: "Cerveza 710ml", desc: "Rubia/Negra", precio: 5000, tipo: "alcohol", conExtras: false }
             ]
           }
         },
         estaAbierto: function() {
           const ahora = new Date();
-          let dia = ahora.getDay(); 
           let h = ahora.getHours() * 100 + ahora.getMinutes();
-          let diaTurno = (h < 1200) ? (dia === 0 ? 6 : dia - 1) : dia;
-          const cierra = (diaTurno === 5 || diaTurno === 6) ? 700 : 400;
-          return h >= 1200 || h < cierra;
+          let d = ahora.getDay(); 
+          let dt = (h < 1200) ? (d === 0 ? 6 : d - 1) : d;
+          return h >= 1200 || h < ((dt === 5 || dt === 6) ? 700 : 400);
         }
       },
       mamacora: {
@@ -260,9 +253,7 @@
         nombre: "Mama Cora",
         horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
         whatsapp: "5491124500967", 
-        coords: { lat: -24.7821, lng: -65.4232 }, 
-        // ACÁ PODÉS PEGAR EL LINK CORTO DE GOOGLE MAPS CUANDO LO TENGAS:
-        mapaUrl: "https://maps.app.goo.gl/QSq4DtxBgSNfnGry6", 
+        mapaUrl: "https://maps.app.goo.gl/9", 
         menu: {
           "Empanadas Salteñas 🥟": {
             items: [
@@ -303,7 +294,7 @@
     document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
     document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
 
-    window.addEventListener('popstate', (e) => {
+    window.addEventListener('popstate', () => {
       if (window.location.hash !== '#menu') {
         document.getElementById('vista-menu').style.display = 'none';
         document.getElementById('vista-locales').style.display = 'block';
@@ -326,34 +317,28 @@
 
     function abrirLocal(id) {
       localActivo = locales[id];
-      
       linkGPS = "";
-      document.getElementById("btnGPS").innerText = "📍 Usar GPS";
-      document.getElementById("btnGPS").className = "btn-gps";
-      document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
-      document.getElementById("btnMapa").className = "btn-mapa";
+      
+      // Reiniciar botones GPS
+      const btnG = document.getElementById("btnGPS");
+      btnG.innerText = "📍 Usar GPS";
+      btnG.className = "btn-gps";
+      const btnM = document.getElementById("btnMapa");
+      btnM.innerText = "🗺️ Buscar en mapa";
+      btnM.className = "btn-mapa";
 
-      document.getElementById("tipoEntrega").value = "delivery";
-      toggleDireccion(); 
-
-      let carritoGuardado = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
-      if (carritoGuardado) {
-        let tiempoPasado = Date.now() - carritoGuardado.tiempo;
-        if (tiempoPasado > 300000 || carritoGuardado.localId !== localActivo.id) {
-          carrito = [];
-          localStorage.removeItem('dp_carrito');
-        } else {
-          carrito = carritoGuardado.items;
-        }
+      let cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
+      if (cg && (Date.now() - cg.tiempo < 300000) && cg.localId === localActivo.id) {
+        carrito = cg.items;
       } else {
         carrito = [];
+        localStorage.removeItem('dp_carrito');
       }
+      
       actualizarCarrito();
-
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
-
       if(window.location.hash !== '#menu') history.pushState({ vista: 'menu' }, '', '#menu');
 
       document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
@@ -366,8 +351,6 @@
         h2.className = "categoria-titulo";
         h2.innerText = cat;
         contCat.appendChild(h2);
-
-        const contItems = document.createElement('div');
         localActivo.menu[cat].items.forEach(p => {
           const card = document.createElement('div');
           card.className = "card";
@@ -377,11 +360,9 @@
           btn.innerText = "Agregar";
           btn.onclick = () => { if (p.conExtras) { abrirModalExtras(p); } else { agregarDirecto(p); } };
           card.appendChild(btn);
-          contItems.appendChild(card);
+          contCat.appendChild(card);
         });
-        contCat.appendChild(contItems);
       }
-
       validarBotonEnviar();
     }
 
@@ -402,8 +383,8 @@
       });
       document.getElementById("contenedor-adicionales").innerHTML = `
         <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
       `;
       document.getElementById("modalExtras").style.display = "flex";
     }
@@ -412,13 +393,13 @@
 
     function confirmarExtras() {
       let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
-      let totalP = pFinal.precio;
+      let tp = pFinal.precio;
       document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
       document.querySelectorAll(".extra-cb:checked").forEach(cb => {
         pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
-        totalP += parseInt(cb.value);
+        tp += parseInt(cb.value);
       });
-      pFinal.precioFinal = totalP;
+      pFinal.precioFinal = tp;
       carrito.push(pFinal);
       cerrarModalExtras();
       actualizarCarrito();
@@ -426,170 +407,113 @@
 
     function actualizarCarrito() {
       const lista = document.getElementById("listaCarrito");
-      const btnVaciar = document.getElementById("btnVaciar");
       lista.innerHTML = "";
-      let total = 0;
-      if (carrito.length > 0) { btnVaciar.style.display = "block"; } else { btnVaciar.style.display = "none"; }
-      
+      let t = 0;
+      document.getElementById("btnVaciar").style.display = (carrito.length > 0) ? "block" : "none";
       carrito.forEach((item, i) => {
         let txt = "";
-        if (item.aderezos && item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
-        if (item.extras && item.extras.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
+        if (item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
+        if (item.extras.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
           <div style="display:flex; justify-content:space-between">
             <strong>${item.nombre}</strong>
-            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; font-size:1.2rem; margin-left:10px;">X</b></span>
+            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer;">X</b></span>
           </div>${txt}
         </div>`;
-        total += item.precioFinal;
+        t += item.precioFinal;
       });
-      document.getElementById("totalCarrito").innerText = "Total: $" + total;
-
-      if(localActivo) {
-        localStorage.setItem('dp_carrito', JSON.stringify({ items: carrito, tiempo: Date.now(), localId: localActivo.id }));
-      }
+      document.getElementById("totalCarrito").innerText = "Total: $" + t;
+      if(localActivo) localStorage.setItem('dp_carrito', JSON.stringify({ items: carrito, tiempo: Date.now(), localId: localActivo.id }));
     }
 
-    function confirmarVaciarCarrito() {
-      if (confirm("¿Vaciar todo el pedido?")) { carrito = []; actualizarCarrito(); }
-    }
+    function confirmarVaciarCarrito() { if (confirm("¿Vaciar todo?")) { carrito = []; actualizarCarrito(); } }
 
     function toggleDireccion() { 
-      const tipo = document.getElementById("tipoEntrega").value;
-      const seccionDir = document.getElementById("seccionDireccion");
-      const btnUbi = document.getElementById("btnUbiLocal");
-      
-      if (tipo === "retiro") {
-        seccionDir.style.display = "none";
-        btnUbi.style.display = "block";
-      } else {
-        seccionDir.style.display = "block";
-        btnUbi.style.display = "none";
-      }
-      validarBotonEnviar();
+      const t = document.getElementById("tipoEntrega").value;
+      document.getElementById("seccionDireccion").style.display = (t === "retiro") ? "none" : "block";
+      document.getElementById("btnUbiLocal").style.display = (t === "retiro") ? "block" : "none";
     }
 
-    function abrirUbicacionLocal() {
-      if (localActivo && localActivo.mapaUrl) {
-        window.open(localActivo.mapaUrl, '_blank');
-      }
-    }
+    function abrirUbicacionLocal() { if (localActivo) window.open(localActivo.mapaUrl, '_blank'); }
 
+    // --- CORRECCIÓN CLAVE EN GPS ---
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            linkGPS = `https://www.google.com/maps?q=$${pos.coords.latitude},${pos.coords.longitude}`;
-            btn.innerText = "✅ GPS Listo";
-            btn.className = "btn-gps exito";
-            document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
-            document.getElementById("btnMapa").className = "btn-mapa";
-            validarBotonEnviar();
-          },
-          () => { alert("No se pudo obtener la ubicación."); btn.innerText = "📍 Reintentar GPS"; }
-        );
-      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+          btn.innerText = "✅ GPS Listo";
+          btn.classList.add("exito");
+          document.getElementById("btnMapa").classList.remove("exito");
+          document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
+        },
+        () => { alert("No se pudo obtener el GPS."); btn.innerText = "📍 Reintentar GPS"; }
+      );
     }
 
     function abrirModalMapa() {
       document.getElementById("modalMapaContenedor").style.display = "flex";
-      const latSalta = localActivo.coords.lat; 
-      const lngSalta = localActivo.coords.lng;
       if (!mapaInstance) {
-        mapaInstance = L.map('map').setView([latSalta, lngSalta], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapaInstance);
-        marcador = L.marker([latSalta, lngSalta], { draggable: true }).addTo(mapaInstance);
-        coordsTemp = { lat: latSalta, lng: lngSalta };
-        marcador.on('dragend', function(e) { coordsTemp = marcador.getLatLng(); });
-        mapaInstance.on('click', function(e) { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
-      } else {
-        mapaInstance.setView([latSalta, lngSalta], 14);
-        marcador.setLatLng([latSalta, lngSalta]);
-        coordsTemp = { lat: latSalta, lng: lngSalta };
+        mapaInstance = L.map('map').setView([-24.7821, -65.4232], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaInstance);
+        marcador = L.marker([-24.7821, -65.4232], { draggable: true }).addTo(mapaInstance);
+        mapaInstance.on('click', (e) => { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
+        marcador.on('dragend', () => { coordsTemp = marcador.getLatLng(); });
       }
-      setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
+      setTimeout(() => mapaInstance.invalidateSize(), 300);
     }
 
     function confirmarMapa() {
-      if (coordsTemp) {
-        linkGPS = `https://www.google.com/maps?q=$${coordsTemp.lat},${coordsTemp.lng}`;
-        document.getElementById("btnMapa").innerText = "✅ Mapa Guardado";
-        document.getElementById("btnMapa").className = "btn-mapa exito";
-        document.getElementById("btnGPS").innerText = "📍 Usar GPS";
-        document.getElementById("btnGPS").className = "btn-gps";
-        validarBotonEnviar();
-      }
+      const c = coordsTemp || marcador.getLatLng();
+      linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
+      const btnM = document.getElementById("btnMapa");
+      btnM.innerText = "✅ Mapa Guardado";
+      btnM.classList.add("exito");
+      document.getElementById("btnGPS").classList.remove("exito");
+      document.getElementById("btnGPS").innerText = "📍 Usar GPS";
       cerrarModalMapa();
     }
 
     function cerrarModalMapa() { document.getElementById("modalMapaContenedor").style.display = "none"; }
 
     function validarBotonEnviar() {
-      const btnWA = document.getElementById('btnEnviarWhatsapp');
-      
+      const b = document.getElementById('btnEnviarWhatsapp');
       if (!localActivo.estaAbierto()) {
-        btnWA.innerText = "Local Cerrado ⛔";
-        btnWA.disabled = true;
-        btnWA.style.background = "#999";
-        return;
+        b.innerText = "Local Cerrado ⛔"; b.disabled = true; b.style.background = "#999";
+      } else {
+        b.innerText = "Hacer pedido por WhatsApp"; b.disabled = false; b.style.background = "#25D366";
       }
-
-      btnWA.innerText = "Hacer pedido por WhatsApp";
-      btnWA.disabled = false;
-      btnWA.style.background = "#25D366";
     }
 
     function enviarPedido() {
       const n = document.getElementById("nombreCliente").value.trim();
-      const selectEntrega = document.getElementById("tipoEntrega");
-      const direccion = document.getElementById("direccionCliente").value.trim();
-      const observaciones = document.getElementById("observacionesCliente").value.trim();
-
-      if(!n) { alert("Ingresá tu nombre."); return; }
-      if(carrito.length === 0) { alert("Agregá algo al carrito."); return; }
-      
-      if(selectEntrega.value === "delivery") {
-        if(!direccion) { alert("Falta escribir la dirección."); return; }
-        if(!linkGPS) { alert("Por favor, tocá en 'Usar GPS' o 'Buscar en Mapa' para confirmar tu ubicación."); return; }
-      }
+      const se = document.getElementById("tipoEntrega").value;
+      const di = document.getElementById("direccionCliente").value.trim();
+      if(!n || carrito.length === 0) { alert("Completá nombre y carrito."); return; }
+      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS."); return; }
       
       let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
       carrito.forEach(i => {
-        let icono = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : "🍔";
-        if (localActivo.nombre === "Mama Cora" && i.tipo === "comida") icono = "🥟";
-        m += `${icono} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos && i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
-        if (i.extras && i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
+        let ic = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : (localActivo.id === "mamacora" ? "🥟" : "🍔");
+        m += `${ic} *${i.nombre}* ($${i.precioFinal})%0A`;
+        if (i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
+        if (i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
         t += i.precioFinal;
       });
       m += `%0A💰 *TOTAL: $${t}*%0A`;
-      
-      const pago = document.getElementById("metodoPago").value;
-      m += `💳 *Pago:* ${pago} ${pago.includes("Efectivo") ? "💵" : "📱"}%0A`;
-      
-      if(selectEntrega.value === "delivery") {
-        m += `🛵 *Entrega:* A domicilio%0A`;
-        m += `🏠 *Dirección:* ${direccion}%0A`;
-        m += `📍 *Mapa:* ${linkGPS}%0A`;
-      } else {
-        m += `🛵 *Entrega:* Retiro por el local%0A`;
-      }
-
-      if(observaciones) { m += `%0A📝 *Observaciones:* ${observaciones}%0A`; }
+      m += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
+      m += `🛵 *Entrega:* ${se === "delivery" ? "A domicilio" : "Retiro por local"}%0A`;
+      if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
+      const obs = document.getElementById("observacionesCliente").value.trim();
+      if(obs) m += `%0A📝 *Observaciones:* ${obs}%0A`;
       
       localStorage.removeItem('dp_carrito');
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
 
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
-    let eventoInstalacion = null;
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); eventoInstalacion = e; setTimeout(() => { document.getElementById('bannerInstalacion').style.display = 'flex'; }, 2000); });
-    document.getElementById('btnInstalar').addEventListener('click', () => { if (eventoInstalacion) { eventoInstalacion.prompt(); eventoInstalacion = null; } document.getElementById('bannerInstalacion').style.display = 'none'; });
-    function cerrarBanner() { document.getElementById('bannerInstalacion').style.display = 'none'; }
-
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
     actualizarPantallaPrincipal();
   </script>
 </body>
