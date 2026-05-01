@@ -14,33 +14,38 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; transition: background 0.3s ease, color 0.3s ease; }
     
     /* VISTA ZONAS Y PRINCIPAL */
     .header-plataforma { text-align: center; margin-bottom: 25px; padding-top: 10px; }
     .logo-principal { width: 110px; height: 110px; object-fit: cover; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(217,35,45,0.2); }
     .header-plataforma h1 { color: #d9232d; font-size: 2.8rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
-    .header-plataforma p { color: #555; margin: 5px 0; font-size: 1.1rem; }
+    .eslogan { font-weight: bold; color: #111; margin: 5px 0; font-size: 1.1rem; transition: color 0.3s ease;}
+    .sub-eslogan { font-size: 0.95rem; color: #555; transition: color 0.3s ease;}
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
 
-    /* NUEVA GRILLA DE ZONAS (COLORES SÓLIDOS/DEGRADADOS) */
+    /* BOTON MODO OSCURO */
+    .btn-theme-toggle { position: absolute; top: 15px; right: 15px; background: #fff; color: #111; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s ease, background 0.3s ease; z-index: 1000; }
+    .btn-theme-toggle:active { transform: scale(0.9); }
+
+    /* GRILLA DE ZONAS */
     .grid-zonas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 5px; }
     .btn-zona { border-radius: 15px; padding: 35px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: transform 0.2s ease; border: none; color: white; display: flex; align-items: center; justify-content: center; }
     .btn-zona:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .btn-zona h3 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
     
-    /* COLORES POR ZONA */
     .bg-norte { background: linear-gradient(135deg, #007bff, #0056b3); }
     .bg-este { background: linear-gradient(135deg, #20c997, #117a8b); }
     .bg-oeste { background: linear-gradient(135deg, #fd7e14, #d35400); }
     .bg-sur { background: linear-gradient(135deg, #6f42c1, #4e2a84); }
     .bg-sureste { background: linear-gradient(135deg, #e83e8c, #ad2163); }
-    .bg-centro { background: linear-gradient(135deg, #d9232d, #a7141b); } /* Color principal de Dale pué */
+    .bg-centro { background: linear-gradient(135deg, #d9232d, #a7141b); }
 
     /* TARJETAS LOCALES */
-    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease; }
     .tarjeta-local:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
+    .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; transition: color 0.3s ease;}
+    .tarjeta-local-dir { color: #888; font-size: 0.8rem; margin-bottom: 0; transition: color 0.3s ease;}
     .btn-entrar { background: #d9232d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(217,35,45,0.3); }
 
     .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
@@ -52,23 +57,23 @@
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
     .horarios-texto { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; margin-top: 10px; padding: 8px; border-radius: 8px; text-align: left; display: block;}
 
-    .container { max-width: 800px; margin: auto; }
-    .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; }
+    .container { max-width: 800px; margin: auto; position: relative; }
+    .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; transition: color 0.3s ease;}
 
-    .card { background: white; margin-bottom: 15px; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ffb800; }
+    .card { background: white; margin-bottom: 15px; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ffb800; transition: background 0.3s ease; }
     .info-producto { flex-grow: 1; padding-right: 10px; }
-    .info-producto h3 { margin: 0; color: #111; font-size: 1.1rem; }
-    .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.8rem; line-height: 1.2; }
+    .info-producto h3 { margin: 0; color: #111; font-size: 1.1rem; transition: color 0.3s ease;}
+    .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.8rem; line-height: 1.2; transition: color 0.3s ease;}
     .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; }
     .btn-agregar { background: #111; color: #ffb800; padding: 8px 12px; border-radius: 8px; font-weight: bold; border:none; cursor: pointer;}
     
-    #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: background 0.3s ease; }
     .header-carrito { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .btn-vaciar { background: #dc3545; color: white; padding: 6px 12px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
     
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; transition: background 0.3s ease, color 0.3s ease; }
     
     .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
@@ -79,24 +84,61 @@
     .btn-ubi-local { background: #17a2b8; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px; width: 100%; display: none; }
 
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
-    .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
+    .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; transition: border-color 0.3s ease;}
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
+    .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; transition: background 0.3s ease;}
     
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-    .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
-    .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
+    .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; transition: background 0.3s ease;}
+    .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; transition: background 0.3s ease, color 0.3s ease;}
 
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
 
-    .banner-instalacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); display: none; align-items: center; justify-content: space-between; width: 90%; max-width: 400px; z-index: 2000; border: 2px solid #d9232d; }
-    .banner-instalacion p { margin: 0; font-weight: bold; color: #111; font-size: 0.95rem; flex-grow: 1; padding-right: 10px; }
+    .banner-instalacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); display: none; align-items: center; justify-content: space-between; width: 90%; max-width: 400px; z-index: 3000; border: 2px solid #d9232d; transition: background 0.3s ease;}
+    .banner-instalacion p { margin: 0; font-weight: bold; color: #111; font-size: 0.95rem; flex-grow: 1; padding-right: 10px; transition: color 0.3s ease;}
     .btn-instalar { background: #d9232d; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .btn-cerrar-banner { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; padding: 0 0 0 10px; }
+
+    /* =========================================
+       🔥🔥🔥 ESTILOS MODO OSCURO 🔥🔥🔥
+       ========================================= */
+    body.dark-mode { background: #121212; color: #e0e0e0; }
+    body.dark-mode .btn-theme-toggle { background: #2d2d2d; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    
+    body.dark-mode .tarjeta-local, 
+    body.dark-mode .card, 
+    body.dark-mode #carrito, 
+    body.dark-mode .modal-content, 
+    body.dark-mode .banner-instalacion { background: #1e1e1e; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    
+    body.dark-mode .eslogan, 
+    body.dark-mode .tarjeta-local h2, 
+    body.dark-mode .info-producto h3, 
+    body.dark-mode .categoria-titulo,
+    body.dark-mode .banner-instalacion p { color: #f0f2f5; }
+    
+    body.dark-mode .sub-eslogan,
+    body.dark-mode .tarjeta-local p,
+    body.dark-mode .tarjeta-local-dir,
+    body.dark-mode .info-producto .desc { color: #aaa !important; }
+    
+    body.dark-mode input, 
+    body.dark-mode select, 
+    body.dark-mode textarea { background: #2d2d2d; color: #f0f2f5; border: 1px solid #444; }
+    
+    body.dark-mode .total { border-top: 2px solid #333; }
+    body.dark-mode .btn-gps { background: #333; color: #f0f2f5; }
+    body.dark-mode .opcion-check { background: #2d2d2d; }
+    body.dark-mode .seccion-modal-titulo { background: #2a2000; color: #ffb800; }
+    body.dark-mode .header-local { background: #0a0a0a; border: 1px solid #222; }
+
   </style>
 </head>
 <body>
+
+  <!-- BOTÓN MODO OSCURO / CLARO -->
+  <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleDarkMode()">🌙</button>
 
   <div id="bannerInstalacion" class="banner-instalacion">
     <p>📲 ¡Instalá Dale pué y pedí al toque!</p>
@@ -111,9 +153,9 @@
       <div class="header-plataforma">
         <img src="logo.png" alt="Logo Dale pué" class="logo-principal" onerror="this.style.display='none'"> 
         <h1>Dale pué 🛵</h1>
-        <p style="font-weight: bold; color: #111;">Lo nuestro, al toque.</p>
+        <p class="eslogan">Lo nuestro, al toque.</p>
         <hr class="divisor-header">
-        <p style="font-size: 0.95rem;">¿A dónde llevamos tu pedido hoy?</p>
+        <p class="sub-eslogan">¿A dónde llevamos tu pedido hoy?</p>
       </div>
 
       <div class="grid-zonas">
@@ -141,13 +183,12 @@
     <!-- PANTALLA 2: LISTADO DE LOCALES (DINÁMICO) -->
     <div id="vista-locales" style="display: none;">
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-gps" style="background: #e0e0e0; color: #333; padding: 8px 12px; margin: 0;" onclick="volverZonas()">⬅ Cambiar Zona</button>
+        <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverZonas()">⬅ Cambiar Zona</button>
         <span id="txt-zona-elegida" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
       </div>
 
-      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS SEGÚN LA ZONA ELEGIDA -->
+      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS -->
       <div id="contenedor-lista-locales"></div>
-
     </div>
 
     <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
@@ -201,7 +242,7 @@
 
         <div class="form-group">
           <label>Observaciones (Opcional):</label>
-          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, la hamburguesa sin lechuga..."></textarea>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas..."></textarea>
         </div>
         
         <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
@@ -220,26 +261,34 @@
         <div id="contenedor-adicionales"></div>
       </div>
       <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
-      <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModalExtras()">Cancelar</button>
+      <button class="btn-gps" style="background:#f1f1f1; color:#111;" onclick="cerrarModalExtras()">Cancelar</button>
     </div>
   </div>
 
   <div id="modalMapaContenedor" class="modal-overlay">
     <div class="modal-content">
       <h3 style="margin-top:0;">Ubicá tu casa 🏠</h3>
-      <p style="font-size: 0.85rem; color: #666;">Mové el mapa para ubicar el marcador rojo.</p>
+      <p style="font-size: 0.85rem; color: #888;">Mové el mapa para ubicar el marcador rojo.</p>
       <div id="map"></div>
       <button class="btn-whatsapp" style="background:#28a745; margin-top:10px;" onclick="confirmarMapa()">✅ Confirmar ubicación</button>
-      <button class="btn-gps" style="background:#f1f1f1; margin-top:10px;" onclick="cerrarModalMapa()">Cancelar</button>
+      <button class="btn-gps" style="background:#f1f1f1; margin-top:10px; color:#111;" onclick="cerrarModalMapa()">Cancelar</button>
     </div>
   </div>
 
   <script>
+    // LÓGICA DEL MODO OSCURO
+    function toggleDarkMode() {
+      const body = document.body;
+      const isDark = body.classList.toggle('dark-mode');
+      const btn = document.getElementById('btnThemeToggle');
+      btn.innerText = isDark ? '☀️' : '🌙';
+      localStorage.setItem('dp_darkmode', isDark);
+    }
+
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // BASE DE DATOS DE LOCALES CON ZONAS Y FANTASMAS DE PRUEBA
+    // BASE DE DATOS LOCALES
     const locales = {
-      // TUS LOCALES OFICIALES (EN EL CENTRO)
       eloeste: {
         id: "eloeste",
         nombre: "El Oeste",
@@ -265,7 +314,7 @@
             ]
           }
         },
-        estaAbierto: function() { return true; } // Simplificado por ahora para que los veas
+        estaAbierto: function() { return true; } 
       },
       mamacora: {
         id: "mamacora",
@@ -287,8 +336,6 @@
         },
         estaAbierto: function() { return true; }
       },
-
-      // --- LOCALES FANTASMA (PARA MOSTRAR EN OTRAS ZONAS) ---
       pizzanorte: {
         id: "pizzanorte",
         nombre: "Pizzería Norteña (Demo)",
@@ -361,6 +408,12 @@
     let coordsTemp = null;
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Chequear preferencia de Modo Oscuro guardada
+      if (localStorage.getItem('dp_darkmode') === 'true') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('btnThemeToggle').innerText = '☀️';
+      }
+
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
     });
@@ -368,20 +421,18 @@
     document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
     document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
 
-    // LÓGICA DINÁMICA DE ZONAS Y LOCALES
     function seleccionarZona(zona) {
       zonaElegida = zona;
       document.getElementById('txt-zona-elegida').innerText = "📍 ZONA " + zona;
       document.getElementById('vista-zonas').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
-      
       renderizarLocalesPorZona(zona);
     }
 
     function renderizarLocalesPorZona(zonaBuscada) {
       const contenedor = document.getElementById('contenedor-lista-locales');
-      contenedor.innerHTML = ""; // Limpiamos la lista anterior
+      contenedor.innerHTML = ""; 
       let localesEncontrados = 0;
 
       for (let id in locales) {
@@ -395,15 +446,15 @@
 
           let tarjeta = document.createElement('div');
           tarjeta.className = "tarjeta-local";
-          tarjeta.style.borderLeftColor = local.colorBrand; // Le pone el color de la marca al borde
+          tarjeta.style.borderLeftColor = local.colorBrand; 
           
           tarjeta.onclick = () => abrirLocal(id);
           
           tarjeta.innerHTML = `
             <div>
               <h2>${local.nombre}</h2>
-              <p>${local.descCorta}</p>
-              <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 ${local.direccion}</p>
+              <p class="tarjeta-local-dir">${local.descCorta}</p>
+              <p class="tarjeta-local-dir">📍 ${local.direccion}</p>
               ${htmlEstado}
             </div>
             <div class="btn-entrar" style="background: ${local.colorBrand}; color: ${id === 'mamacora' ? '#111' : 'white'};">Ver menú</div>
@@ -414,7 +465,7 @@
       }
 
       if (localesEncontrados === 0) {
-        contenedor.innerHTML = `<p style="text-align:center; padding: 30px 10px; color:#666; font-size: 1.1rem;">Aún no tenemos locales adheridos en esta zona. ¡Pronto llegaremos con todo! 🛵</p>`;
+        contenedor.innerHTML = `<p style="text-align:center; padding: 30px 10px; color:#888; font-size: 1.1rem;">Aún no tenemos locales adheridos en esta zona. ¡Pronto llegaremos con todo! 🛵</p>`;
       }
     }
 
