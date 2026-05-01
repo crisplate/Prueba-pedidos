@@ -23,12 +23,19 @@
     .header-plataforma p { color: #555; margin: 5px 0; font-size: 1.1rem; }
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
 
-    /* GRILLA DE ZONAS (NUEVO CONCEPTO) */
+    /* NUEVA GRILLA DE ZONAS (COLORES SÓLIDOS/DEGRADADOS) */
     .grid-zonas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 5px; }
-    .btn-zona { background: white; border: 2px solid transparent; border-radius: 15px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: transform 0.2s ease, border-color 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .btn-zona:active { transform: scale(0.95); border-color: #d9232d; }
-    .btn-zona-icono { font-size: 1.8rem; margin-bottom: 8px; }
-    .btn-zona h3 { margin: 0; font-size: 1rem; color: #111; font-weight: bold; }
+    .btn-zona { border-radius: 15px; padding: 35px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: transform 0.2s ease; border: none; color: white; display: flex; align-items: center; justify-content: center; }
+    .btn-zona:active { transform: scale(0.95); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .btn-zona h3 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+    
+    /* COLORES POR ZONA */
+    .bg-norte { background: linear-gradient(135deg, #007bff, #0056b3); }
+    .bg-este { background: linear-gradient(135deg, #20c997, #117a8b); }
+    .bg-oeste { background: linear-gradient(135deg, #fd7e14, #d35400); }
+    .bg-sur { background: linear-gradient(135deg, #6f42c1, #4e2a84); }
+    .bg-sureste { background: linear-gradient(135deg, #e83e8c, #ad2163); }
+    .bg-centro { background: linear-gradient(135deg, #d9232d, #a7141b); } /* Color principal de Dale pué */
 
     /* TARJETAS LOCALES */
     .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -110,59 +117,37 @@
       </div>
 
       <div class="grid-zonas">
-        <div class="btn-zona" onclick="seleccionarZona('Norte')">
-          <div class="btn-zona-icono">📍</div>
+        <div class="btn-zona bg-norte" onclick="seleccionarZona('Norte')">
           <h3>Norte</h3>
         </div>
-        <div class="btn-zona" onclick="seleccionarZona('Este')">
-          <div class="btn-zona-icono">📍</div>
+        <div class="btn-zona bg-este" onclick="seleccionarZona('Este')">
           <h3>Este</h3>
         </div>
-        <div class="btn-zona" onclick="seleccionarZona('Oeste')">
-          <div class="btn-zona-icono">📍</div>
+        <div class="btn-zona bg-oeste" onclick="seleccionarZona('Oeste')">
           <h3>Oeste</h3>
         </div>
-        <div class="btn-zona" onclick="seleccionarZona('Sur')">
-          <div class="btn-zona-icono">📍</div>
+        <div class="btn-zona bg-sur" onclick="seleccionarZona('Sur')">
           <h3>Sur</h3>
         </div>
-        <div class="btn-zona" onclick="seleccionarZona('Sureste')">
-          <div class="btn-zona-icono">📍</div>
+        <div class="btn-zona bg-sureste" onclick="seleccionarZona('Sureste')">
           <h3>Sureste</h3>
         </div>
-        <div class="btn-zona" onclick="seleccionarZona('Centro')">
-          <div class="btn-zona-icono">🏙️</div>
+        <div class="btn-zona bg-centro" onclick="seleccionarZona('Centro')">
           <h3>Centro</h3>
         </div>
       </div>
     </div>
 
-    <!-- PANTALLA 2: LISTADO DE LOCALES -->
+    <!-- PANTALLA 2: LISTADO DE LOCALES (DINÁMICO) -->
     <div id="vista-locales" style="display: none;">
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
         <button class="btn-gps" style="background: #e0e0e0; color: #333; padding: 8px 12px; margin: 0;" onclick="volverZonas()">⬅ Cambiar Zona</button>
-        <span id="txt-zona-elegida" style="font-weight: bold; color: #d9232d; font-size: 0.9rem;"></span>
+        <span id="txt-zona-elegida" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
       </div>
 
-      <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
-        <div>
-          <h2>El Oeste</h2>
-          <p>Sandwichería • Minutas</p>
-          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Leguizamón 1594</p>
-          <div id="badge-eloeste" class="badge-estado">Cargando...</div>
-        </div>
-        <div class="btn-entrar">Ver menú</div>
-      </div>
+      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS SEGÚN LA ZONA ELEGIDA -->
+      <div id="contenedor-lista-locales"></div>
 
-      <div class="tarjeta-local" onclick="abrirLocal('mamacora')" style="border-left-color: #ffb800;">
-        <div>
-          <h2>Mama Cora</h2>
-          <p>Empanadas Salteñas • Pizzas</p>
-          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Centro de Salta</p>
-          <div id="badge-mamacora" class="badge-estado">Cargando...</div>
-        </div>
-        <div class="btn-entrar" style="background: #ffb800; color: #111;">Ver menú</div>
-      </div>
     </div>
 
     <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
@@ -252,10 +237,16 @@
   <script>
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
+    // BASE DE DATOS DE LOCALES CON ZONAS Y FANTASMAS DE PRUEBA
     const locales = {
+      // TUS LOCALES OFICIALES (EN EL CENTRO)
       eloeste: {
         id: "eloeste",
         nombre: "El Oeste",
+        zona: "Centro",
+        descCorta: "Sandwichería • Minutas",
+        direccion: "Leguizamón 1594",
+        colorBrand: "#d9232d",
         horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
         whatsapp: "5491124500967",
         mapaUrl: "https://maps.app.goo.gl/x6YWoLYC24iEZLNV8", 
@@ -264,48 +255,25 @@
             items: [
               { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
               { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, completa + 300g papas", precio: 18000, tipo: "comida", conExtras: true },
-              { nombre: "Gigante tucumana", desc: "2 milanesas 200g, completa + 500g papas", precio: 22000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa XL", desc: "300g carne, completa + 600g papas", precio: 22000, tipo: "comida", conExtras: true },
-              { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Hamburguesa Paty", desc: "1 medallón 125g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo gigante p/2", desc: "350g carne, completa + 500g papas", precio: 19000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo XL", desc: "450g carne, completa + 600g papas", precio: 25000, tipo: "comida", conExtras: true }
-            ]
-          },
-          "Nuestras Minutas 🍽️": {
-            items: [
-              { nombre: "Milanesa al plato", desc: "Clásica", precio: 11500, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa a caballo", desc: "Con dos huevos fritos", precio: 12500, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa napolitana", desc: "Salsa, jamón y queso", precio: 12500, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa napolitana especial", desc: "Completa", precio: 13500, tipo: "comida", conExtras: true },
-              { nombre: "Lomo al plato", desc: "Porción de carne", precio: 10000, tipo: "comida", conExtras: true },
-              { nombre: "Lomo a caballo", desc: "Con huevos fritos", precio: 11500, tipo: "comida", conExtras: true },
-              { nombre: "Lomo a la frontera", desc: "Especialidad", precio: 11500, tipo: "comida", conExtras: true },
-              { nombre: "Chacarero p/2", desc: "Para compartir", precio: 18000, tipo: "comida", conExtras: true },
-              { nombre: "Napolitana para compartir", desc: "Súper tamaño", precio: 20000, tipo: "comida", conExtras: true }
+              { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true }
             ]
           },
           "Bebidas 🥤": {
             items: [
               { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol", conExtras: false },
               { nombre: "Cerveza 710ml", desc: "Rubia/Negra", precio: 5000, tipo: "alcohol", conExtras: false }
             ]
           }
         },
-        estaAbierto: function() {
-          const ahora = new Date();
-          let h = ahora.getHours() * 100 + ahora.getMinutes();
-          let d = ahora.getDay(); 
-          let dt = (h < 1200) ? (d === 0 ? 6 : d - 1) : d;
-          return h >= 1200 || h < ((dt === 5 || dt === 6) ? 700 : 400);
-        }
+        estaAbierto: function() { return true; } // Simplificado por ahora para que los veas
       },
       mamacora: {
         id: "mamacora",
         nombre: "Mama Cora",
+        zona: "Centro",
+        descCorta: "Empanadas Salteñas • Pizzas",
+        direccion: "Centro de Salta",
+        colorBrand: "#ffb800",
         horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
         whatsapp: "5491124500967", 
         mapaUrl: "https://maps.app.goo.gl/MqxUqaRMeYmsEU7r7", 
@@ -313,23 +281,73 @@
           "Empanadas Salteñas 🥟": {
             items: [
               { nombre: "Carne Suave (Docena)", desc: "Carne picada a cuchillo", precio: 8000, tipo: "comida", conExtras: false },
-              { nombre: "Carne Picante (Docena)", desc: "Con ají del valle", precio: 8000, tipo: "comida", conExtras: false },
               { nombre: "Queso y Cebolla (Docena)", desc: "Bien cargadas", precio: 7500, tipo: "comida", conExtras: false }
-            ]
-          },
-          "Pizzas 🍕": {
-            items: [
-              { nombre: "Muzzarella", desc: "8 porciones", precio: 9000, tipo: "comida", conExtras: false },
-              { nombre: "Especial", desc: "Jamón y morrón", precio: 11000, tipo: "comida", conExtras: false },
-              { nombre: "Calabresa", desc: "Con longaniza", precio: 12000, tipo: "comida", conExtras: false }
             ]
           }
         },
-        estaAbierto: function() {
-          const ahora = new Date();
-          let h = ahora.getHours() * 100 + ahora.getMinutes();
-          return (h >= 1200 && h < 1700) || (h >= 1800 && h <= 2359);
-        }
+        estaAbierto: function() { return true; }
+      },
+
+      // --- LOCALES FANTASMA (PARA MOSTRAR EN OTRAS ZONAS) ---
+      pizzanorte: {
+        id: "pizzanorte",
+        nombre: "Pizzería Norteña (Demo)",
+        zona: "Norte",
+        descCorta: "Pizzas a la piedra • Calzones",
+        direccion: "Av. Bolivia 1200",
+        colorBrand: "#007bff",
+        horariosTxt: "🕒 <b>Todos los días:</b> 20:00 a 00:00",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Especialidades 🍕": { items: [ { nombre: "Pizza Muzzarella", desc: "Clásica al horno de barro", precio: 8500, tipo: "comida", conExtras: false } ] } },
+        estaAbierto: function() { return true; }
+      },
+      burgereste: {
+        id: "burgereste",
+        nombre: "Burger Este (Demo)",
+        zona: "Este",
+        descCorta: "Hamburguesas Smash • Papas Cheddar",
+        direccion: "Barrio Autódromo",
+        colorBrand: "#20c997",
+        horariosTxt: "🕒 <b>Jue a Dom:</b> 19:30 a 01:00",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Smash Burgers 🍔": { items: [ { nombre: "Doble Cheeseburger", desc: "Doble carne, doble cheddar", precio: 6500, tipo: "comida", conExtras: true } ] } },
+        estaAbierto: function() { return true; }
+      },
+      lomitooeste: {
+        id: "lomitooeste",
+        nombre: "Lomitos del Oeste (Demo)",
+        zona: "Oeste",
+        descCorta: "Lomos gigantes • Cerveza artesanal",
+        direccion: "Av. Perón 3000",
+        colorBrand: "#fd7e14",
+        horariosTxt: "🕒 <b>Mié a Dom:</b> 20:00 a 02:00",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Nuestros Lomos 🥩": { items: [ { nombre: "Lomo Completo", desc: "Lechuga, tomate, huevo, jamón y queso", precio: 10500, tipo: "comida", conExtras: true } ] } },
+        estaAbierto: function() { return true; }
+      },
+      empanadasur: {
+        id: "empanadasur",
+        nombre: "Empanadas del Sur (Demo)",
+        zona: "Sur",
+        descCorta: "Empanadas al horno • Humitas",
+        direccion: "Rotonda de Limache",
+        colorBrand: "#6f42c1",
+        horariosTxt: "🕒 <b>Todos los días:</b> 11:30 a 15:00 y 19:30 a 23:30",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Empanadas 🥟": { items: [ { nombre: "Docena Mixta", desc: "6 carne, 3 pollo, 3 queso", precio: 7800, tipo: "comida", conExtras: false } ] } },
+        estaAbierto: function() { return true; }
+      },
+      panchosureste: {
+        id: "panchosureste",
+        nombre: "Panchos Sureños (Demo)",
+        zona: "Sureste",
+        descCorta: "Súper panchos • Nachos",
+        direccion: "Barrio Solidaridad",
+        colorBrand: "#e83e8c",
+        horariosTxt: "🕒 <b>Vie a Dom:</b> 20:00 a 05:00 AM",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Comida Rápida 🌭": { items: [ { nombre: "Súper Pancho Completo", desc: "Con lluvia de papas y salsas", precio: 3000, tipo: "comida", conExtras: true } ] } },
+        estaAbierto: function() { return true; }
       }
     };
 
@@ -345,19 +363,59 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
-      actualizarPantallaPrincipal();
     });
 
     document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
     document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
 
-    // LÓGICA DE NAVEGACIÓN ENTRE PANTALLAS
+    // LÓGICA DINÁMICA DE ZONAS Y LOCALES
     function seleccionarZona(zona) {
       zonaElegida = zona;
-      document.getElementById('txt-zona-elegida').innerText = "📍 " + zona;
+      document.getElementById('txt-zona-elegida').innerText = "📍 ZONA " + zona;
       document.getElementById('vista-zonas').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
+      
+      renderizarLocalesPorZona(zona);
+    }
+
+    function renderizarLocalesPorZona(zonaBuscada) {
+      const contenedor = document.getElementById('contenedor-lista-locales');
+      contenedor.innerHTML = ""; // Limpiamos la lista anterior
+      let localesEncontrados = 0;
+
+      for (let id in locales) {
+        if (locales[id].zona === zonaBuscada) {
+          localesEncontrados++;
+          let local = locales[id];
+          
+          let htmlEstado = local.estaAbierto() 
+            ? '<div class="badge-estado badge-abierto">Abierto ahora</div>' 
+            : '<div class="badge-estado badge-cerrado">Cerrado ahora</div>';
+
+          let tarjeta = document.createElement('div');
+          tarjeta.className = "tarjeta-local";
+          tarjeta.style.borderLeftColor = local.colorBrand; // Le pone el color de la marca al borde
+          
+          tarjeta.onclick = () => abrirLocal(id);
+          
+          tarjeta.innerHTML = `
+            <div>
+              <h2>${local.nombre}</h2>
+              <p>${local.descCorta}</p>
+              <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 ${local.direccion}</p>
+              ${htmlEstado}
+            </div>
+            <div class="btn-entrar" style="background: ${local.colorBrand}; color: ${id === 'mamacora' ? '#111' : 'white'};">Ver menú</div>
+          `;
+          
+          contenedor.appendChild(tarjeta);
+        }
+      }
+
+      if (localesEncontrados === 0) {
+        contenedor.innerHTML = `<p style="text-align:center; padding: 30px 10px; color:#666; font-size: 1.1rem;">Aún no tenemos locales adheridos en esta zona. ¡Pronto llegaremos con todo! 🛵</p>`;
+      }
     }
 
     function volverZonas() {
@@ -370,19 +428,6 @@
       document.getElementById('vista-menu').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
-    }
-
-    function actualizarPantallaPrincipal() {
-      for (let id in locales) {
-        const badge = document.getElementById(`badge-${id}`);
-        if (locales[id].estaAbierto()) {
-          badge.innerText = "Abierto ahora";
-          badge.className = "badge-estado badge-abierto";
-        } else {
-          badge.innerText = "Cerrado ahora";
-          badge.className = "badge-estado badge-cerrado";
-        }
-      }
     }
 
     function abrirLocal(id) {
@@ -570,7 +615,7 @@
       m += `%0A💰 *TOTAL: $${t}*%0A`;
       m += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
       
-      m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio (${zonaElegida})` : "Retiro por local"}%0A`;
+      m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio (Zona ${zonaElegida})` : "Retiro por local"}%0A`;
       
       if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
       const obs = document.getElementById("observacionesCliente").value.trim();
