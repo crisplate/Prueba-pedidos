@@ -5,6 +5,10 @@
   <title>Dale pué - Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d9232d">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1046/1046784.png">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -17,14 +21,22 @@
     .header-plataforma p { color: #555; margin: 5px 0; font-size: 1.1rem; }
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
 
-    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    /* TARJETAS CON EFECTO MODERNIZADO */
+    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .tarjeta-local:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
+    
+    /* BOTON DE ENTRAR MODERNIZADO */
     .btn-entrar { background: #d9232d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(217,35,45,0.3); }
 
-    /* VISTA MENÚ */
+    .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
+    .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .badge-cerrado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
+    .horarios-texto { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; margin-top: 10px; padding: 8px; border-radius: 8px; text-align: left; display: block;}
 
     .container { max-width: 800px; margin: auto; }
     .categoria-titulo { border-bottom: 2px solid #ffb800; padding-bottom: 5px; color: #333; margin-top: 30px; }
@@ -42,66 +54,81 @@
     
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
     
     .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
-    .btn-gps.exito { background: #28a745; color: white; }
+    .btn-gps.exito { background: #28a745 !important; color: white !important; }
     .btn-mapa { background: #007bff; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
+    .btn-mapa.exito { background: #28a745 !important; color: white !important; }
     
+    .btn-ubi-local { background: #17a2b8; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px; width: 100%; display: none; }
+
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
 
-    /* MODALES GENERALES */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
     
-    /* MODAL EXTRAS */
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
-    .opcion-check input { transform: scale(1.2); }
     .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
 
-    /* MAPA */
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
+
+    .banner-instalacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); display: none; align-items: center; justify-content: space-between; width: 90%; max-width: 400px; z-index: 2000; border: 2px solid #d9232d; }
+    .banner-instalacion p { margin: 0; font-weight: bold; color: #111; font-size: 0.95rem; flex-grow: 1; padding-right: 10px; }
+    .btn-instalar { background: #d9232d; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-cerrar-banner { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; padding: 0 0 0 10px; }
   </style>
 </head>
 <body>
 
+  <div id="bannerInstalacion" class="banner-instalacion">
+    <p>📲 ¡Instalá Dale pué y pedí al toque!</p>
+    <button class="btn-instalar" id="btnInstalar">Instalar</button>
+    <button class="btn-cerrar-banner" onclick="cerrarBanner()">✖</button>
+  </div>
+
   <div class="container">
-    
     <div id="vista-locales">
+      <!-- BLOQUE DE IDENTIDAD ACTUALIZADO -->
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
         <p style="font-weight: bold; color: #111;">Lo nuestro, al toque.</p>
         <hr class="divisor-header">
         <p style="font-size: 0.9rem;">Elegí un local y armá tu pedido en segundos.</p>
       </div>
+      
       <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
         <div>
           <h2>El Oeste</h2>
-          <p>Sandwichería • Minutas • Bebidas</p>
-          <p style="color: #888; font-size: 0.8rem;">📍 Leguizamón 1594</p>
+          <p>Sandwichería • Minutas</p>
+          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Leguizamón 1594</p>
+          <div id="badge-eloeste" class="badge-estado">Cargando...</div>
         </div>
         <div class="btn-entrar">Ver menú</div>
+      </div>
+
+      <div class="tarjeta-local" onclick="abrirLocal('mamacora')" style="border-left-color: #ffb800;">
+        <div>
+          <h2>Mama Cora</h2>
+          <p>Empanadas Salteñas • Pizzas</p>
+          <p style="color: #888; font-size: 0.8rem; margin-bottom: 0;">📍 Centro de Salta</p>
+          <div id="badge-mamacora" class="badge-estado">Cargando...</div>
+        </div>
+        <div class="btn-entrar" style="background: #ffb800; color: #111;">Ver menú</div>
       </div>
     </div>
 
     <div id="vista-menu" style="display: none;">
-      <div class="header-local">
+      <div class="header-local" id="menu-header">
         <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
-        <h1>EL OESTE</h1>
-        <p>Sandwichería - Leguizamón 1594</p>
+        <h1 id="menu-nombre-local" style="margin-bottom: 5px;">CARGANDO...</h1>
+        <div id="menu-horarios" class="horarios-texto"></div>
       </div>
 
-      <h2 class="categoria-titulo">Tu Sándwich Favorito 🥪</h2>
-      <div id="menu-sandwiches"></div>
-      
-      <h2 class="categoria-titulo">Nuestras Minutas 🍽️</h2>
-      <div id="menu-minutas"></div>
-      
-      <h2 class="categoria-titulo">Bebidas 🥤</h2>
-      <div id="menu-bebidas"></div>
+      <div id="contenedor-categorias"></div>
 
       <div id="carrito">
         <div class="header-carrito">
@@ -123,13 +150,13 @@
             <option value="delivery">Envío a domicilio</option>
             <option value="retiro">Retiro por el local</option>
           </select>
+          <button id="btnUbiLocal" class="btn-ubi-local" onclick="abrirUbicacionLocal()">📍 Ver ubicación del local en Google Maps</button>
         </div>
         
         <div id="seccionDireccion">
           <div class="form-group">
             <label>Dirección:</label>
             <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
-            
             <div class="grid-botones-ubicacion">
               <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPS()">📍 Usar GPS</button>
               <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button>
@@ -141,8 +168,13 @@
           <label>Pago:</label>
           <select id="metodoPago"><option>Efectivo</option><option>Transferencia / Billetera Virtual</option></select>
         </div>
+
+        <div class="form-group">
+          <label>Observaciones (Opcional):</label>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, la hamburguesa sin lechuga..."></textarea>
+        </div>
         
-        <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
+        <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
       </div>
     </div>
   </div>
@@ -150,17 +182,12 @@
   <div id="modalExtras" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
-      
-      <div class="seccion-modal-titulo"><h4>Aderezos (Seleccioná los que quieras)</h4></div>
-      <div class="grid-aderezos" id="contenedor-aderezos"></div>
-      
-      <div class="seccion-modal-titulo"><h4>Adicionales (Opcional)</h4></div>
-      <div id="contenedor-adicionales">
-        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
+      <div id="modal-cuerpo-extras">
+        <div class="seccion-modal-titulo"><h4>Aderezos</h4></div>
+        <div class="grid-aderezos" id="contenedor-aderezos"></div>
+        <div class="seccion-modal-titulo"><h4>Adicionales</h4></div>
+        <div id="contenedor-adicionales"></div>
       </div>
-      
       <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
       <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModalExtras()">Cancelar</button>
     </div>
@@ -169,11 +196,9 @@
   <div id="modalMapaContenedor" class="modal-overlay">
     <div class="modal-content">
       <h3 style="margin-top:0;">Ubicá tu casa 🏠</h3>
-      <p style="font-size: 0.85rem; color: #666;">Mové el mapa para ubicar el marcador rojo exactamente en tu domicilio.</p>
-      
+      <p style="font-size: 0.85rem; color: #666;">Mové el mapa para ubicar el marcador rojo.</p>
       <div id="map"></div>
-      
-      <button class="btn-whatsapp" style="background:#28a745; margin-top:10px;" onclick="confirmarMapa()">✅ Confirmar esta ubicación</button>
+      <button class="btn-whatsapp" style="background:#28a745; margin-top:10px;" onclick="confirmarMapa()">✅ Confirmar ubicación</button>
       <button class="btn-gps" style="background:#f1f1f1; margin-top:10px;" onclick="cerrarModalMapa()">Cancelar</button>
     </div>
   </div>
@@ -181,99 +206,175 @@
   <script>
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    const menuElOeste = {
-      sandwiches: [
-        { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida" },
-        { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000, tipo: "comida" },
-        { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, lechuga, tomate, cebolla + 300g papas", precio: 18000, tipo: "comida" },
-        { nombre: "Gigante tucumana", desc: "2 milanesas 200g, lechuga, tomate, huevo, cebolla + 500g papas", precio: 22000, tipo: "comida" },
-        { nombre: "Milanesa XL", desc: "300g carne, lechuga, tomate, huevo, cebolla + 600g papas", precio: 22000, tipo: "comida" },
-        { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida" },
-        { nombre: "Hamburguesa Paty", desc: "1 medallón 125g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida" },
-        { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida" },
-        { nombre: "Lomo gigante p/2", desc: "350g carne, lechuga, tomate, huevo + 500g papas", precio: 19000, tipo: "comida" },
-        { nombre: "Lomo XL", desc: "450g carne, lechuga, tomate, huevo + 600g papas", precio: 25000, tipo: "comida" }
-      ],
-      minutas: [
-        { nombre: "Milanesa al plato", desc: "Clásica", precio: 11500, tipo: "comida" },
-        { nombre: "Milanesa a caballo", desc: "Con dos huevos fritos", precio: 12500, tipo: "comida" },
-        { nombre: "Milanesa napolitana", desc: "Salsa, jamón y queso", precio: 12500, tipo: "comida" },
-        { nombre: "Milanesa napolitana especial", desc: "Completa", precio: 13500, tipo: "comida" },
-        { nombre: "Lomo al plato", desc: "Porción de carne", precio: 10000, tipo: "comida" },
-        { nombre: "Lomo a caballo", desc: "Con huevos fritos", precio: 11500, tipo: "comida" },
-        { nombre: "Lomo a la frontera", desc: "Especialidad", precio: 11500, tipo: "comida" },
-        { nombre: "Chacarero p/2", desc: "Para compartir", precio: 18000, tipo: "comida" },
-        { nombre: "Napolitana para compartir", desc: "Súper tamaño", precio: 20000, tipo: "comida" }
-      ],
-      bebidas: [
-        { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol" },
-        { nombre: "Mirinda Manzana 500ml", desc: "", precio: 3000, tipo: "sinalcohol" },
-        { nombre: "Agua 500ml", desc: "", precio: 2000, tipo: "sinalcohol" },
-        { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol" },
-        { nombre: "Gaseosa 2L", desc: "Línea Pepsi", precio: 6000, tipo: "sinalcohol" },
-        { nombre: "Agua 2L / Saborizada 1.5L", desc: "", precio: 4000, tipo: "sinalcohol" },
-        { nombre: "Cerveza 473ml", desc: "Rubia/Negra", precio: 3000, tipo: "alcohol" },
-        { nombre: "Cerveza 710ml", desc: "", precio: 5000, tipo: "alcohol" }
-      ]
+    const locales = {
+      eloeste: {
+        id: "eloeste",
+        nombre: "El Oeste",
+        horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
+        whatsapp: "5491124500967",
+        mapaUrl: "https://maps.app.goo.gl/x6YWoLYC24iEZLNV8", 
+        menu: {
+          "Tu Sándwich Favorito 🥪": {
+            items: [
+              { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa súper tucumana", desc: "3 milanesas 120g, completa + 300g papas", precio: 18000, tipo: "comida", conExtras: true },
+              { nombre: "Gigante tucumana", desc: "2 milanesas 200g, completa + 500g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa XL", desc: "300g carne, completa + 600g papas", precio: 22000, tipo: "comida", conExtras: true },
+              { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
+              { nombre: "Hamburguesa Paty", desc: "1 medallón 125g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo clásico", desc: "200g carne, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo gigante p/2", desc: "350g carne, completa + 500g papas", precio: 19000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo XL", desc: "450g carne, completa + 600g papas", precio: 25000, tipo: "comida", conExtras: true }
+            ]
+          },
+          "Nuestras Minutas 🍽️": {
+            items: [
+              { nombre: "Milanesa al plato", desc: "Clásica", precio: 11500, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa a caballo", desc: "Con dos huevos fritos", precio: 12500, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa napolitana", desc: "Salsa, jamón y queso", precio: 12500, tipo: "comida", conExtras: true },
+              { nombre: "Milanesa napolitana especial", desc: "Completa", precio: 13500, tipo: "comida", conExtras: true },
+              { nombre: "Lomo al plato", desc: "Porción de carne", precio: 10000, tipo: "comida", conExtras: true },
+              { nombre: "Lomo a caballo", desc: "Con huevos fritos", precio: 11500, tipo: "comida", conExtras: true },
+              { nombre: "Lomo a la frontera", desc: "Especialidad", precio: 11500, tipo: "comida", conExtras: true },
+              { nombre: "Chacarero p/2", desc: "Para compartir", precio: 18000, tipo: "comida", conExtras: true },
+              { nombre: "Napolitana para compartir", desc: "Súper tamaño", precio: 20000, tipo: "comida", conExtras: true }
+            ]
+          },
+          "Bebidas 🥤": {
+            items: [
+              { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
+              { nombre: "Gaseosa 1.5L", desc: "Línea Coca", precio: 7000, tipo: "sinalcohol", conExtras: false },
+              { nombre: "Cerveza 710ml", desc: "Rubia/Negra", precio: 5000, tipo: "alcohol", conExtras: false }
+            ]
+          }
+        },
+        estaAbierto: function() {
+          const ahora = new Date();
+          let h = ahora.getHours() * 100 + ahora.getMinutes();
+          let d = ahora.getDay(); 
+          let dt = (h < 1200) ? (d === 0 ? 6 : d - 1) : d;
+          return h >= 1200 || h < ((dt === 5 || dt === 6) ? 700 : 400);
+        }
+      },
+      mamacora: {
+        id: "mamacora",
+        nombre: "Mama Cora",
+        horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
+        whatsapp: "5491124500967", 
+        mapaUrl: "https://maps.app.goo.gl/MqxUqaRMeYmsEU7r7", 
+        menu: {
+          "Empanadas Salteñas 🥟": {
+            items: [
+              { nombre: "Carne Suave (Docena)", desc: "Carne picada a cuchillo", precio: 8000, tipo: "comida", conExtras: false },
+              { nombre: "Carne Picante (Docena)", desc: "Con ají del valle", precio: 8000, tipo: "comida", conExtras: false },
+              { nombre: "Queso y Cebolla (Docena)", desc: "Bien cargadas", precio: 7500, tipo: "comida", conExtras: false }
+            ]
+          },
+          "Pizzas 🍕": {
+            items: [
+              { nombre: "Muzzarella", desc: "8 porciones", precio: 9000, tipo: "comida", conExtras: false },
+              { nombre: "Especial", desc: "Jamón y morrón", precio: 11000, tipo: "comida", conExtras: false },
+              { nombre: "Calabresa", desc: "Con longaniza", precio: 12000, tipo: "comida", conExtras: false }
+            ]
+          }
+        },
+        estaAbierto: function() {
+          const ahora = new Date();
+          let h = ahora.getHours() * 100 + ahora.getMinutes();
+          return (h >= 1200 && h < 1700) || (h >= 1800 && h <= 2359);
+        }
+      }
     };
 
     let carrito = [];
     let productoTemporal = null;
+    let localActivo = null;
     let linkGPS = "";
-    
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
 
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
+      document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
+    });
+
+    document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
+    document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
+
+    window.addEventListener('popstate', () => {
+      if (window.location.hash !== '#menu') {
+        document.getElementById('vista-menu').style.display = 'none';
+        document.getElementById('vista-locales').style.display = 'block';
+        actualizarPantallaPrincipal();
+      }
+    });
+
+    function actualizarPantallaPrincipal() {
+      for (let id in locales) {
+        const badge = document.getElementById(`badge-${id}`);
+        if (locales[id].estaAbierto()) {
+          badge.innerText = "Abierto ahora";
+          badge.className = "badge-estado badge-abierto";
+        } else {
+          badge.innerText = "Cerrado ahora";
+          badge.className = "badge-estado badge-cerrado";
+        }
+      }
+    }
+
     function abrirLocal(id) {
+      localActivo = locales[id];
+      linkGPS = "";
+      
+      const btnG = document.getElementById("btnGPS");
+      btnG.innerText = "📍 Usar GPS";
+      btnG.className = "btn-gps";
+      const btnM = document.getElementById("btnMapa");
+      btnM.innerText = "🗺️ Buscar en mapa";
+      btnM.className = "btn-mapa";
+
+      let cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
+      if (cg && (Date.now() - cg.tiempo < 300000) && cg.localId === localActivo.id) {
+        carrito = cg.items;
+      } else {
+        carrito = [];
+        localStorage.removeItem('dp_carrito');
+      }
+      
+      actualizarCarrito();
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
-    }
+      if(window.location.hash !== '#menu') history.pushState({ vista: 'menu' }, '', '#menu');
 
-    function volverInicio() {
-      document.getElementById('vista-menu').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-      window.scrollTo(0,0);
-    }
+      document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
+      document.getElementById('menu-horarios').innerHTML = localActivo.horariosTxt;
 
-    // ARREGLO DEFINITIVO DE LA FUNCIÓN QUE ROPMÍA LOS BOTONES
-    function renderizarMenu() {
-      const render = (arr, id, conExtras) => {
-        const cont = document.getElementById(id);
-        cont.innerHTML = "";
-        
-        arr.forEach(p => {
-          const d = document.createElement("div");
-          d.className = "card";
-          
-          // Agregamos la información en texto limpio
-          d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
-          
-          // Creamos el botón "a mano" usando JavaScript. Esto EVITA que haya errores por chocar las comillas
-          const btn = document.createElement("button");
+      const contCat = document.getElementById('contenedor-categorias');
+      contCat.innerHTML = "";
+      for (let cat in localActivo.menu) {
+        const h2 = document.createElement('h2');
+        h2.className = "categoria-titulo";
+        h2.innerText = cat;
+        contCat.appendChild(h2);
+        localActivo.menu[cat].items.forEach(p => {
+          const card = document.createElement('div');
+          card.className = "card";
+          card.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
+          const btn = document.createElement('button');
           btn.className = "btn-agregar";
           btn.innerText = "Agregar";
-          
-          // Le decimos exactamente qué hacer cuando se hace clic, sin pasarlo como texto
-          btn.onclick = () => {
-            if (conExtras) {
-              abrirModalExtras(p);
-            } else {
-              agregarDirecto(p);
-            }
-          };
-          
-          // Metemos el botón adentro de la tarjeta
-          d.appendChild(btn);
-          cont.appendChild(d);
+          btn.onclick = () => { if (p.conExtras) { abrirModalExtras(p); } else { agregarDirecto(p); } };
+          card.appendChild(btn);
+          contCat.appendChild(card);
         });
-      };
-      
-      render(menuElOeste.sandwiches, "menu-sandwiches", true);
-      render(menuElOeste.minutas, "menu-minutas", true);
-      render(menuElOeste.bebidas, "menu-bebidas", false);
+      }
+      validarBotonEnviar();
     }
+
+    function volverInicio() { history.back(); }
 
     function agregarDirecto(p) {
       carrito.push({ ...p, extras: [], aderezos: [], precioFinal: p.precio });
@@ -288,25 +389,25 @@
       aderezosLista.forEach(a => { 
         contAderezos.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; 
       });
-      document.querySelectorAll(".extra-cb").forEach(cb => cb.checked = false);
+      document.getElementById("contenedor-adicionales").innerHTML = `
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
+        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>
+      `;
       document.getElementById("modalExtras").style.display = "flex";
     }
 
-    function cerrarModalExtras() { 
-      document.getElementById("modalExtras").style.display = "none"; 
-    }
+    function cerrarModalExtras() { document.getElementById("modalExtras").style.display = "none"; }
 
     function confirmarExtras() {
       let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
-      let totalP = pFinal.precio;
-      
+      let tp = pFinal.precio;
       document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
       document.querySelectorAll(".extra-cb:checked").forEach(cb => {
         pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
-        totalP += parseInt(cb.value);
+        tp += parseInt(cb.value);
       });
-      
-      pFinal.precioFinal = totalP;
+      pFinal.precioFinal = tp;
       carrito.push(pFinal);
       cerrarModalExtras();
       actualizarCarrito();
@@ -314,155 +415,113 @@
 
     function actualizarCarrito() {
       const lista = document.getElementById("listaCarrito");
-      const btnVaciar = document.getElementById("btnVaciar");
       lista.innerHTML = "";
-      let total = 0;
-      
-      if (carrito.length > 0) {
-        btnVaciar.style.display = "block";
-      } else {
-        btnVaciar.style.display = "none";
-      }
-      
+      let t = 0;
+      document.getElementById("btnVaciar").style.display = (carrito.length > 0) ? "block" : "none";
       carrito.forEach((item, i) => {
         let txt = "";
-        if (item.aderezos && item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
-        if (item.extras && item.extras.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
-        
+        if (item.aderezos.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
+        if (item.extras.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
           <div style="display:flex; justify-content:space-between">
             <strong>${item.nombre}</strong>
-            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; font-size:1.2rem; margin-left:10px;">X</b></span>
+            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer;">X</b></span>
           </div>${txt}
         </div>`;
-        total += item.precioFinal;
+        t += item.precioFinal;
       });
-      document.getElementById("totalCarrito").innerText = "Total: $" + total;
+      document.getElementById("totalCarrito").innerText = "Total: $" + t;
+      if(localActivo) localStorage.setItem('dp_carrito', JSON.stringify({ items: carrito, tiempo: Date.now(), localId: localActivo.id }));
     }
 
-    function confirmarVaciarCarrito() {
-      if (confirm("¿Estás seguro de que querés vaciar todo tu pedido?")) {
-        carrito = [];
-        actualizarCarrito();
-      }
-    }
+    function confirmarVaciarCarrito() { if (confirm("¿Vaciar todo?")) { carrito = []; actualizarCarrito(); } }
 
     function toggleDireccion() { 
-      document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; 
+      const t = document.getElementById("tipoEntrega").value;
+      document.getElementById("seccionDireccion").style.display = (t === "retiro") ? "none" : "block";
+      document.getElementById("btnUbiLocal").style.display = (t === "retiro") ? "block" : "none";
     }
+
+    function abrirUbicacionLocal() { if (localActivo) window.open(localActivo.mapaUrl, '_blank'); }
 
     function obtenerUbicacionGPS() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            btn.innerText = "✅ GPS Listo";
-            btn.className = "btn-gps exito";
-            document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
-            document.getElementById("btnMapa").className = "btn-mapa";
-          },
-          () => { 
-            alert("No se pudo obtener la ubicación. Intentá con la opción 'Buscar en mapa'."); 
-            btn.innerText = "📍 Reintentar GPS"; 
-          }
-        );
-      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+          btn.innerText = "✅ GPS Listo";
+          btn.classList.add("exito");
+          document.getElementById("btnMapa").classList.remove("exito");
+          document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
+        },
+        () => { alert("No se pudo obtener el GPS."); btn.innerText = "📍 Reintentar GPS"; }
+      );
     }
 
     function abrirModalMapa() {
       document.getElementById("modalMapaContenedor").style.display = "flex";
-      
-      const latSalta = -24.7821;
-      const lngSalta = -65.4232;
-
       if (!mapaInstance) {
-        mapaInstance = L.map('map').setView([latSalta, lngSalta], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapaInstance);
-        
-        marcador = L.marker([latSalta, lngSalta], { draggable: true }).addTo(mapaInstance);
-        coordsTemp = { lat: latSalta, lng: lngSalta };
-
-        marcador.on('dragend', function(e) {
-          coordsTemp = marcador.getLatLng();
-        });
-        
-        mapaInstance.on('click', function(e) {
-          marcador.setLatLng(e.latlng);
-          coordsTemp = e.latlng;
-        });
+        mapaInstance = L.map('map').setView([-24.7821, -65.4232], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaInstance);
+        marcador = L.marker([-24.7821, -65.4232], { draggable: true }).addTo(mapaInstance);
+        mapaInstance.on('click', (e) => { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
+        marcador.on('dragend', () => { coordsTemp = marcador.getLatLng(); });
       }
-      
-      setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
+      setTimeout(() => mapaInstance.invalidateSize(), 300);
     }
 
     function confirmarMapa() {
-      if (coordsTemp) {
-        linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
-        
-        const btnM = document.getElementById("btnMapa");
-        btnM.innerText = "✅ Mapa Guardado";
-        btnM.className = "btn-mapa exito";
-        btnM.style.background = "#28a745";
-        
-        document.getElementById("btnGPS").innerText = "📍 Usar GPS";
-        document.getElementById("btnGPS").className = "btn-gps";
-      }
+      const c = coordsTemp || marcador.getLatLng();
+      linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
+      const btnM = document.getElementById("btnMapa");
+      btnM.innerText = "✅ Mapa Guardado";
+      btnM.classList.add("exito");
+      document.getElementById("btnGPS").classList.remove("exito");
+      document.getElementById("btnGPS").innerText = "📍 Usar GPS";
       cerrarModalMapa();
+    }
+
+    function cerrarModalMapa() { document.getElementById("modalMapaContenedor").style.display = "none"; }
+
+    function validarBotonEnviar() {
+      const b = document.getElementById('btnEnviarWhatsapp');
+      if (!localActivo.estaAbierto()) {
+        b.innerText = "Local Cerrado ⛔"; b.disabled = true; b.style.background = "#999";
+      } else {
+        b.innerText = "Hacer pedido por WhatsApp"; b.disabled = false; b.style.background = "#25D366";
+      }
     }
 
     function enviarPedido() {
       const n = document.getElementById("nombreCliente").value.trim();
+      const se = document.getElementById("tipoEntrega").value;
+      const di = document.getElementById("direccionCliente").value.trim();
+      if(!n || carrito.length === 0) { alert("Completá nombre y carrito."); return; }
+      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS."); return; }
       
-      if(!n || carrito.length === 0) {
-        alert("Por favor, completá tu nombre y agregá algo al carrito.");
-        return;
-      }
-      
-      let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
+      let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
-      
       carrito.forEach(i => {
-        let iconoItem = "🍔"; 
-        if(i.tipo === "sinalcohol") iconoItem = "🥤";
-        if(i.tipo === "alcohol") iconoItem = "🍺";
-
-        m += `${iconoItem} *${i.nombre}* ($${i.precioFinal})%0A`;
-        
-        if (i.aderezos && i.aderezos.length > 0) {
-          m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
-        }
-        if (i.extras && i.extras.length > 0) {
-          let nombresExtras = i.extras.map(e => e.n).join(", ");
-          m += `   ⚠️ Extras: ${nombresExtras}%0A`;
-        }
-        
+        let ic = (i.tipo === "sinalcohol") ? "🥤" : (i.tipo === "alcohol") ? "🍺" : (localActivo.id === "mamacora" ? "🥟" : "🍔");
+        m += `${ic} *${i.nombre}* ($${i.precioFinal})%0A`;
+        if (i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`; 
+        if (i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
         t += i.precioFinal;
       });
+      m += `%0A💰 *TOTAL: $${t}*%0A`;
+      m += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
+      m += `🛵 *Entrega:* ${se === "delivery" ? "A domicilio" : "Retiro por local"}%0A`;
+      if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
+      const obs = document.getElementById("observacionesCliente").value.trim();
+      if(obs) m += `%0A📝 *Observaciones:* ${obs}%0A`;
       
-      m += `%0A💰 *TOTAL: Total: $${t}*%0A`;
-      
-      const selectMetodo = document.getElementById("metodoPago").value;
-      const iconoPago = selectMetodo.includes("Efectivo") ? "💵" : "📱";
-      m += `💳 *Pago:* ${selectMetodo} ${iconoPago}%0A`;
-      
-      const selectEntrega = document.getElementById("tipoEntrega");
-      const txtEntrega = selectEntrega.options[selectEntrega.selectedIndex].text;
-      m += `🛵 *Entrega:* ${txtEntrega}%0A`;
-      
-      const direccion = document.getElementById("direccionCliente").value.trim();
-      if(direccion) m += `🏠 *Dirección:* ${direccion}%0A`;
-      
-      if(linkGPS) m += `📍 *Mapa:* ${linkGPS}`;
-      
-      const numeroWhatsApp = "5491124500967";
-      
-      window.open(`https://wa.me/${numeroWhatsApp}?text=${m}`, "_blank");
+      localStorage.removeItem('dp_carrito');
+      window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
 
-    renderizarMenu();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    actualizarPantallaPrincipal();
   </script>
 </body>
 </html>
