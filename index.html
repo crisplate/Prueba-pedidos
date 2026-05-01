@@ -16,23 +16,31 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
     
-    .header-plataforma { text-align: center; margin-bottom: 30px; padding-top: 10px; }
-    .logo-principal { width: 100px; height: 100px; object-fit: cover; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(217,35,45,0.2); }
+    /* VISTA ZONAS Y PRINCIPAL */
+    .header-plataforma { text-align: center; margin-bottom: 25px; padding-top: 10px; }
+    .logo-principal { width: 110px; height: 110px; object-fit: cover; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(217,35,45,0.2); }
     .header-plataforma h1 { color: #d9232d; font-size: 2.8rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
     .header-plataforma p { color: #555; margin: 5px 0; font-size: 1.1rem; }
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
 
+    /* GRILLA DE ZONAS (NUEVO CONCEPTO) */
+    .grid-zonas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 5px; }
+    .btn-zona { background: white; border: 2px solid transparent; border-radius: 15px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: transform 0.2s ease, border-color 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .btn-zona:active { transform: scale(0.95); border-color: #d9232d; }
+    .btn-zona-icono { font-size: 1.8rem; margin-bottom: 8px; }
+    .btn-zona h3 { margin: 0; font-size: 1rem; color: #111; font-weight: bold; }
+
+    /* TARJETAS LOCALES */
     .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 8px solid #d9232d; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .tarjeta-local:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
-    
     .btn-entrar { background: #d9232d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(217,35,45,0.3); }
 
     .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
     .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .badge-cerrado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-    .cartel-cerrado { background: #dc3545; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(220,53,69,0.2); }
+    /* VISTA MENÚ */
     .header-local { text-align: center; background: #111; color: #ffb800; padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
     .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
     .horarios-texto { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem; margin-top: 10px; padding: 8px; border-radius: 8px; text-align: left; display: block;}
@@ -90,15 +98,52 @@
   </div>
 
   <div class="container">
-    <div id="vista-locales">
+    
+    <!-- PANTALLA 1: SELECCIÓN DE ZONA -->
+    <div id="vista-zonas">
       <div class="header-plataforma">
         <img src="logo.png" alt="Logo Dale pué" class="logo-principal" onerror="this.style.display='none'"> 
         <h1>Dale pué 🛵</h1>
         <p style="font-weight: bold; color: #111;">Lo nuestro, al toque.</p>
         <hr class="divisor-header">
-        <p style="font-size: 0.9rem;">Elegí un local y armá tu pedido en segundos.</p>
+        <p style="font-size: 0.95rem;">¿A dónde llevamos tu pedido hoy?</p>
       </div>
-      
+
+      <div class="grid-zonas">
+        <div class="btn-zona" onclick="seleccionarZona('Norte')">
+          <div class="btn-zona-icono">📍</div>
+          <h3>Norte</h3>
+        </div>
+        <div class="btn-zona" onclick="seleccionarZona('Este')">
+          <div class="btn-zona-icono">📍</div>
+          <h3>Este</h3>
+        </div>
+        <div class="btn-zona" onclick="seleccionarZona('Oeste')">
+          <div class="btn-zona-icono">📍</div>
+          <h3>Oeste</h3>
+        </div>
+        <div class="btn-zona" onclick="seleccionarZona('Sur')">
+          <div class="btn-zona-icono">📍</div>
+          <h3>Sur</h3>
+        </div>
+        <div class="btn-zona" onclick="seleccionarZona('Sureste')">
+          <div class="btn-zona-icono">📍</div>
+          <h3>Sureste</h3>
+        </div>
+        <div class="btn-zona" onclick="seleccionarZona('Centro')">
+          <div class="btn-zona-icono">🏙️</div>
+          <h3>Centro</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2: LISTADO DE LOCALES -->
+    <div id="vista-locales" style="display: none;">
+      <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn-gps" style="background: #e0e0e0; color: #333; padding: 8px 12px; margin: 0;" onclick="volverZonas()">⬅ Cambiar Zona</button>
+        <span id="txt-zona-elegida" style="font-weight: bold; color: #d9232d; font-size: 0.9rem;"></span>
+      </div>
+
       <div class="tarjeta-local" onclick="abrirLocal('eloeste')">
         <div>
           <h2>El Oeste</h2>
@@ -120,9 +165,10 @@
       </div>
     </div>
 
+    <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
     <div id="vista-menu" style="display: none;">
       <div class="header-local" id="menu-header">
-        <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
+        <button class="btn-volver" onclick="volverLocales()">⬅ Volver</button>
         <h1 id="menu-nombre-local" style="margin-bottom: 5px;">CARGANDO...</h1>
         <div id="menu-horarios" class="horarios-texto"></div>
       </div>
@@ -154,7 +200,7 @@
         
         <div id="seccionDireccion">
           <div class="form-group">
-            <label>Dirección:</label>
+            <label>Dirección exacta:</label>
             <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
             <div class="grid-botones-ubicacion">
               <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPS()">📍 Usar GPS</button>
@@ -178,6 +224,7 @@
     </div>
   </div>
 
+  <!-- MODALES -->
   <div id="modalExtras" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
@@ -289,6 +336,7 @@
     let carrito = [];
     let productoTemporal = null;
     let localActivo = null;
+    let zonaElegida = "";
     let linkGPS = "";
     let mapaInstance = null;
     let marcador = null;
@@ -297,18 +345,32 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
+      actualizarPantallaPrincipal();
     });
 
     document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
     document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
 
-    window.addEventListener('popstate', () => {
-      if (window.location.hash !== '#menu') {
-        document.getElementById('vista-menu').style.display = 'none';
-        document.getElementById('vista-locales').style.display = 'block';
-        actualizarPantallaPrincipal();
-      }
-    });
+    // LÓGICA DE NAVEGACIÓN ENTRE PANTALLAS
+    function seleccionarZona(zona) {
+      zonaElegida = zona;
+      document.getElementById('txt-zona-elegida').innerText = "📍 " + zona;
+      document.getElementById('vista-zonas').style.display = 'none';
+      document.getElementById('vista-locales').style.display = 'block';
+      window.scrollTo(0,0);
+    }
+
+    function volverZonas() {
+      document.getElementById('vista-locales').style.display = 'none';
+      document.getElementById('vista-zonas').style.display = 'block';
+      window.scrollTo(0,0);
+    }
+
+    function volverLocales() {
+      document.getElementById('vista-menu').style.display = 'none';
+      document.getElementById('vista-locales').style.display = 'block';
+      window.scrollTo(0,0);
+    }
 
     function actualizarPantallaPrincipal() {
       for (let id in locales) {
@@ -346,7 +408,6 @@
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
-      if(window.location.hash !== '#menu') history.pushState({ vista: 'menu' }, '', '#menu');
 
       document.getElementById('menu-nombre-local').innerText = localActivo.nombre;
       document.getElementById('menu-horarios').innerHTML = localActivo.horariosTxt;
@@ -372,8 +433,6 @@
       }
       validarBotonEnviar();
     }
-
-    function volverInicio() { history.back(); }
 
     function agregarDirecto(p) {
       carrito.push({ ...p, extras: [], aderezos: [], precioFinal: p.precio });
@@ -424,7 +483,7 @@
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
           <div style="display:flex; justify-content:space-between">
             <strong>${item.nombre}</strong>
-            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer;">X</b></span>
+            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; margin-left:8px;">X</b></span>
           </div>${txt}
         </div>`;
         t += item.precioFinal;
@@ -496,7 +555,7 @@
       const n = document.getElementById("nombreCliente").value.trim();
       const se = document.getElementById("tipoEntrega").value;
       const di = document.getElementById("direccionCliente").value.trim();
-      if(!n || carrito.length === 0) { alert("Completá nombre y carrito."); return; }
+      if(!n || carrito.length === 0) { alert("Completá nombre y agregá algo al carrito."); return; }
       if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS."); return; }
       
       let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
@@ -510,7 +569,9 @@
       });
       m += `%0A💰 *TOTAL: $${t}*%0A`;
       m += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
-      m += `🛵 *Entrega:* ${se === "delivery" ? "A domicilio" : "Retiro por local"}%0A`;
+      
+      m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio (${zonaElegida})` : "Retiro por local"}%0A`;
+      
       if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
       const obs = document.getElementById("observacionesCliente").value.trim();
       if(obs) m += `%0A📝 *Observaciones:* ${obs}%0A`;
@@ -520,7 +581,6 @@
     }
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-    actualizarPantallaPrincipal();
   </script>
 </body>
 </html>
