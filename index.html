@@ -287,7 +287,7 @@
 
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // --- BASE DE DATOS (Con Coordenadas GPS para el radar) ---
+    // --- BASE DE DATOS ---
     const locales = {
       eloeste: {
         id: "eloeste", nombre: "El Oeste", zona: "Centro", descCorta: "Sandwichería • Minutas",
@@ -349,22 +349,26 @@
     let marcador = null;
     let coordsTemp = null;
 
-    // --- ARREGLO DE FLECHA DE RETROCESO (HISTORY API) ---
+    // --- ARRANQUE Y LIMPIEZA DE MEMORIA TRAMPOSA ---
     document.addEventListener("DOMContentLoaded", () => {
       if (localStorage.getItem('dp_darkmode') === 'true') {
         document.body.classList.add('dark-mode');
         document.getElementById('btnThemeToggle').innerText = '☀️';
       }
+      
+      // SOLO guardamos/restauramos el nombre. La dirección y el GPS mueren al salir por seguridad logística.
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
-      document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
-
-      // Inyectamos el estado inicial en el historial del celular
+      document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
+      
+      // Forzamos al navegador a borrar los campos que intenta recordar automáticamente
+      document.getElementById("inputBuscador").value = "";
+      document.getElementById("direccionCliente").value = "";
+      
       history.replaceState({ vista: 'inicio' }, '', '#inicio');
     });
 
-    // Escuchamos si el cliente toca "Atrás" en su celular
+    // --- HISTORY API: NAVEGACIÓN FLUIDA CON LA FLECHA DEL CELU ---
     window.addEventListener('popstate', (e) => {
-      // Por las dudas, si aprieta atrás, cerramos los modales si están abiertos
       cerrarModalExtras();
       cerrarModalMapa();
 
@@ -372,6 +376,11 @@
         document.getElementById('vista-inicio').style.display = 'block';
         document.getElementById('vista-locales').style.display = 'none';
         document.getElementById('vista-menu').style.display = 'none';
+        
+        // Limpiamos el buscador al volver al inicio con la flecha
+        document.getElementById("inputBuscador").value = "";
+        document.getElementById("resultados-busqueda-envivo").style.display = "none";
+        document.getElementById("contenido-inicio-normal").style.display = "block";
       } else if (e.state.vista === 'locales') {
         document.getElementById('vista-inicio').style.display = 'none';
         document.getElementById('vista-locales').style.display = 'block';
@@ -384,9 +393,8 @@
       window.scrollTo(0,0);
     });
 
-    // Usamos esto para los botones "Volver" propios de la interfaz
     function volverInicioNav() {
-      history.back(); // Llama automáticamente al popstate
+      history.back(); 
     }
 
     // --- FORMULA DE DISTANCIA GPS (Haversine) ---
@@ -399,13 +407,12 @@
       return (R * c).toFixed(1); 
     }
 
-    // --- ARREGLO DEL BUSCADOR EN VIVO (MÁS AMIGABLE) ---
+    // --- BUSCADOR EN VIVO ---
     function ejecutarBusquedaEnVivo() {
       const termino = document.getElementById("inputBuscador").value.toLowerCase();
       const contResultados = document.getElementById("resultados-busqueda-envivo");
       const contNormal = document.getElementById("contenido-inicio-normal");
 
-      // Si borra o escribe menos de 3 letras, vuelve al menú normal fluido
       if (termino.length < 3) {
         contResultados.style.display = "none";
         contNormal.style.display = "block";
@@ -429,7 +436,6 @@
         if (coincidencia) resultados.push({id: id, localData: local});
       }
       
-      // Escondemos las zonas y mostramos resultados ahí nomás
       contNormal.style.display = "none";
       contResultados.style.display = "block";
       contResultados.innerHTML = `<h3 style="color:#d9232d; font-size:1.1rem; margin-top:0;">🔎 Resultados para "${termino}":</h3>`;
@@ -460,7 +466,6 @@
       }
     }
 
-    // --- FUNCIONES DE CERCANÍA Y ZONAS ---
     function mostrarResultadosLista(listaFiltrada, titulo, mostrarDistancia = false) {
       document.getElementById('txt-titulo-resultados').innerText = titulo;
       const contenedor = document.getElementById('contenedor-lista-locales');
@@ -495,9 +500,7 @@
         });
       }
 
-      // Guardamos en el historial que fuimos a "locales"
       history.pushState({ vista: 'locales' }, '', '#locales');
-      
       document.getElementById('vista-inicio').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
@@ -548,7 +551,7 @@
     // --- LÓGICA DE MENÚ Y CARRITO ---
     function abrirLocal(id) {
       localActivo = locales[id];
-      linkGPS = "";
+      linkGPS = ""; // Limpieza obligatoria del GPS anterior al entrar a un local
       
       const btnG = document.getElementById("btnGPS");
       btnG.innerText = "📍 Usar GPS";
@@ -567,7 +570,6 @@
       
       actualizarCarrito();
       
-      // Guardamos en el historial que fuimos al "menu"
       history.pushState({ vista: 'menu' }, '', '#menu');
 
       document.getElementById('vista-inicio').style.display = 'none';
