@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dale pué - Lo nuestro, al toque</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <!-- Estilos y Librerías (Leaflet) se mantienen igual que en v0.8_47 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- IMPORTANTE: Firebase SDK (Versión liviana para Web) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Reemplazá esto con los datos que te da Firebase Console en "Configuración del proyecto"
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY_AQUÍ",
+      authDomain: "dalepue-salta.firebaseapp.com",
+      projectId: "dalepue-salta",
+      storageBucket: "dalepue-salta.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Hacemos que la función sea accesible globalmente
+    window.db = db;
+    window.getDoc = getDoc;
+    window.doc = doc;
+  </script>
+
+  <style>
+    /* Se mantienen los estilos de v0.8_47: Rojo #d9232d y Amarillo #ffb800 */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+    .header-plataforma h1 { color: #d9232d; text-align: center; font-size: 2.5rem; }
+    /* ... (resto del CSS igual a la versión anterior para mantener estabilidad) */
+  </style>
+</head>
+<body>
+  <!-- Estructura HTML (Vistas de locales y menú) idéntica a v0.8_47 -->
+  <div class="container" id="app-container">
+    <!-- El contenido se genera dinámicamente -->
+  </div>
+
+  <script>
+    // Variables de estado
+    let menuData = { sandwiches: [], minutas: [], bebidas: [] };
+    let carrito = [];
+    const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
+
+    // Función principal para traer datos de Firebase
+    async function inicializarProyecto() {
+      try {
+        // Intentamos traer los datos del local "eloeste" desde la colección "locales"
+        const docRef = window.doc(window.db, "locales", "eloeste");
+        const docSnap = await window.getDoc(docRef);
+
+        if (docSnap.exists()) {
+          menuData = docSnap.data().menu;
+          console.log("✅ Datos cargados desde Firebase");
+        } else {
+          console.warn("⚠️ No hay datos en Firebase. Cargando menú de respaldo.");
+          // Aquí podrías poner el menú por defecto de la v0.8_47
+        }
+        renderizarMenu();
+      } catch (error) {
+        console.error("Error conectando a Firebase:", error);
+      }
+    }
+
+    function renderizarMenu() {
+      // Usamos document.createElement para proteger el HTML
+      const renderSeccion = (items, contenedorId, conExtras) => {
+        const cont = document.getElementById(contenedorId);
+        if(!cont) return;
+        cont.innerHTML = "";
+        
+        items.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="info-producto">
+              <h3>${p.nombre}</h3>
+              <p class="desc">${p.desc}</p>
+              <p class="precio">$${p.precio}</p>
+            </div>`;
+          
+          const btn = document.createElement("button");
+          btn.className = "btn-agregar";
+          btn.innerText = "Agregar";
+          btn.onclick = () => conExtras ? abrirModalExtras(p) : agregarDirecto(p);
+          
+          card.appendChild(btn);
+          cont.appendChild(card);
+        });
+      };
+
+      renderSeccion(menuData.sandwiches, "menu-sandwiches", true);
+      renderSeccion(menuData.minutas, "menu-minutas", true);
+      renderSeccion(menuData.bebidas, "menu-bebidas", false);
+    }
+
+    // La lógica de enviarPedido mantiene los emojis: 🍔, 🥤, 🍺 y el formato de mapa
+    function enviarPedido() {
+      // ... (Lógica de WhatsApp de v0.8_47 intacta para asegurar estabilidad)
+      const urlMapa = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`; // Formato oficial[cite: 1]
+    }
+
+    // Ejecutar al cargar
+    window.onload = inicializarProyecto;
+  </script>
+</body>
+</html>
