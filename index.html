@@ -24,7 +24,7 @@
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
 
     /* BUSCADOR Y GPS */
-    .buscador-container { margin-bottom: 15px; }
+    .buscador-container { margin-bottom: 15px; position: relative; z-index: 10; }
     .buscador-input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #ddd; font-size: 1rem; font-family: inherit; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.3s ease; outline: none;}
     .buscador-input:focus { border-color: #d9232d; }
     .btn-radar { background: #111; color: #ffb800; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; border: none; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 25px; transition: transform 0.2s ease;}
@@ -158,41 +158,45 @@
 
       <!-- BUSCADOR -->
       <div class="buscador-container">
-        <input type="text" id="inputBuscador" class="buscador-input" placeholder="🔍 Buscar comida, locales o palabras..." onkeyup="ejecutarBusqueda()">
+        <input type="text" id="inputBuscador" class="buscador-input" placeholder="🔍 Buscar comida, locales o palabras..." onkeyup="ejecutarBusquedaEnVivo()">
       </div>
 
-      <!-- RADAR GPS -->
-      <button class="btn-radar" onclick="buscarLocalesCerca()" id="btnRadarGPS">
-        📍 Encontrar locales cerca de mí
-      </button>
+      <!-- RESULTADOS EN VIVO (Aparecen debajo del buscador sin borrar la pantalla) -->
+      <div id="resultados-busqueda-envivo" style="display: none; margin-bottom: 20px;"></div>
 
-      <!-- ZONAS -->
-      <p class="titulo-seccion-inicio">O explorá por tu zona:</p>
-      <div class="grid-zonas">
-        <div class="btn-zona bg-norte" onclick="mostrarResultadosPorZona('Norte')"><h3>Norte</h3></div>
-        <div class="btn-zona bg-este" onclick="mostrarResultadosPorZona('Este')"><h3>Este</h3></div>
-        <div class="btn-zona bg-oeste" onclick="mostrarResultadosPorZona('Oeste')"><h3>Oeste</h3></div>
-        <div class="btn-zona bg-sur" onclick="mostrarResultadosPorZona('Sur')"><h3>Sur</h3></div>
-        <div class="btn-zona bg-sureste" onclick="mostrarResultadosPorZona('Sureste')"><h3>Sureste</h3></div>
-        <div class="btn-zona bg-centro" onclick="mostrarResultadosPorZona('Centro')"><h3>Centro</h3></div>
+      <!-- CONTENIDO NORMAL QUE SE OCULTA AL BUSCAR -->
+      <div id="contenido-inicio-normal">
+        <button class="btn-radar" onclick="buscarLocalesCerca()" id="btnRadarGPS">
+          📍 Encontrar locales cerca de mí
+        </button>
+
+        <p class="titulo-seccion-inicio">O explorá por tu zona:</p>
+        <div class="grid-zonas">
+          <div class="btn-zona bg-norte" onclick="mostrarResultadosPorZona('Norte')"><h3>Norte</h3></div>
+          <div class="btn-zona bg-este" onclick="mostrarResultadosPorZona('Este')"><h3>Este</h3></div>
+          <div class="btn-zona bg-oeste" onclick="mostrarResultadosPorZona('Oeste')"><h3>Oeste</h3></div>
+          <div class="btn-zona bg-sur" onclick="mostrarResultadosPorZona('Sur')"><h3>Sur</h3></div>
+          <div class="btn-zona bg-sureste" onclick="mostrarResultadosPorZona('Sureste')"><h3>Sureste</h3></div>
+          <div class="btn-zona bg-centro" onclick="mostrarResultadosPorZona('Centro')"><h3>Centro</h3></div>
+        </div>
       </div>
     </div>
 
-    <!-- PANTALLA 2: LISTADO DE RESULTADOS (DINÁMICO) -->
+    <!-- PANTALLA 2: LISTADO DE RESULTADOS ZONAS/CERCANOS -->
     <div id="vista-locales" style="display: none;">
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverInicioNav()">⬅ Volver al inicio</button>
+        <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverInicioNav()">⬅ Volver</button>
         <span id="txt-titulo-resultados" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
       </div>
 
-      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS (Zonas, Búsqueda o Cercanía) -->
+      <!-- ACÁ SE INYECTAN TARJETAS DE ZONAS O CERCANOS -->
       <div id="contenedor-lista-locales"></div>
     </div>
 
     <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
     <div id="vista-menu" style="display: none;">
       <div class="header-local" id="menu-header">
-        <button class="btn-volver" onclick="volverAResultados()">⬅ Volver</button>
+        <button class="btn-volver" onclick="volverInicioNav()">⬅ Volver</button>
         <h1 id="menu-nombre-local" style="margin-bottom: 5px;">CARGANDO...</h1>
         <div id="menu-horarios" class="horarios-texto"></div>
       </div>
@@ -339,12 +343,13 @@
     let carrito = [];
     let productoTemporal = null;
     let localActivo = null;
-    let contextoActual = ""; // Guarda si estamos viendo una "Zona", "Busqueda" o "Cerca"
+    let contextoActual = ""; 
     let linkGPS = "";
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
 
+    // --- ARREGLO DE FLECHA DE RETROCESO (HISTORY API) ---
     document.addEventListener("DOMContentLoaded", () => {
       if (localStorage.getItem('dp_darkmode') === 'true') {
         document.body.classList.add('dark-mode');
@@ -352,7 +357,37 @@
       }
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
+
+      // Inyectamos el estado inicial en el historial del celular
+      history.replaceState({ vista: 'inicio' }, '', '#inicio');
     });
+
+    // Escuchamos si el cliente toca "Atrás" en su celular
+    window.addEventListener('popstate', (e) => {
+      // Por las dudas, si aprieta atrás, cerramos los modales si están abiertos
+      cerrarModalExtras();
+      cerrarModalMapa();
+
+      if (!e.state || e.state.vista === 'inicio') {
+        document.getElementById('vista-inicio').style.display = 'block';
+        document.getElementById('vista-locales').style.display = 'none';
+        document.getElementById('vista-menu').style.display = 'none';
+      } else if (e.state.vista === 'locales') {
+        document.getElementById('vista-inicio').style.display = 'none';
+        document.getElementById('vista-locales').style.display = 'block';
+        document.getElementById('vista-menu').style.display = 'none';
+      } else if (e.state.vista === 'menu') {
+        document.getElementById('vista-inicio').style.display = 'none';
+        document.getElementById('vista-locales').style.display = 'none';
+        document.getElementById('vista-menu').style.display = 'block';
+      }
+      window.scrollTo(0,0);
+    });
+
+    // Usamos esto para los botones "Volver" propios de la interfaz
+    function volverInicioNav() {
+      history.back(); // Llama automáticamente al popstate
+    }
 
     // --- FORMULA DE DISTANCIA GPS (Haversine) ---
     function calcularDistanciaKM(lat1, lon1, lat2, lon2) {
@@ -364,8 +399,69 @@
       return (R * c).toFixed(1); 
     }
 
-    // --- MOTOR DE NAVEGACIÓN Y RENDERIZADO ---
-    function mostrarResultados(listaFiltrada, titulo, mostrarDistancia = false) {
+    // --- ARREGLO DEL BUSCADOR EN VIVO (MÁS AMIGABLE) ---
+    function ejecutarBusquedaEnVivo() {
+      const termino = document.getElementById("inputBuscador").value.toLowerCase();
+      const contResultados = document.getElementById("resultados-busqueda-envivo");
+      const contNormal = document.getElementById("contenido-inicio-normal");
+
+      // Si borra o escribe menos de 3 letras, vuelve al menú normal fluido
+      if (termino.length < 3) {
+        contResultados.style.display = "none";
+        contNormal.style.display = "block";
+        return;
+      }
+
+      let resultados = [];
+      for (let id in locales) {
+        let local = locales[id];
+        let coincidencia = false;
+        
+        if (local.nombre.toLowerCase().includes(termino) || local.descCorta.toLowerCase().includes(termino)) {
+          coincidencia = true;
+        } else {
+          for (let cat in local.menu) {
+            local.menu[cat].items.forEach(item => {
+              if (item.nombre.toLowerCase().includes(termino) || item.desc.toLowerCase().includes(termino)) coincidencia = true;
+            });
+          }
+        }
+        if (coincidencia) resultados.push({id: id, localData: local});
+      }
+      
+      // Escondemos las zonas y mostramos resultados ahí nomás
+      contNormal.style.display = "none";
+      contResultados.style.display = "block";
+      contResultados.innerHTML = `<h3 style="color:#d9232d; font-size:1.1rem; margin-top:0;">🔎 Resultados para "${termino}":</h3>`;
+
+      if (resultados.length === 0) {
+        contResultados.innerHTML += `<p style="text-align:center; padding: 20px 10px; color:#888;">No encontramos locales con esos datos. ¡Intentá otra palabra! 🛵</p>`;
+      } else {
+        resultados.forEach(loc => {
+          let htmlEstado = loc.localData.estaAbierto() 
+            ? '<div class="badge-estado badge-abierto">Abierto ahora</div>' 
+            : '<div class="badge-estado badge-cerrado">Cerrado ahora</div>';
+
+          let tarjeta = document.createElement('div');
+          tarjeta.className = "tarjeta-local";
+          tarjeta.style.borderLeftColor = loc.localData.colorBrand; 
+          tarjeta.onclick = () => abrirLocal(loc.id);
+          
+          tarjeta.innerHTML = `
+            <div>
+              <h2 style="font-size:1.3rem;">${loc.localData.nombre}</h2>
+              <p class="tarjeta-local-dir">${loc.localData.descCorta}</p>
+              ${htmlEstado}
+            </div>
+            <div class="btn-entrar" style="background: ${loc.localData.colorBrand}; color: ${loc.id === 'mamacora' ? '#111' : 'white'}; padding: 8px 12px; font-size:0.85rem;">Menú</div>
+          `;
+          contResultados.appendChild(tarjeta);
+        });
+      }
+    }
+
+    // --- FUNCIONES DE CERCANÍA Y ZONAS ---
+    function mostrarResultadosLista(listaFiltrada, titulo, mostrarDistancia = false) {
       document.getElementById('txt-titulo-resultados').innerText = titulo;
       const contenedor = document.getElementById('contenedor-lista-locales');
       contenedor.innerHTML = ""; 
@@ -399,6 +495,9 @@
         });
       }
 
+      // Guardamos en el historial que fuimos a "locales"
+      history.pushState({ vista: 'locales' }, '', '#locales');
+      
       document.getElementById('vista-inicio').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
@@ -410,37 +509,9 @@
       for (let id in locales) {
         if (locales[id].zona === zona) resultados.push({id: id, localData: locales[id]});
       }
-      mostrarResultados(resultados, `📍 ${contextoActual}`);
+      mostrarResultadosLista(resultados, `📍 ${contextoActual}`);
     }
 
-    // --- FUNCIONALIDAD: BUSCADOR INTELIGENTE ---
-    function ejecutarBusqueda() {
-      const termino = document.getElementById("inputBuscador").value.toLowerCase();
-      if (termino.length < 3) return; // Espera a que escriba 3 letras para buscar
-
-      let resultados = [];
-      for (let id in locales) {
-        let local = locales[id];
-        let coincidencia = false;
-        
-        if (local.nombre.toLowerCase().includes(termino) || local.descCorta.toLowerCase().includes(termino)) {
-          coincidencia = true;
-        } else {
-          // Buscar adentro del menú
-          for (let cat in local.menu) {
-            local.menu[cat].items.forEach(item => {
-              if (item.nombre.toLowerCase().includes(termino) || item.desc.toLowerCase().includes(termino)) coincidencia = true;
-            });
-          }
-        }
-        if (coincidencia) resultados.push({id: id, localData: local});
-      }
-      
-      contextoActual = "BÚSQUEDA";
-      mostrarResultados(resultados, `🔎 RESULTADOS`);
-    }
-
-    // --- FUNCIONALIDAD: RADAR GPS ---
     function buscarLocalesCerca() {
       const btn = document.getElementById("btnRadarGPS");
       btn.innerText = "⏳ Buscando señal GPS...";
@@ -458,12 +529,11 @@
               resultados.push({id: id, localData: local, distancia: dist});
             }
 
-            // Ordenar de más cerca a más lejos
             resultados.sort((a, b) => a.distancia - b.distancia);
 
-            btn.innerText = "📍 Encontrar locales cerca de mí"; // Restaurar texto
+            btn.innerText = "📍 Encontrar locales cerca de mí"; 
             contextoActual = "CERCA DE MÍ";
-            mostrarResultados(resultados, `📍 LOCALES CERCA`, true);
+            mostrarResultadosLista(resultados, `📍 LOCALES CERCA`, true);
           },
           () => { 
             alert("No pudimos acceder a tu ubicación. Por favor, permití el uso del GPS en tu navegador o explorá usando las zonas."); 
@@ -475,20 +545,7 @@
       }
     }
 
-    function volverInicioNav() {
-      document.getElementById("inputBuscador").value = ""; // Limpia buscador
-      document.getElementById('vista-locales').style.display = 'none';
-      document.getElementById('vista-inicio').style.display = 'block';
-      window.scrollTo(0,0);
-    }
-
-    function volverAResultados() {
-      document.getElementById('vista-menu').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-      window.scrollTo(0,0);
-    }
-
-    // --- LÓGICA DE MENÚ Y CARRITO (Igual que v0.8.5) ---
+    // --- LÓGICA DE MENÚ Y CARRITO ---
     function abrirLocal(id) {
       localActivo = locales[id];
       linkGPS = "";
@@ -509,6 +566,11 @@
       }
       
       actualizarCarrito();
+      
+      // Guardamos en el historial que fuimos al "menu"
+      history.pushState({ vista: 'menu' }, '', '#menu');
+
+      document.getElementById('vista-inicio').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'none';
       document.getElementById('vista-menu').style.display = 'block';
       window.scrollTo(0,0);
