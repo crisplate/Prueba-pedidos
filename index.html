@@ -147,7 +147,7 @@
 
   <div class="container">
     
-    <!-- PANTALLA 1: INICIO (Buscador + Radar + Zonas) -->
+    <!-- PANTALLA 1: INICIO -->
     <div id="vista-inicio">
       <div class="header-plataforma">
         <img src="logo.png" alt="Logo Dale pué" class="logo-principal" onerror="this.style.display='none'"> 
@@ -156,15 +156,12 @@
         <hr class="divisor-header">
       </div>
 
-      <!-- BUSCADOR -->
       <div class="buscador-container">
         <input type="text" id="inputBuscador" class="buscador-input" placeholder="🔍 Buscar comida, locales o palabras..." onkeyup="ejecutarBusquedaEnVivo()">
       </div>
 
-      <!-- RESULTADOS EN VIVO (Aparecen debajo del buscador sin borrar la pantalla) -->
       <div id="resultados-busqueda-envivo" style="display: none; margin-bottom: 20px;"></div>
 
-      <!-- CONTENIDO NORMAL QUE SE OCULTA AL BUSCAR -->
       <div id="contenido-inicio-normal">
         <button class="btn-radar" onclick="buscarLocalesCerca()" id="btnRadarGPS">
           📍 Encontrar locales cerca de mí
@@ -182,18 +179,16 @@
       </div>
     </div>
 
-    <!-- PANTALLA 2: LISTADO DE RESULTADOS ZONAS/CERCANOS -->
+    <!-- PANTALLA 2: LISTADO DE RESULTADOS -->
     <div id="vista-locales" style="display: none;">
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
         <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverInicioNav()">⬅ Volver</button>
         <span id="txt-titulo-resultados" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
       </div>
-
-      <!-- ACÁ SE INYECTAN TARJETAS DE ZONAS O CERCANOS -->
       <div id="contenedor-lista-locales"></div>
     </div>
 
-    <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
+    <!-- PANTALLA 3: MENÚ Y CARRITO -->
     <div id="vista-menu" style="display: none;">
       <div class="header-local" id="menu-header">
         <button class="btn-volver" onclick="volverInicioNav()">⬅ Volver</button>
@@ -228,12 +223,21 @@
         
         <div id="seccionDireccion">
           <div class="form-group">
-            <label>Dirección exacta:</label>
+            <label>Calle y Número:</label>
             <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
-            <div class="grid-botones-ubicacion">
-              <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPSParaEnvio()">📍 Usar GPS</button>
-              <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button>
-            </div>
+          </div>
+          <div class="form-group">
+            <label>Barrio / Piso / Depto (Opcional):</label>
+            <input type="text" id="detalleDireccion" placeholder="Ej: B° Centro, Piso 2 Depto B">
+          </div>
+          <div class="form-group">
+            <label>Aclaraciones para el cadete (Opcional):</label>
+            <input type="text" id="aclaracionesEntrega" placeholder="Ej: Portón negro, no anda el timbre...">
+          </div>
+          
+          <div class="grid-botones-ubicacion">
+            <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPSParaEnvio()">📍 Usar GPS</button>
+            <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button>
           </div>
         </div>
         
@@ -243,8 +247,8 @@
         </div>
 
         <div class="form-group">
-          <label>Observaciones (Opcional):</label>
-          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas..."></textarea>
+          <label>Observaciones del pedido (Opcional):</label>
+          <textarea id="observacionesCliente" rows="2" placeholder="Ej: Las empanadas sin pasas, la hamburguesa sin lechuga..."></textarea>
         </div>
         
         <button class="btn-whatsapp" id="btnEnviarWhatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
@@ -287,7 +291,7 @@
 
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // --- BASE DE DATOS ---
+    // --- BASE DE DATOS (Con Coordenadas GPS para el radar) ---
     const locales = {
       eloeste: {
         id: "eloeste", nombre: "El Oeste", zona: "Centro", descCorta: "Sandwichería • Minutas",
@@ -363,11 +367,13 @@
       // Forzamos al navegador a borrar los campos que intenta recordar automáticamente
       document.getElementById("inputBuscador").value = "";
       document.getElementById("direccionCliente").value = "";
+      document.getElementById("detalleDireccion").value = "";
+      document.getElementById("aclaracionesEntrega").value = "";
       
       history.replaceState({ vista: 'inicio' }, '', '#inicio');
     });
 
-    // --- HISTORY API: NAVEGACIÓN FLUIDA CON LA FLECHA DEL CELU ---
+    // --- HISTORY API: NAVEGACIÓN FLUIDA ---
     window.addEventListener('popstate', (e) => {
       cerrarModalExtras();
       cerrarModalMapa();
@@ -723,8 +729,11 @@
       const n = document.getElementById("nombreCliente").value.trim();
       const se = document.getElementById("tipoEntrega").value;
       const di = document.getElementById("direccionCliente").value.trim();
+      const detDir = document.getElementById("detalleDireccion").value.trim();
+      const aclDir = document.getElementById("aclaracionesEntrega").value.trim();
+
       if(!n || carrito.length === 0) { alert("Completá nombre y agregá algo al carrito."); return; }
-      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS para el cadete."); return; }
+      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta calle/número o ubicación GPS para el cadete."); return; }
       
       let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
@@ -743,9 +752,15 @@
                             : ` (Zona ${localActivo.zona})`;
       m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio${textoFiltroInfo}` : "Retiro por local"}%0A`;
       
-      if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
+      if(se === "delivery") {
+        m += `🏠 *Dirección:* ${di}%0A`;
+        if(detDir) m += `🏢 *Detalle:* ${detDir}%0A`;
+        if(aclDir) m += `🔔 *Aclaraciones:* ${aclDir}%0A`;
+        m += `📍 *Mapa:* ${linkGPS}%0A`;
+      }
+
       const obs = document.getElementById("observacionesCliente").value.trim();
-      if(obs) m += `%0A📝 *Observaciones:* ${obs}%0A`;
+      if(obs) m += `%0A📝 *Observaciones del pedido:* ${obs}%0A`;
       
       localStorage.removeItem('dp_carrito');
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
