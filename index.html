@@ -16,13 +16,21 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; transition: background 0.3s ease, color 0.3s ease; }
     
-    /* VISTA ZONAS Y PRINCIPAL */
-    .header-plataforma { text-align: center; margin-bottom: 25px; padding-top: 10px; }
+    /* VISTA INICIO */
+    .header-plataforma { text-align: center; margin-bottom: 20px; padding-top: 10px; }
     .logo-principal { width: 110px; height: 110px; object-fit: cover; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(217,35,45,0.2); }
     .header-plataforma h1 { color: #d9232d; font-size: 2.8rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
     .eslogan { font-weight: bold; color: #111; margin: 5px 0; font-size: 1.1rem; transition: color 0.3s ease;}
-    .sub-eslogan { font-size: 0.95rem; color: #555; transition: color 0.3s ease;}
     .divisor-header { width: 60px; border: 2px solid #ffb800; margin: 15px auto; border-radius: 5px; }
+
+    /* BUSCADOR Y GPS */
+    .buscador-container { margin-bottom: 15px; }
+    .buscador-input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #ddd; font-size: 1rem; font-family: inherit; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.3s ease; outline: none;}
+    .buscador-input:focus { border-color: #d9232d; }
+    .btn-radar { background: #111; color: #ffb800; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; border: none; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 25px; transition: transform 0.2s ease;}
+    .btn-radar:active { transform: scale(0.98); }
+
+    .titulo-seccion-inicio { font-size: 0.95rem; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; transition: color 0.3s ease;}
 
     /* BOTON MODO OSCURO */
     .btn-theme-toggle { position: absolute; top: 15px; right: 15px; background: #fff; color: #111; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s ease, background 0.3s ease; z-index: 1000; }
@@ -46,7 +54,8 @@
     .tarjeta-local:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; transition: color 0.3s ease;}
     .tarjeta-local-dir { color: #888; font-size: 0.8rem; margin-bottom: 0; transition: color 0.3s ease;}
-    .btn-entrar { background: #d9232d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(217,35,45,0.3); }
+    .btn-entrar { background: #d9232d; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-transform: uppercase; box-shadow: 0 2px 5px rgba(217,35,45,0.3); white-space: nowrap;}
+    .distancia-badge { display: inline-block; background: #e0f2f1; color: #00796b; padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; border: 1px solid #b2dfdb;}
 
     .badge-estado { padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; display: inline-block; }
     .badge-abierto { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -95,33 +104,28 @@
 
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
 
-    .banner-instalacion { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); display: none; align-items: center; justify-content: space-between; width: 90%; max-width: 400px; z-index: 3000; border: 2px solid #d9232d; transition: background 0.3s ease;}
-    .banner-instalacion p { margin: 0; font-weight: bold; color: #111; font-size: 0.95rem; flex-grow: 1; padding-right: 10px; transition: color 0.3s ease;}
-    .btn-instalar { background: #d9232d; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-cerrar-banner { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; padding: 0 0 0 10px; }
-
     /* =========================================
        🔥🔥🔥 ESTILOS MODO OSCURO 🔥🔥🔥
        ========================================= */
     body.dark-mode { background: #121212; color: #e0e0e0; }
-    body.dark-mode .btn-theme-toggle { background: #2d2d2d; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    body.dark-mode .btn-theme-toggle { background: #2d2d2d; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: #fff;}
+    body.dark-mode .buscador-input { background: #2d2d2d; border-color: #444; color: #fff; }
+    body.dark-mode .buscador-input:focus { border-color: #d9232d; }
     
     body.dark-mode .tarjeta-local, 
     body.dark-mode .card, 
     body.dark-mode #carrito, 
-    body.dark-mode .modal-content, 
-    body.dark-mode .banner-instalacion { background: #1e1e1e; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    body.dark-mode .modal-content { background: #1e1e1e; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
     
     body.dark-mode .eslogan, 
     body.dark-mode .tarjeta-local h2, 
     body.dark-mode .info-producto h3, 
-    body.dark-mode .categoria-titulo,
-    body.dark-mode .banner-instalacion p { color: #f0f2f5; }
+    body.dark-mode .categoria-titulo { color: #f0f2f5; }
     
     body.dark-mode .sub-eslogan,
-    body.dark-mode .tarjeta-local p,
     body.dark-mode .tarjeta-local-dir,
-    body.dark-mode .info-producto .desc { color: #aaa !important; }
+    body.dark-mode .info-producto .desc,
+    body.dark-mode .titulo-seccion-inicio { color: #aaa !important; }
     
     body.dark-mode input, 
     body.dark-mode select, 
@@ -132,6 +136,7 @@
     body.dark-mode .opcion-check { background: #2d2d2d; }
     body.dark-mode .seccion-modal-titulo { background: #2a2000; color: #ffb800; }
     body.dark-mode .header-local { background: #0a0a0a; border: 1px solid #222; }
+    body.dark-mode .distancia-badge { background: #00332c; color: #4db6ac; border-color: #004d40; }
 
   </style>
 </head>
@@ -140,61 +145,54 @@
   <!-- BOTÓN MODO OSCURO / CLARO -->
   <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleDarkMode()">🌙</button>
 
-  <div id="bannerInstalacion" class="banner-instalacion">
-    <p>📲 ¡Instalá Dale pué y pedí al toque!</p>
-    <button class="btn-instalar" id="btnInstalar">Instalar</button>
-    <button class="btn-cerrar-banner" onclick="cerrarBanner()">✖</button>
-  </div>
-
   <div class="container">
     
-    <!-- PANTALLA 1: SELECCIÓN DE ZONA -->
-    <div id="vista-zonas">
+    <!-- PANTALLA 1: INICIO (Buscador + Radar + Zonas) -->
+    <div id="vista-inicio">
       <div class="header-plataforma">
         <img src="logo.png" alt="Logo Dale pué" class="logo-principal" onerror="this.style.display='none'"> 
         <h1>Dale pué 🛵</h1>
         <p class="eslogan">Lo nuestro, al toque.</p>
         <hr class="divisor-header">
-        <p class="sub-eslogan">¿A dónde llevamos tu pedido hoy?</p>
       </div>
 
+      <!-- BUSCADOR -->
+      <div class="buscador-container">
+        <input type="text" id="inputBuscador" class="buscador-input" placeholder="🔍 Buscar comida, locales o palabras..." onkeyup="ejecutarBusqueda()">
+      </div>
+
+      <!-- RADAR GPS -->
+      <button class="btn-radar" onclick="buscarLocalesCerca()" id="btnRadarGPS">
+        📍 Encontrar locales cerca de mí
+      </button>
+
+      <!-- ZONAS -->
+      <p class="titulo-seccion-inicio">O explorá por tu zona:</p>
       <div class="grid-zonas">
-        <div class="btn-zona bg-norte" onclick="seleccionarZona('Norte')">
-          <h3>Norte</h3>
-        </div>
-        <div class="btn-zona bg-este" onclick="seleccionarZona('Este')">
-          <h3>Este</h3>
-        </div>
-        <div class="btn-zona bg-oeste" onclick="seleccionarZona('Oeste')">
-          <h3>Oeste</h3>
-        </div>
-        <div class="btn-zona bg-sur" onclick="seleccionarZona('Sur')">
-          <h3>Sur</h3>
-        </div>
-        <div class="btn-zona bg-sureste" onclick="seleccionarZona('Sureste')">
-          <h3>Sureste</h3>
-        </div>
-        <div class="btn-zona bg-centro" onclick="seleccionarZona('Centro')">
-          <h3>Centro</h3>
-        </div>
+        <div class="btn-zona bg-norte" onclick="mostrarResultadosPorZona('Norte')"><h3>Norte</h3></div>
+        <div class="btn-zona bg-este" onclick="mostrarResultadosPorZona('Este')"><h3>Este</h3></div>
+        <div class="btn-zona bg-oeste" onclick="mostrarResultadosPorZona('Oeste')"><h3>Oeste</h3></div>
+        <div class="btn-zona bg-sur" onclick="mostrarResultadosPorZona('Sur')"><h3>Sur</h3></div>
+        <div class="btn-zona bg-sureste" onclick="mostrarResultadosPorZona('Sureste')"><h3>Sureste</h3></div>
+        <div class="btn-zona bg-centro" onclick="mostrarResultadosPorZona('Centro')"><h3>Centro</h3></div>
       </div>
     </div>
 
-    <!-- PANTALLA 2: LISTADO DE LOCALES (DINÁMICO) -->
+    <!-- PANTALLA 2: LISTADO DE RESULTADOS (DINÁMICO) -->
     <div id="vista-locales" style="display: none;">
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverZonas()">⬅ Cambiar Zona</button>
-        <span id="txt-zona-elegida" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
+        <button class="btn-gps" style="padding: 8px 12px; margin: 0;" onclick="volverInicioNav()">⬅ Volver al inicio</button>
+        <span id="txt-titulo-resultados" style="font-weight: bold; color: #d9232d; font-size: 0.95rem; text-transform: uppercase;"></span>
       </div>
 
-      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS -->
+      <!-- ACÁ JAVASCRIPT VA A INYECTAR LAS TARJETAS (Zonas, Búsqueda o Cercanía) -->
       <div id="contenedor-lista-locales"></div>
     </div>
 
     <!-- PANTALLA 3: MENÚ DEL LOCAL Y CARRITO -->
     <div id="vista-menu" style="display: none;">
       <div class="header-local" id="menu-header">
-        <button class="btn-volver" onclick="volverLocales()">⬅ Volver</button>
+        <button class="btn-volver" onclick="volverAResultados()">⬅ Volver</button>
         <h1 id="menu-nombre-local" style="margin-bottom: 5px;">CARGANDO...</h1>
         <div id="menu-horarios" class="horarios-texto"></div>
       </div>
@@ -204,7 +202,7 @@
       <div id="carrito">
         <div class="header-carrito">
           <h3 style="margin:0;">🛒 Tu Pedido</h3>
-          <button class="btn-vaciar" id="btnVaciar" onclick="confirmarVaciarCarrito()" style="display: none;">🗑️ Vaciar Carrito</button>
+          <button class="btn-vaciar" id="btnVaciar" onclick="confirmarVaciarCarrito()" style="display: none;">🗑️ Vaciar</button>
         </div>
         
         <div id="listaCarrito"></div>
@@ -221,7 +219,7 @@
             <option value="delivery">Envío a domicilio</option>
             <option value="retiro">Retiro por el local</option>
           </select>
-          <button id="btnUbiLocal" class="btn-ubi-local" onclick="abrirUbicacionLocal()">📍 Ver ubicación del local en Google Maps</button>
+          <button id="btnUbiLocal" class="btn-ubi-local" onclick="abrirUbicacionLocal()">📍 Ver ubicación del local</button>
         </div>
         
         <div id="seccionDireccion">
@@ -229,7 +227,7 @@
             <label>Dirección exacta:</label>
             <input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
             <div class="grid-botones-ubicacion">
-              <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPS()">📍 Usar GPS</button>
+              <button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPSParaEnvio()">📍 Usar GPS</button>
               <button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button>
             </div>
           </div>
@@ -250,7 +248,7 @@
     </div>
   </div>
 
-  <!-- MODALES -->
+  <!-- MODALES EXTRAS Y MAPA -->
   <div id="modalExtras" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
@@ -276,211 +274,221 @@
   </div>
 
   <script>
-    // LÓGICA DEL MODO OSCURO
+    // --- MODO OSCURO ---
     function toggleDarkMode() {
-      const body = document.body;
-      const isDark = body.classList.toggle('dark-mode');
-      const btn = document.getElementById('btnThemeToggle');
-      btn.innerText = isDark ? '☀️' : '🌙';
+      const isDark = document.body.classList.toggle('dark-mode');
+      document.getElementById('btnThemeToggle').innerText = isDark ? '☀️' : '🌙';
       localStorage.setItem('dp_darkmode', isDark);
     }
 
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
     
-    // BASE DE DATOS LOCALES
+    // --- BASE DE DATOS (Con Coordenadas GPS para el radar) ---
     const locales = {
       eloeste: {
-        id: "eloeste",
-        nombre: "El Oeste",
-        zona: "Centro",
-        descCorta: "Sandwichería • Minutas",
-        direccion: "Leguizamón 1594",
-        colorBrand: "#d9232d",
+        id: "eloeste", nombre: "El Oeste", zona: "Centro", descCorta: "Sandwichería • Minutas",
+        direccion: "Leguizamón 1594", colorBrand: "#d9232d", lat: -24.7883, lng: -65.4105,
         horariosTxt: "🕒 <b>Lun a Jue y Dom:</b> 12:00 a 04:00 AM <br> 🕒 <b>Vie y Sab:</b> 12:00 a 07:00 AM",
-        whatsapp: "5491124500967",
-        mapaUrl: "https://maps.app.goo.gl/x6YWoLYC24iEZLNV8", 
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl/x6YWoLYC24iEZLNV8", 
         menu: {
-          "Tu Sándwich Favorito 🥪": {
-            items: [
-              { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + 300g papas", precio: 12000, tipo: "comida", conExtras: true },
-              { nombre: "Milanesa gigante p/2", desc: "200g carne, lechuga, tomate, huevo, cebolla + 500g papas", precio: 17000, tipo: "comida", conExtras: true },
-              { nombre: "Patynesa", desc: "1 medallón 130g, lechuga, tomate, huevo + 300g papas", precio: 12000, tipo: "comida", conExtras: true }
-            ]
-          },
-          "Bebidas 🥤": {
-            items: [
-              { nombre: "Coca / Coca Zero 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false },
-              { nombre: "Cerveza 710ml", desc: "Rubia/Negra", precio: 5000, tipo: "alcohol", conExtras: false }
-            ]
-          }
-        },
-        estaAbierto: function() { return true; } 
+          "Sándwiches 🥪": { items: [ { nombre: "Milanesa clásica", desc: "120g carne + papas", precio: 12000, tipo: "comida", conExtras: true }, { nombre: "Lomo gigante", desc: "Para 2", precio: 19000, tipo: "comida", conExtras: true } ] },
+          "Bebidas 🥤": { items: [ { nombre: "Coca Cola 500ml", desc: "", precio: 3000, tipo: "sinalcohol", conExtras: false } ] }
+        }, estaAbierto: function() { return true; } 
       },
       mamacora: {
-        id: "mamacora",
-        nombre: "Mama Cora",
-        zona: "Centro",
-        descCorta: "Empanadas Salteñas • Pizzas",
-        direccion: "Centro de Salta",
-        colorBrand: "#ffb800",
-        horariosTxt: "🕒 <b>Lunes a Lunes:</b> <br> 12:00 a 17:00 y 18:00 a 00:00",
-        whatsapp: "5491124500967", 
-        mapaUrl: "https://maps.app.goo.gl/MqxUqaRMeYmsEU7r7", 
+        id: "mamacora", nombre: "Mama Cora", zona: "Centro", descCorta: "Empanadas Salteñas • Pizzas",
+        direccion: "Centro de Salta", colorBrand: "#ffb800", lat: -24.7899, lng: -65.4121,
+        horariosTxt: "🕒 <b>Lunes a Lunes:</b> 12:00 a 17:00 y 18:00 a 00:00",
+        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl/MqxUqaRMeYmsEU7r7", 
         menu: {
-          "Empanadas Salteñas 🥟": {
-            items: [
-              { nombre: "Carne Suave (Docena)", desc: "Carne picada a cuchillo", precio: 8000, tipo: "comida", conExtras: false },
-              { nombre: "Queso y Cebolla (Docena)", desc: "Bien cargadas", precio: 7500, tipo: "comida", conExtras: false }
-            ]
-          }
-        },
-        estaAbierto: function() { return true; }
+          "Empanadas 🥟": { items: [ { nombre: "Carne Suave", desc: "Docena", precio: 8000, tipo: "comida", conExtras: false }, { nombre: "Queso y Cebolla", desc: "Docena", precio: 7500, tipo: "comida", conExtras: false } ] }
+        }, estaAbierto: function() { return true; }
       },
       pizzanorte: {
-        id: "pizzanorte",
-        nombre: "Pizzería Norteña (Demo)",
-        zona: "Norte",
-        descCorta: "Pizzas a la piedra • Calzones",
-        direccion: "Av. Bolivia 1200",
-        colorBrand: "#007bff",
-        horariosTxt: "🕒 <b>Todos los días:</b> 20:00 a 00:00",
-        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
-        menu: { "Especialidades 🍕": { items: [ { nombre: "Pizza Muzzarella", desc: "Clásica al horno de barro", precio: 8500, tipo: "comida", conExtras: false } ] } },
-        estaAbierto: function() { return true; }
+        id: "pizzanorte", nombre: "Pizzería Norteña (Demo)", zona: "Norte", descCorta: "Pizzas a la piedra",
+        direccion: "Av. Bolivia 1200", colorBrand: "#007bff", lat: -24.7500, lng: -65.4000,
+        horariosTxt: "🕒 <b>Todos los días:</b> 20:00 a 00:00", whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Especialidades 🍕": { items: [ { nombre: "Pizza Muzzarella", desc: "Clásica al horno", precio: 8500, tipo: "comida", conExtras: false } ] } }, estaAbierto: function() { return true; }
       },
       burgereste: {
-        id: "burgereste",
-        nombre: "Burger Este (Demo)",
-        zona: "Este",
-        descCorta: "Hamburguesas Smash • Papas Cheddar",
-        direccion: "Barrio Autódromo",
-        colorBrand: "#20c997",
-        horariosTxt: "🕒 <b>Jue a Dom:</b> 19:30 a 01:00",
-        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
-        menu: { "Smash Burgers 🍔": { items: [ { nombre: "Doble Cheeseburger", desc: "Doble carne, doble cheddar", precio: 6500, tipo: "comida", conExtras: true } ] } },
-        estaAbierto: function() { return true; }
+        id: "burgereste", nombre: "Burger Este (Demo)", zona: "Este", descCorta: "Hamburguesas Smash",
+        direccion: "Barrio Autódromo", colorBrand: "#20c997", lat: -24.7950, lng: -65.3800,
+        horariosTxt: "🕒 <b>Jue a Dom:</b> 19:30 a 01:00", whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Burgers 🍔": { items: [ { nombre: "Doble Cheeseburger", desc: "Doble carne", precio: 6500, tipo: "comida", conExtras: true } ] } }, estaAbierto: function() { return true; }
       },
       lomitooeste: {
-        id: "lomitooeste",
-        nombre: "Lomitos del Oeste (Demo)",
-        zona: "Oeste",
-        descCorta: "Lomos gigantes • Cerveza artesanal",
-        direccion: "Av. Perón 3000",
-        colorBrand: "#fd7e14",
-        horariosTxt: "🕒 <b>Mié a Dom:</b> 20:00 a 02:00",
-        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
-        menu: { "Nuestros Lomos 🥩": { items: [ { nombre: "Lomo Completo", desc: "Lechuga, tomate, huevo, jamón y queso", precio: 10500, tipo: "comida", conExtras: true } ] } },
-        estaAbierto: function() { return true; }
+        id: "lomitooeste", nombre: "Lomitos del Oeste (Demo)", zona: "Oeste", descCorta: "Lomos gigantes",
+        direccion: "Av. Perón 3000", colorBrand: "#fd7e14", lat: -24.7900, lng: -65.4500,
+        horariosTxt: "🕒 <b>Mié a Dom:</b> 20:00 a 02:00", whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Lomos 🥩": { items: [ { nombre: "Lomo Completo", desc: "Especial", precio: 10500, tipo: "comida", conExtras: true } ] } }, estaAbierto: function() { return true; }
       },
       empanadasur: {
-        id: "empanadasur",
-        nombre: "Empanadas del Sur (Demo)",
-        zona: "Sur",
-        descCorta: "Empanadas al horno • Humitas",
-        direccion: "Rotonda de Limache",
-        colorBrand: "#6f42c1",
-        horariosTxt: "🕒 <b>Todos los días:</b> 11:30 a 15:00 y 19:30 a 23:30",
-        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
-        menu: { "Empanadas 🥟": { items: [ { nombre: "Docena Mixta", desc: "6 carne, 3 pollo, 3 queso", precio: 7800, tipo: "comida", conExtras: false } ] } },
-        estaAbierto: function() { return true; }
+        id: "empanadasur", nombre: "Empanadas del Sur (Demo)", zona: "Sur", descCorta: "Empanadas al horno",
+        direccion: "Rotonda de Limache", colorBrand: "#6f42c1", lat: -24.8300, lng: -65.4200,
+        horariosTxt: "🕒 <b>Todos los días:</b> 11:30 a 15:00", whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Empanadas 🥟": { items: [ { nombre: "Docena Mixta", desc: "6 carne, 3 pollo", precio: 7800, tipo: "comida", conExtras: false } ] } }, estaAbierto: function() { return true; }
       },
       panchosureste: {
-        id: "panchosureste",
-        nombre: "Panchos Sureños (Demo)",
-        zona: "Sureste",
-        descCorta: "Súper panchos • Nachos",
-        direccion: "Barrio Solidaridad",
-        colorBrand: "#e83e8c",
-        horariosTxt: "🕒 <b>Vie a Dom:</b> 20:00 a 05:00 AM",
-        whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
-        menu: { "Comida Rápida 🌭": { items: [ { nombre: "Súper Pancho Completo", desc: "Con lluvia de papas y salsas", precio: 3000, tipo: "comida", conExtras: true } ] } },
-        estaAbierto: function() { return true; }
+        id: "panchosureste", nombre: "Panchos Sureños (Demo)", zona: "Sureste", descCorta: "Súper panchos",
+        direccion: "Barrio Solidaridad", colorBrand: "#e83e8c", lat: -24.8200, lng: -65.3900,
+        horariosTxt: "🕒 <b>Vie a Dom:</b> 20:00 a 05:00 AM", whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl", 
+        menu: { "Rápida 🌭": { items: [ { nombre: "Súper Pancho", desc: "Con salsas", precio: 3000, tipo: "comida", conExtras: true } ] } }, estaAbierto: function() { return true; }
       }
     };
 
     let carrito = [];
     let productoTemporal = null;
     let localActivo = null;
-    let zonaElegida = "";
+    let contextoActual = ""; // Guarda si estamos viendo una "Zona", "Busqueda" o "Cerca"
     let linkGPS = "";
     let mapaInstance = null;
     let marcador = null;
     let coordsTemp = null;
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Chequear preferencia de Modo Oscuro guardada
       if (localStorage.getItem('dp_darkmode') === 'true') {
         document.body.classList.add('dark-mode');
         document.getElementById('btnThemeToggle').innerText = '☀️';
       }
-
       document.getElementById("nombreCliente").value = localStorage.getItem("dp_cliente_nombre") || "";
       document.getElementById("direccionCliente").value = localStorage.getItem("dp_cliente_direccion") || "";
     });
 
-    document.getElementById("nombreCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_nombre", this.value); });
-    document.getElementById("direccionCliente").addEventListener("input", function() { localStorage.setItem("dp_cliente_direccion", this.value); });
-
-    function seleccionarZona(zona) {
-      zonaElegida = zona;
-      document.getElementById('txt-zona-elegida').innerText = "📍 ZONA " + zona;
-      document.getElementById('vista-zonas').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-      window.scrollTo(0,0);
-      renderizarLocalesPorZona(zona);
+    // --- FORMULA DE DISTANCIA GPS (Haversine) ---
+    function calcularDistanciaKM(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return (R * c).toFixed(1); 
     }
 
-    function renderizarLocalesPorZona(zonaBuscada) {
+    // --- MOTOR DE NAVEGACIÓN Y RENDERIZADO ---
+    function mostrarResultados(listaFiltrada, titulo, mostrarDistancia = false) {
+      document.getElementById('txt-titulo-resultados').innerText = titulo;
       const contenedor = document.getElementById('contenedor-lista-locales');
       contenedor.innerHTML = ""; 
-      let localesEncontrados = 0;
 
-      for (let id in locales) {
-        if (locales[id].zona === zonaBuscada) {
-          localesEncontrados++;
-          let local = locales[id];
-          
-          let htmlEstado = local.estaAbierto() 
+      if (listaFiltrada.length === 0) {
+        contenedor.innerHTML = `<p style="text-align:center; padding: 30px 10px; color:#888; font-size: 1.1rem;">No encontramos locales con esos datos. ¡Intentá de nuevo! 🛵</p>`;
+      } else {
+        listaFiltrada.forEach(loc => {
+          let htmlEstado = loc.localData.estaAbierto() 
             ? '<div class="badge-estado badge-abierto">Abierto ahora</div>' 
             : '<div class="badge-estado badge-cerrado">Cerrado ahora</div>';
+          
+          let htmlDistancia = mostrarDistancia && loc.distancia ? `<div class="distancia-badge">📍 a ${loc.distancia} km</div><br>` : '';
 
           let tarjeta = document.createElement('div');
           tarjeta.className = "tarjeta-local";
-          tarjeta.style.borderLeftColor = local.colorBrand; 
-          
-          tarjeta.onclick = () => abrirLocal(id);
+          tarjeta.style.borderLeftColor = loc.localData.colorBrand; 
+          tarjeta.onclick = () => abrirLocal(loc.id);
           
           tarjeta.innerHTML = `
             <div>
-              <h2>${local.nombre}</h2>
-              <p class="tarjeta-local-dir">${local.descCorta}</p>
-              <p class="tarjeta-local-dir">📍 ${local.direccion}</p>
+              <h2>${loc.localData.nombre}</h2>
+              <p class="tarjeta-local-dir">${loc.localData.descCorta}</p>
+              ${htmlDistancia}
+              <p class="tarjeta-local-dir" style="margin-top:5px;">📍 ${loc.localData.direccion}</p>
               ${htmlEstado}
             </div>
-            <div class="btn-entrar" style="background: ${local.colorBrand}; color: ${id === 'mamacora' ? '#111' : 'white'};">Ver menú</div>
+            <div class="btn-entrar" style="background: ${loc.localData.colorBrand}; color: ${loc.id === 'mamacora' ? '#111' : 'white'};">Menú</div>
           `;
-          
           contenedor.appendChild(tarjeta);
-        }
+        });
       }
 
-      if (localesEncontrados === 0) {
-        contenedor.innerHTML = `<p style="text-align:center; padding: 30px 10px; color:#888; font-size: 1.1rem;">Aún no tenemos locales adheridos en esta zona. ¡Pronto llegaremos con todo! 🛵</p>`;
-      }
-    }
-
-    function volverZonas() {
-      document.getElementById('vista-locales').style.display = 'none';
-      document.getElementById('vista-zonas').style.display = 'block';
+      document.getElementById('vista-inicio').style.display = 'none';
+      document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
     }
 
-    function volverLocales() {
+    function mostrarResultadosPorZona(zona) {
+      contextoActual = `ZONA ${zona}`;
+      let resultados = [];
+      for (let id in locales) {
+        if (locales[id].zona === zona) resultados.push({id: id, localData: locales[id]});
+      }
+      mostrarResultados(resultados, `📍 ${contextoActual}`);
+    }
+
+    // --- FUNCIONALIDAD: BUSCADOR INTELIGENTE ---
+    function ejecutarBusqueda() {
+      const termino = document.getElementById("inputBuscador").value.toLowerCase();
+      if (termino.length < 3) return; // Espera a que escriba 3 letras para buscar
+
+      let resultados = [];
+      for (let id in locales) {
+        let local = locales[id];
+        let coincidencia = false;
+        
+        if (local.nombre.toLowerCase().includes(termino) || local.descCorta.toLowerCase().includes(termino)) {
+          coincidencia = true;
+        } else {
+          // Buscar adentro del menú
+          for (let cat in local.menu) {
+            local.menu[cat].items.forEach(item => {
+              if (item.nombre.toLowerCase().includes(termino) || item.desc.toLowerCase().includes(termino)) coincidencia = true;
+            });
+          }
+        }
+        if (coincidencia) resultados.push({id: id, localData: local});
+      }
+      
+      contextoActual = "BÚSQUEDA";
+      mostrarResultados(resultados, `🔎 RESULTADOS`);
+    }
+
+    // --- FUNCIONALIDAD: RADAR GPS ---
+    function buscarLocalesCerca() {
+      const btn = document.getElementById("btnRadarGPS");
+      btn.innerText = "⏳ Buscando señal GPS...";
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            let latUser = pos.coords.latitude;
+            let lngUser = pos.coords.longitude;
+            let resultados = [];
+
+            for (let id in locales) {
+              let local = locales[id];
+              let dist = calcularDistanciaKM(latUser, lngUser, local.lat, local.lng);
+              resultados.push({id: id, localData: local, distancia: dist});
+            }
+
+            // Ordenar de más cerca a más lejos
+            resultados.sort((a, b) => a.distancia - b.distancia);
+
+            btn.innerText = "📍 Encontrar locales cerca de mí"; // Restaurar texto
+            contextoActual = "CERCA DE MÍ";
+            mostrarResultados(resultados, `📍 LOCALES CERCA`, true);
+          },
+          () => { 
+            alert("No pudimos acceder a tu ubicación. Por favor, permití el uso del GPS en tu navegador o explorá usando las zonas."); 
+            btn.innerText = "📍 Encontrar locales cerca de mí"; 
+          }
+        );
+      } else {
+        alert("Tu navegador no soporta geolocalización.");
+      }
+    }
+
+    function volverInicioNav() {
+      document.getElementById("inputBuscador").value = ""; // Limpia buscador
+      document.getElementById('vista-locales').style.display = 'none';
+      document.getElementById('vista-inicio').style.display = 'block';
+      window.scrollTo(0,0);
+    }
+
+    function volverAResultados() {
       document.getElementById('vista-menu').style.display = 'none';
       document.getElementById('vista-locales').style.display = 'block';
       window.scrollTo(0,0);
     }
 
+    // --- LÓGICA DE MENÚ Y CARRITO (Igual que v0.8.5) ---
     function abrirLocal(id) {
       localActivo = locales[id];
       linkGPS = "";
@@ -579,7 +587,7 @@
         lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
           <div style="display:flex; justify-content:space-between">
             <strong>${item.nombre}</strong>
-            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; margin-left:8px;">X</b></span>
+            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer; font-size:1.2rem; margin-left:10px;">X</b></span>
           </div>${txt}
         </div>`;
         t += item.precioFinal;
@@ -598,7 +606,7 @@
 
     function abrirUbicacionLocal() { if (localActivo) window.open(localActivo.mapaUrl, '_blank'); }
 
-    function obtenerUbicacionGPS() {
+    function obtenerUbicacionGPSParaEnvio() {
       const btn = document.getElementById("btnGPS");
       btn.innerText = "⏳ Obteniendo...";
       navigator.geolocation.getCurrentPosition(
@@ -652,7 +660,7 @@
       const se = document.getElementById("tipoEntrega").value;
       const di = document.getElementById("direccionCliente").value.trim();
       if(!n || carrito.length === 0) { alert("Completá nombre y agregá algo al carrito."); return; }
-      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS."); return; }
+      if(se === "delivery" && (!di || !linkGPS)) { alert("Falta dirección o ubicación GPS para el cadete."); return; }
       
       let m = `¡Hola *${localActivo.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
       let t = 0;
@@ -666,7 +674,10 @@
       m += `%0A💰 *TOTAL: $${t}*%0A`;
       m += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
       
-      m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio (Zona ${zonaElegida})` : "Retiro por local"}%0A`;
+      let textoFiltroInfo = contextoActual !== "" && !contextoActual.includes("BÚSQUEDA") && !contextoActual.includes("CERCA") 
+                            ? ` (${contextoActual})` 
+                            : ` (Zona ${localActivo.zona})`;
+      m += `🛵 *Entrega:* ${se === "delivery" ? `A domicilio${textoFiltroInfo}` : "Retiro por local"}%0A`;
       
       if(se === "delivery") m += `🏠 *Dirección:* ${di}%0A📍 *Mapa:* ${linkGPS}%0A`;
       const obs = document.getElementById("observacionesCliente").value.trim();
@@ -675,8 +686,6 @@
       localStorage.removeItem('dp_carrito');
       window.open(`https://wa.me/${localActivo.whatsapp}?text=${m}`, "_blank");
     }
-
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>
 </html>
