@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Dale pué - Lo nuestro, al toque 🛵</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <!-- Leaflet para el mapa de Salta -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -30,22 +31,18 @@
     .form-group { margin-top: 15px; display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
     .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
-    .btn-gps.exito { background: #28a745; color: white; }
-    .btn-mapa { background: #007bff; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
     .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
     .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
     .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
-    .seccion-modal-titulo { border-left: 4px solid #ffb800; padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
     #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- VISTA SELECCIÓN DE LOCALES -->
     <div id="vista-locales">
       <div class="header-plataforma">
         <h1>Dale pué 🛵</h1>
@@ -61,191 +58,211 @@
       </div>
     </div>
 
+    <!-- VISTA MENÚ DEL LOCAL -->
     <div id="vista-menu" style="display: none;">
       <div class="header-local">
         <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
         <h1 id="nombre-local-header">EL OESTE</h1>
-        <p id="direccion-local-header">Leguizamón 1594</p>
+        <p>Leguizamón 1594 - Salta</p>
       </div>
-      <h2 class="categoria-titulo">Nuestras Variedades 🥪</h2>
-      <div id="contenedor-productos"></div>
+      <h2 class="categoria-titulo">El Menú 🥪🥤</h2>
+      <div id="contenedor-productos">Cargando menú...</div>
+
       <div id="carrito">
         <div class="header-carrito"><h3>🛒 Tu Pedido</h3><button class="btn-vaciar" id="btnVaciar" onclick="confirmarVaciarCarrito()" style="display: none;">🗑️</button></div>
         <div id="listaCarrito"></div>
         <div class="total" id="totalCarrito">Total: $0</div>
+        
         <div class="form-group"><label>Tu Nombre:</label><input type="text" id="nombreCliente" placeholder="Ej: Cristian"></div>
-        <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Envío a domicilio</option><option value="retiro">Retiro por local</option></select></div>
-        <div id="seccionDireccion"><div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Av. Bicentenario 450"><div class="grid-botones-ubicacion"><button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPS()">📍 GPS</button><button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Mapa</button></div></div></div>
+        <div class="form-group"><label>Entrega:</label><select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Envío a domicilio</option><option value="retiro">Retiro por el local</option></select></div>
+        
+        <div id="seccionDireccion">
+          <div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+              <button onclick="obtenerGPS()" class="btn-entrar" style="background: #e0e0e0; color: black;" id="btnGPS">📍 GPS</button>
+              <button onclick="abrirModalMapa()" class="btn-entrar" style="background: #007bff;">🗺️ Mapa</button>
+            </div>
+          </div>
+        </div>
+        
         <div class="form-group"><label>Pago:</label><select id="metodoPago"><option>Efectivo</option><option>Transferencia / Billetera Virtual</option></select></div>
         <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
       </div>
     </div>
   </div>
 
+  <!-- MODAL EXTRAS -->
   <div id="modalExtras" class="modal-overlay">
     <div class="modal-content">
-      <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
-      <div class="seccion-modal-titulo"><h4>Aderezos</h4></div>
+      <h3 id="modalTitulo">Personalizar</h3>
       <div class="grid-aderezos" id="contenedor-aderezos"></div>
-      <div class="seccion-modal-titulo"><h4>Adicionales</h4></div>
-      <div id="contenedor-adicionales">
-        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
-      </div>
-      <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar</button>
-      <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModalExtras()">Cancelar</button>
+      <button class="btn-whatsapp" style="background:#28a745;" onclick="confirmarExtras()">Confirmar y Agregar</button>
+      <button class="btn-vaciar" style="width:100%; margin-top:10px;" onclick="cerrarModalExtras()">Cancelar</button>
     </div>
   </div>
 
+  <!-- MODAL MAPA -->
   <div id="modalMapaContenedor" class="modal-overlay">
     <div class="modal-content">
       <h3>Ubicá tu casa 🏠</h3>
       <div id="map"></div>
-      <button class="btn-whatsapp" style="background:#28a745;" onclick="confirmarMapa()">✅ Confirmar ubicación</button>
-      <button class="btn-gps" style="margin-top:10px;" onclick="cerrarModalMapa()">Cancelar</button>
+      <button class="btn-whatsapp" style="background:#28a745;" onclick="confirmarMapa()">✅ Confirmar</button>
     </div>
   </div>
 
+  <!-- FIREBASE Y LÓGICA -->
   <script type="module">
-    // --- AQUÍ CONECTAREMOS FIREBASE DESPUÉS ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Credenciales extraídas de tu captura de pantalla
+    const firebaseConfig = {
+      apiKey: "AIzaSyCwfVFtJxYiA6i1R624IRmF0SoE1o1-RPE",
+      authDomain: "dale-pue.firebaseapp.com",
+      projectId: "dale-pue",
+      storageBucket: "dale-pue.firebasestorage.app",
+      messagingSenderId: "137759081638",
+      appId: "1:137759081638:web:0816dd9327837d4dc46067",
+      measurementId: "G-75F7ZSRB02"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Salsa Golf"];
     let carrito = [];
-    let productoTemporal = null;
+    let prodTemp = null;
     let linkGPS = "";
-    let mapaInstance = null;
+    let mapa = null;
     let marcador = null;
-    let coordsTemp = null;
 
-    // Menú temporal (Esto se reemplazará por la carga de Firebase)
-    const menuActual = [
-        { nombre: "Milanesa clásica", desc: "120g carne, lechuga, tomate, huevo, cebolla + papas", precio: 12000, tipo: "comida" },
-        { nombre: "Coca Cola 500ml", desc: "Sabor original", precio: 3000, tipo: "sinalcohol" }
-    ];
+    // --- CARGAR PRODUCTOS DESDE FIREBASE ---
+    async function cargarMenu() {
+      const cont = document.getElementById("contenedor-productos");
+      cont.innerHTML = "Cargando menú del Oeste...";
+      try {
+        // Accede a: locales -> eloeste -> productos[cite: 1]
+        const querySnapshot = await getDocs(collection(db, "locales", "eloeste", "productos"));
+        cont.innerHTML = "";
+        
+        querySnapshot.forEach((doc) => {
+          const p = doc.data();
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
+          
+          const btn = document.createElement("button");
+          btn.className = "btn-agregar";
+          btn.innerText = "Agregar";
+          btn.onclick = () => p.tipo === "comida" ? abrirModalExtras(p) : agregarAlCarrito(p, [], 0);
+          
+          card.appendChild(btn);
+          cont.appendChild(card);
+        });
+      } catch (e) {
+        cont.innerHTML = "Error al cargar productos.";
+        console.error(e);
+      }
+    }
 
     window.abrirLocal = function(id) {
-      document.getElementById('vista-locales').style.display = 'none';
-      document.getElementById('vista-menu').style.display = 'block';
-      renderizarProductos();
-      window.scrollTo(0,0);
+      document.getElementById("vista-locales").style.display = "none";
+      document.getElementById("vista-menu").style.display = "block";
+      cargarMenu();
     }
 
     window.volverInicio = function() {
-      document.getElementById('vista-menu').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-    }
-
-    function renderizarProductos() {
-      const cont = document.getElementById("contenedor-productos");
-      cont.innerHTML = "";
-      menuActual.forEach(p => {
-        const d = document.createElement("div");
-        d.className = "card";
-        d.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc}</p><p class="precio">$${p.precio}</p></div>`;
-        const btn = document.createElement("button");
-        btn.className = "btn-agregar";
-        btn.innerText = "Agregar";
-        btn.onclick = () => p.tipo === "comida" ? abrirModalExtras(p) : agregarDirecto(p);
-        d.appendChild(btn);
-        cont.appendChild(d);
-      });
-    }
-
-    function agregarDirecto(p) {
-      carrito.push({ ...p, extras: [], aderezos: [], precioFinal: p.precio });
-      actualizarCarrito();
+      document.getElementById("vista-menu").style.display = "none";
+      document.getElementById("vista-locales").style.display = "block";
     }
 
     function abrirModalExtras(p) {
-      productoTemporal = p;
+      prodTemp = p;
       document.getElementById("modalTitulo").innerText = p.nombre;
       const cont = document.getElementById("contenedor-aderezos");
       cont.innerHTML = "";
-      aderezosLista.forEach(a => { cont.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; });
-      document.querySelectorAll(".extra-cb").forEach(cb => cb.checked = false);
+      aderezosLista.forEach(a => {
+        const div = document.createElement("div");
+        div.className = "opcion-check";
+        div.innerHTML = `<label><input type="checkbox" class="ade-cb" value="${a}"> ${a}</label>`;
+        cont.appendChild(div);
+      });
       document.getElementById("modalExtras").style.display = "flex";
     }
 
-    window.cerrarModalExtras = function() { document.getElementById("modalExtras").style.display = "none"; }
-
     window.confirmarExtras = function() {
-      let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
-      let totalP = pFinal.precio;
-      document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
-      document.querySelectorAll(".extra-cb:checked").forEach(cb => {
-        pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
-        totalP += parseInt(cb.value);
-      });
-      pFinal.precioFinal = totalP;
-      carrito.push(pFinal);
-      cerrarModalExtras();
+      const sel = Array.from(document.querySelectorAll(".ade-cb:checked")).map(cb => cb.value);
+      agregarAlCarrito(prodTemp, sel, 0);
+      document.getElementById("modalExtras").style.display = "none";
+    }
+
+    function agregarAlCarrito(p, ades, extraPrecio) {
+      carrito.push({ ...p, aderezos: ades, precioTotal: p.precio + extraPrecio });
       actualizarCarrito();
     }
 
     function actualizarCarrito() {
       const lista = document.getElementById("listaCarrito");
-      const btnV = document.getElementById("btnVaciar");
       lista.innerHTML = "";
       let total = 0;
-      btnV.style.display = carrito.length > 0 ? "block" : "none";
-      carrito.forEach((item, i) => {
-        let txt = item.aderezos.length > 0 ? `<br><small>⚠️ ${item.aderezos.join(", ")}</small>` : "";
-        item.extras.forEach(e => txt += `<br><small style="color:red">⚠️ + ${e.n}</small>`);
-        lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee"><div style="display:flex; justify-content:space-between"><strong>${item.nombre}</strong><span>$${item.precioFinal} <b onclick="quitarItem(${i})" style="color:red; cursor:pointer; margin-left:10px;">X</b></span></div>${txt}</div>`;
-        total += item.precioFinal;
+      carrito.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.style = "border-bottom: 1px solid #eee; padding: 5px 0;";
+        div.innerHTML = `<strong>${item.nombre}</strong> - $${item.precioTotal} <span onclick="quitar(${index})" style="color:red; cursor:pointer; float:right;">X</span>`;
+        if(item.aderezos.length > 0) div.innerHTML += `<br><small>⚠️ ${item.aderezos.join(", ")}</small>`;
+        lista.appendChild(div);
+        total += item.precioTotal;
       });
       document.getElementById("totalCarrito").innerText = "Total: $" + total;
+      document.getElementById("btnVaciar").style.display = carrito.length > 0 ? "block" : "none";
     }
 
-    window.quitarItem = function(i) { carrito.splice(i, 1); actualizarCarrito(); }
-    window.confirmarVaciarCarrito = function() { if(confirm("¿Vaciar pedido?")) { carrito = []; actualizarCarrito(); } }
-    window.toggleDireccion = function() { document.getElementById("seccionDireccion").style.display = document.getElementById("tipoEntrega").value === "retiro" ? "none" : "block"; }
+    window.quitar = (i) => { carrito.splice(i, 1); actualizarCarrito(); }
+    window.cerrarModalExtras = () => document.getElementById("modalExtras").style.display = "none";
 
-    window.obtenerUbicacionGPS = function() {
-      const btn = document.getElementById("btnGPS");
-      btn.innerText = "⏳...";
+    // --- MAPA Y GPS ---
+    window.obtenerGPS = function() {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-          btn.innerText = "✅ Listo";
-          btn.className = "btn-gps exito";
-        }, () => { alert("Error GPS"); btn.innerText = "📍 GPS"; });
+        navigator.geolocation.getCurrentPosition(p => {
+          linkGPS = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+          document.getElementById("btnGPS").innerText = "✅ Listo";
+        });
       }
     }
 
     window.abrirModalMapa = function() {
       document.getElementById("modalMapaContenedor").style.display = "flex";
-      if (!mapaInstance) {
-        mapaInstance = L.map('map').setView([-24.7821, -65.4232], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaInstance);
-        marcador = L.marker([-24.7821, -65.4232], { draggable: true }).addTo(mapaInstance);
-        mapaInstance.on('click', (e) => { marcador.setLatLng(e.latlng); coordsTemp = e.latlng; });
+      if (!mapa) {
+        mapa = L.map('map').setView([-24.7821, -65.4232], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+        marcador = L.marker([-24.7821, -65.4232], {draggable: true}).addTo(mapa);
       }
-      setTimeout(() => mapaInstance.invalidateSize(), 300);
     }
 
-    window.cerrarModalMapa = function() { document.getElementById("modalMapaContenedor").style.display = "none"; }
     window.confirmarMapa = function() {
-      let c = marcador.getLatLng();
-      linkGPS = `https://www.google.com/maps?q=${c.lat},${c.lng}`;
-      document.getElementById("btnMapa").className = "btn-mapa exito";
-      cerrarModalMapa();
+      const pos = marcador.getLatLng();
+      linkGPS = `https://www.google.com/maps?q=${pos.lat},${pos.lng}`;
+      document.getElementById("modalMapaContenedor").style.display = "none";
     }
 
+    // --- ENVÍO WHATSAPP ---
     window.enviarPedido = function() {
-      const n = document.getElementById("nombreCliente").value.trim();
-      if(!n || carrito.length === 0) { alert("Completá tu nombre y el pedido."); return; }
-      let m = `¡Hola *El Oeste*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
-      let t = 0;
+      const nombre = document.getElementById("nombreCliente").value;
+      if(!nombre || carrito.length === 0) return alert("Poné tu nombre y algo al carrito, che.");
+      
+      let msg = `¡Hola! Soy *${nombre}*. Mi pedido desde *Dale pué*:%0A%0A`;
       carrito.forEach(i => {
-        let icon = i.tipo === "sinalcohol" ? "🥤" : (i.tipo === "alcohol" ? "🍺" : "🍔");
-        m += `${icon} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`;
-        if (i.extras.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e => e.n).join(", ")}%0A`;
-        t += i.precioFinal;
+        let emoji = i.tipo === "sinalcohol" ? "🥤" : (i.tipo === "alcohol" ? "🍺" : "🍔");
+        msg += `${emoji} *${i.nombre}* ($${i.precioTotal})%0A`;
+        if(i.aderezos.length > 0) msg += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`;
       });
-      m += `%0A💰 *TOTAL: $${t}*%0A💳 *Pago:* ${document.getElementById("metodoPago").value}%0A🛵 *Entrega:* ${document.getElementById("tipoEntrega").value === "delivery" ? "Envío a domicilio" : "Retiro"}%0A`;
-      if(linkGPS) m += `📍 *Ubicación:* ${linkGPS}`;
-      window.open(`https://wa.me/5491124500967?text=${m}`, "_blank");
+      
+      msg += `%0A💰 *TOTAL: ${document.getElementById("totalCarrito").innerText}*%0A`;
+      msg += `💳 *Pago:* ${document.getElementById("metodoPago").value}%0A`;
+      msg += `🏠 *Entrega:* ${document.getElementById("direccionCliente").value}%0A`;
+      if(linkGPS) msg += `📍 *Ubicación:* ${linkGPS}`;
+      
+      window.open(`https://wa.me/5491124500967?text=${msg}`, "_blank");
     }
   </script>
 </body>
