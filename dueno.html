@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal Dueño — Dale pué</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f5f4f0;
+      --white:   #ffffff;
+      --border:  #e2e0d8;
+      --text:    #1a1a18;
+      --muted:   #7a7870;
+      --accent:  #d9232d;
+      --accent2: #ffb800;
+      --green:   #1a9e5a;
+      --radius:  12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 3rem;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: #111;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand { font-size: 1.1rem; font-weight: 600; color: var(--accent2); }
+    .topbar-sub   { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+    .btn-salir {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    /* ── LAYOUT ── */
+    .main { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+    /* ── SECCIONES ── */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title .icon {
+      width: 28px; height: 28px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* ── CAMPOS ── */
+    .field { margin-bottom: 1rem; }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.02em;
+    }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .field textarea { resize: vertical; min-height: 70px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+
+    /* ── BOTONES ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.2rem;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* ── LISTA DE PRODUCTOS ── */
+    .producto-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .producto-info { flex: 1; min-width: 0; }
+    .producto-nombre { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
+
+    .producto-acciones { display: flex; gap: 0.4rem; }
+
+    .btn-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+
+    .btn-icon:hover { background: #fee2e2; border-color: #fecaca; }
+
+    /* ── FORMULARIO NUEVO PRODUCTO ── */
+    .form-producto {
+      background: #fffbf0;
+      border: 1px dashed var(--accent2);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .form-producto.visible { display: block; }
+
+    .form-producto-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin-bottom: 1rem;
+    }
+
+    /* ── TABS DE CATEGORÍA ── */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+
+    .tab {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111;
+      color: #fff;
+      padding: 0.75rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--green); }
+    .toast.error   { background: var(--accent); }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: #111;
+    }
+
+    .login-card {
+      background: #1a1a1f;
+      border: 1px solid #2e2e36;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-brand { color: var(--accent2); font-weight: 600; font-size: 1.4rem; margin-bottom: 0.3rem; }
+    .login-sub   { color: #666; font-size: 0.85rem; margin-bottom: 1.8rem; }
+
+    .login-field { margin-bottom: 1rem; }
+    .login-field label { display: block; font-size: 0.78rem; color: #888; margin-bottom: 0.35rem; }
+    .login-field input {
+      width: 100%;
+      background: #0f0f11;
+      border: 1px solid #2e2e36;
+      border-radius: 10px;
+      color: #f0eff4;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+    }
+
+    .login-field input:focus { border-color: var(--accent2); }
+
+    .btn-login {
+      width: 100%;
+      background: var(--accent2);
+      color: #111;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    .login-error {
+      color: #f76c6c;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    .login-error.show { display: block; }
+
+    /* ── BADGE ESTADO ── */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-ok  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 2rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     PANTALLA LOGIN
+════════════════════════════════════════ -->
+<div id="pantalla-login" class="login-wrap">
+  <div class="login-card">
+    <div class="login-brand">Dale pué 🛵</div>
+    <div class="login-sub">Portal dueños / encargados</div>
+
+    <div class="login-field">
+      <label>Correo</label>
+      <input type="email" id="l-email" placeholder="tu@correo.com" autocomplete="email"/>
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" placeholder="••••••••"/>
+    </div>
+
+    <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANTALLA PRINCIPAL (post-login)
+════════════════════════════════════════ -->
+<div id="pantalla-portal" style="display:none;">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">Dale pué 🛵</div>
+      <div class="topbar-sub" id="topbar-email">—</div>
+    </div>
+    <button class="btn-salir" id="btn-salir">Salir</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ── 1. DATOS DEL LOCAL ── -->
+    <div class="section">
+      <div class="section-title">
+        <span class="icon">🏪</span>
+        Datos del local
+      </div>
+
+      <div class="field">
+        <label>Nombre del local</label>
+        <input type="text" id="f-nombre" placeholder="Ej: El Oeste"/>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" id="f-direccion" placeholder="Ej: Leguizamón 1594"/>
+        </div>
+        <div class="field">
+          <label>WhatsApp (con código de país)</label>
+          <input type="tel" id="f-whatsapp" placeholder="Ej: 5493874123456"/>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Tipo de local</label>
+          <select id="f-tipo">
+            <option>Sandwichería</option>
+            <option>Pizzería</option>
+            <option>Parrilla</option>
+            <option>Minutas</option>
+            <option>Rotisería</option>
+            <option>Heladería</option>
+            <option>Café / Cafetería</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="f-estado">
+            <option value="abierto">Abierto ✅</option>
+            <option value="cerrado">Cerrado ❌</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
+    </div>
+
+    <!-- ── 2. MENÚ ── -->
+    <div class="section">
+      <div class="section-title">
+        <span class="icon">🍽️</span>
+        Menú
+      </div>
+
+      <!-- Tabs de categoría -->
+      <div class="tabs" id="tabs-categorias">
+        <!-- se generan dinámicamente -->
+      </div>
+
+      <!-- Lista de productos de la categoría activa -->
+      <div id="lista-productos">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Botón agregar producto -->
+      <button class="btn btn-secondary" id="btn-mostrar-form" style="margin-top:1rem; width:100%;">
+        + Agregar producto
+      </button>
+
+      <!-- Formulario nuevo producto -->
+      <div class="form-producto" id="form-producto">
+        <div class="form-producto-title">Nuevo producto</div>
+
+        <div class="field">
+          <label>Nombre del producto</label>
+          <input type="text" id="p-nombre" placeholder="Ej: Sánguche de lomo"/>
+        </div>
+        <div class="field">
+          <label>Descripción (opcional)</label>
+          <textarea id="p-desc" placeholder="Ej: Lomo, lechuga, tomate y queso"></textarea>
+        </div>
+        <div class="row-3">
+          <div class="field">
+            <label>Precio ($)</label>
+            <input type="number" id="p-precio" placeholder="2500"/>
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <input type="text" id="p-categoria" placeholder="Sandwiches"/>
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="p-tipo">
+              <option value="comida">Comida 🍔</option>
+              <option value="bebida">Bebida 🥤</option>
+              <option value="alcohol">Alcohol 🍺</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green" id="btn-confirmar-producto">Guardar producto</button>
+          <button class="btn btn-secondary" id="btn-cancelar-producto">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. VISTA PREVIA ── -->
+    <div class="section">
+      <div class="section-title">
+        <span class="icon">👁️</span>
+        Vista previa del local
+      </div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1rem;">
+        Así ve el cliente tu local en la app.
+      </p>
+      <div id="preview-local" style="background:var(--bg); border-radius:12px; padding:1rem; border:1px solid var(--border);">
+        <p class="empty">Guardá los datos del local para ver la vista previa.</p>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /pantalla-portal -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIGURACIÓN FIREBASE
+//  → Usá las mismas credenciales de tu index.html
+// ─────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyCwfVFtJxYiA6i1R624IRmF0SoE1o1-RPE",
+  authDomain:        "dale-pue.firebaseapp.com",
+  projectId:         "dale-pue",
+  storageBucket:     "dale-pue.firebasestorage.app",
+  messagingSenderId: "137759081638",
+  appId:             "1:137759081638:web:0816dd9327837d4dc46067"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ─────────────────────────────────────────────
+//  ESTADO GLOBAL
+// ─────────────────────────────────────────────
+let localId       = null;   // ID del doc en Firestore
+let localData     = null;   // datos actuales del local
+let categoriaActiva = null; // tab seleccionado
+
+// ─────────────────────────────────────────────
+//  UTILIDADES
+// ─────────────────────────────────────────────
+function toast(msg, tipo = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${tipo} show`;
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function slugify(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+// ─────────────────────────────────────────────
+//  LOGIN
+// ─────────────────────────────────────────────
+document.getElementById('btn-ingresar').addEventListener('click', async () => {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':  'No existe cuenta con ese correo.',
+      'auth/wrong-password':  'Contraseña incorrecta.',
+      'auth/invalid-email':   'Correo inválido.',
+      'auth/too-many-requests': 'Demasiados intentos. Esperá un momento.',
+    };
+    errEl.textContent = msgs[e.code] || 'Error al ingresar.';
+    errEl.classList.add('show');
+  }
+});
+
+document.getElementById('l-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
+});
+
+document.getElementById('btn-salir').addEventListener('click', () => auth.signOut());
+
+// ─────────────────────────────────────────────
+//  OBSERVER DE SESIÓN
+// ─────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    document.getElementById('pantalla-login').style.display  = 'none';
+    document.getElementById('pantalla-portal').style.display = 'block';
+    document.getElementById('topbar-email').textContent = user.email;
+
+    // Buscar si ya tiene un local vinculado a su uid
+    await cargarLocalDelDueno(user.uid);
+  } else {
+    document.getElementById('pantalla-login').style.display  = 'flex';
+    document.getElementById('pantalla-portal').style.display = 'none';
+  }
+});
+
+// ─────────────────────────────────────────────
+//  CARGAR LOCAL DEL DUEÑO
+// ─────────────────────────────────────────────
+async function cargarLocalDelDueno(uid) {
+  // Buscamos el local cuyo campo "dueno_uid" coincida con el usuario
+  const q = await db.collection('locales').where('dueno_uid', '==', uid).limit(1).get();
+
+  if (!q.empty) {
+    const docSnap = q.docs[0];
+    localId   = docSnap.id;
+    localData = docSnap.data();
+    rellenarFormulario(localData);
+    renderizarMenu(localData.menu || {});
+    renderizarPreview(localData);
+  } else {
+    // Dueño nuevo sin local todavía — el form queda vacío
+    renderizarMenu({});
+  }
+}
+
+// ─────────────────────────────────────────────
+//  FORMULARIO DATOS DEL LOCAL
+// ─────────────────────────────────────────────
+function rellenarFormulario(data) {
+  document.getElementById('f-nombre').value    = data.nombre    || '';
+  document.getElementById('f-direccion').value = data.direccion || '';
+  document.getElementById('f-whatsapp').value  = data.whatsapp  || '';
+  document.getElementById('f-tipo').value      = data.tipo      || 'Sandwichería';
+  document.getElementById('f-estado').value    = data.estado    || 'abierto';
+}
+
+document.getElementById('btn-guardar-local').addEventListener('click', async () => {
+  const btn    = document.getElementById('btn-guardar-local');
+  const nombre = document.getElementById('f-nombre').value.trim();
+  if (!nombre) { toast('El nombre del local es obligatorio.', 'error'); return; }
+
+  const datos = {
+    nombre:    nombre,
+    direccion: document.getElementById('f-direccion').value.trim(),
+    whatsapp:  document.getElementById('f-whatsapp').value.trim(),
+    tipo:      document.getElementById('f-tipo').value,
+    estado:    document.getElementById('f-estado').value,
+    dueno_uid: auth.currentUser.uid,
+    menu:      localData?.menu || {}
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    if (localId) {
+      // Actualizar doc existente
+      await db.collection('locales').doc(localId).update(datos);
+    } else {
+      // Crear doc nuevo con ID basado en el nombre
+      localId = slugify(nombre);
+      await db.collection('locales').doc(localId).set(datos);
+    }
+    localData = { ...datos };
+    toast('✅ Local guardado correctamente.');
+    renderizarPreview(localData);
+  } catch(e) {
+    console.error(e);
+    toast('Error al guardar. Revisá tu conexión.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Guardar datos del local';
+});
+
+// ─────────────────────────────────────────────
+//  MENÚ — TABS Y LISTA
+// ─────────────────────────────────────────────
+function renderizarMenu(menu) {
+  const categorias = Object.keys(menu);
+  const tabsCont   = document.getElementById('tabs-categorias');
+  tabsCont.innerHTML = '';
+
+  if (categorias.length === 0) {
+    document.getElementById('lista-productos').innerHTML =
+      '<p class="empty">Todavía no hay productos. Agregá el primero 👇</p>';
+    return;
+  }
+
+  // Si no hay categoría activa, elegir la primera
+  if (!categoriaActiva || !menu[categoriaActiva]) {
+    categoriaActiva = categorias[0];
+  }
+
+  categorias.forEach(cat => {
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (cat === categoriaActiva ? ' active' : '');
+    tab.textContent = cat;
+    tab.addEventListener('click', () => {
+      categoriaActiva = cat;
+      renderizarMenu(localData.menu || {});
+    });
+    tabsCont.appendChild(tab);
+  });
+
+  // Lista de productos de la categoría activa
+  const lista    = document.getElementById('lista-productos');
+  const productos = menu[categoriaActiva] || [];
+  lista.innerHTML = '';
+
+  if (productos.length === 0) {
+    lista.innerHTML = '<p class="empty">No hay productos en esta categoría.</p>';
+    return;
+  }
+
+  productos.forEach((p, idx) => {
+    const item = document.createElement('div');
+    item.className = 'producto-item';
+    item.innerHTML = `
+      <div class="producto-info">
+        <div class="producto-nombre">${p.nombre}</div>
+        <div class="producto-meta">${p.desc || '—'} · ${p.tipo}</div>
+      </div>
+      <div class="producto-precio">$${p.precio}</div>
+      <div class="producto-acciones">
+        <button class="btn-icon" title="Eliminar" data-idx="${idx}">🗑️</button>
+      </div>`;
+
+    item.querySelector('.btn-icon').addEventListener('click', () => eliminarProducto(categoriaActiva, idx));
+    lista.appendChild(item);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  AGREGAR PRODUCTO
+// ─────────────────────────────────────────────
+document.getElementById('btn-mostrar-form').addEventListener('click', () => {
+  const form = document.getElementById('form-producto');
+  form.classList.toggle('visible');
+  // Prellenar categoría con la activa
+  if (categoriaActiva) document.getElementById('p-categoria').value = categoriaActiva;
+});
+
+document.getElementById('btn-cancelar-producto').addEventListener('click', () => {
+  document.getElementById('form-producto').classList.remove('visible');
+  limpiarFormProducto();
+});
+
+document.getElementById('btn-confirmar-producto').addEventListener('click', async () => {
+  if (!localId) { toast('Primero guardá los datos del local.', 'error'); return; }
+
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const precio = parseInt(document.getElementById('p-precio').value);
+  const cat    = document.getElementById('p-categoria').value.trim();
+
+  if (!nombre || !precio || !cat) {
+    toast('Nombre, precio y categoría son obligatorios.', 'error');
+    return;
+  }
+
+  const producto = {
+    nombre,
+    desc:   document.getElementById('p-desc').value.trim(),
+    precio,
+    tipo:   document.getElementById('p-tipo').value
+  };
+
+  // Agregar al menú local en memoria
+  if (!localData.menu) localData.menu = {};
+  if (!localData.menu[cat]) localData.menu[cat] = [];
+  localData.menu[cat].push(producto);
+
+  const btn = document.getElementById('btn-confirmar-producto');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    await db.collection('locales').doc(localId).update({ menu: localData.menu });
+    categoriaActiva = cat;
+    renderizarMenu(localData.menu);
+    document.getElementById('form-producto').classList.remove('visible');
+    limpiarFormProducto();
+    toast('✅ Producto agregado.');
+  } catch(e) {
+    console.error(e);
+    toast('Error al guardar el producto.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Guardar producto';
+});
+
+function limpiarFormProducto() {
+  ['p-nombre','p-desc','p-precio','p-categoria'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ─────────────────────────────────────────────
+//  ELIMINAR PRODUCTO
+// ─────────────────────────────────────────────
+async function eliminarProducto(cat, idx) {
+  if (!confirm('¿Eliminar este producto?')) return;
+
+  localData.menu[cat].splice(idx, 1);
+  // Si la categoría queda vacía, la borramos
+  if (localData.menu[cat].length === 0) {
+    delete localData.menu[cat];
+    categoriaActiva = Object.keys(localData.menu)[0] || null;
+  }
+
+  try {
+    await db.collection('locales').doc(localId).update({ menu: localData.menu });
+    renderizarMenu(localData.menu);
+    toast('Producto eliminado.');
+  } catch(e) {
+    toast('Error al eliminar.', 'error');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  VISTA PREVIA
+// ─────────────────────────────────────────────
+function renderizarPreview(data) {
+  const cont  = document.getElementById('preview-local');
+  const badge = data.estado === 'abierto'
+    ? '<span class="badge badge-ok">Abierto</span>'
+    : '<span class="badge badge-off">Cerrado</span>';
+
+  cont.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:.75rem;">
+      <div>
+        <div style="font-weight:700; font-size:1.1rem;">${data.nombre || '—'}</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${data.tipo || ''} • 📍 ${data.direccion || '—'}</div>
+      </div>
+      ${badge}
+    </div>
+    <div style="font-size:0.8rem; color:var(--muted);">
+      WhatsApp: ${data.whatsapp || '—'} &nbsp;|&nbsp;
+      Productos: ${contarProductos(data.menu)} en ${Object.keys(data.menu||{}).length} categorías
+    </div>`;
+}
+
+function contarProductos(menu) {
+  if (!menu) return 0;
+  return Object.values(menu).reduce((acc, arr) => acc + arr.length, 0);
+}
+</script>
+</body>
+</html>
