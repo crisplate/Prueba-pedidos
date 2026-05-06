@@ -566,14 +566,22 @@
       cont.appendChild(h2);
       const items = Array.isArray(menu[cat]) ? menu[cat] : [];
       items.forEach(p => {
+        const disponible = p.disponible !== false;
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc || ''}</p><p class="precio">$${p.precio}</p></div>`;
-        const btn = document.createElement('button');
-        btn.className = 'btn-agregar';
-        btn.innerText = 'Agregar';
-        btn.onclick = () => p.tipo === 'comida' ? abrirExtras(p) : agregarDirecto(p);
-        card.appendChild(btn);
+        card.style.opacity = disponible ? '1' : '0.5';
+        card.innerHTML = `<div class="info-producto">
+          <h3>${p.nombre}${!disponible ? ' <span style="font-size:0.75rem;color:#dc2626;font-weight:600;">· No disponible</span>' : ''}</h3>
+          <p class="desc">${p.desc || ''}</p>
+          <p class="precio">$${p.precio}</p>
+        </div>`;
+        if (disponible) {
+          const btn = document.createElement('button');
+          btn.className = 'btn-agregar';
+          btn.innerText = 'Agregar';
+          btn.onclick = () => p.tipo === 'comida' ? abrirExtras(p) : agregarDirecto(p);
+          card.appendChild(btn);
+        }
         cont.appendChild(card);
       });
     }
