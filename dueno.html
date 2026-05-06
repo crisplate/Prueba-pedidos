@@ -1,353 +1,781 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Dale pué - Lo nuestro, al toque</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-  
-  <!-- Leaflet y Firebase -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal Dueño — Dale pué</title>
+
+  <!-- Firebase compat (más simple y confiable) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --rojo: #d9232d;
-      --amarillo: #ffb800;
-      --fondo: #f0f2f5;
+      --bg:      #f5f4f0;
+      --white:   #ffffff;
+      --border:  #e2e0d8;
+      --text:    #1a1a18;
+      --muted:   #7a7870;
+      --accent:  #d9232d;
+      --yellow:  #ffb800;
+      --green:   #1a9e5a;
+      --radius:  12px;
     }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--fondo); margin: 0; padding: 15px; }
-    
-    /* VISTA PRINCIPAL */
-    .header-plataforma { text-align: center; margin-bottom: 30px; }
-    .header-plataforma h1 { color: var(--rojo); font-size: 2.5rem; margin: 0; }
-    .header-plataforma p { color: #555; margin: 5px 0; }
 
-    .tarjeta-local { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 6px solid var(--rojo); }
-    .tarjeta-local h2 { margin: 0; color: #111; font-size: 1.5rem; }
-    .btn-entrar { background: var(--rojo); color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-    /* VISTA MENÚ */
-    .header-local { text-align: center; background: #111; color: var(--amarillo); padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; }
-    .btn-volver { position: absolute; top: 15px; left: 15px; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer;}
+    /* ── LOGIN ── */
+    #pantalla-login {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: #111;
+    }
 
-    .container { max-width: 800px; margin: auto; }
-    .categoria-titulo { border-bottom: 2px solid var(--amarillo); padding-bottom: 5px; color: #333; margin-top: 30px; }
+    .login-card {
+      background: #1a1a1f;
+      border: 1px solid #2e2e36;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 360px;
+    }
 
-    .card { background: white; margin-bottom: 15px; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--amarillo); }
-    .info-producto { flex-grow: 1; padding-right: 10px; }
-    .info-producto h3 { margin: 0; color: #111; font-size: 1.1rem; }
-    .info-producto .desc { margin: 5px 0; color: #666; font-size: 0.8rem; line-height: 1.2; }
-    .info-producto .precio { margin: 5px 0 0 0; color: #28a745; font-weight: bold; }
-    .btn-agregar { background: #111; color: var(--amarillo); padding: 8px 12px; border-radius: 8px; font-weight: bold; border:none; cursor: pointer;}
-    
-    #carrito { margin-top: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .header-carrito { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .btn-vaciar { background: #dc3545; color: white; padding: 6px 12px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-    
-    .form-group { margin-top: 15px; display: flex; flex-direction: column; }
-    .form-group label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    
-    .grid-botones-ubicacion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .btn-gps { background: #e0e0e0; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
-    .btn-gps.exito { background: #28a745; color: white; }
-    .btn-mapa { background: #007bff; color: white; padding: 10px; border-radius: 8px; border:none; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;}
-    
-    .btn-whatsapp { background: #25D366; width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; color: white; border-radius: 10px; font-weight: bold; border:none; cursor: pointer;}
-    .total { font-size: 1.3rem; font-weight: bold; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
+    .login-logo {
+      color: var(--yellow);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
 
-    /* MODALES */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; max-height: 85vh; overflow-y: auto; }
-    .grid-aderezos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-    .opcion-check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 5px; background: #f9f9f9; border-radius: 5px; }
-    .seccion-modal-titulo { border-left: 4px solid var(--amarillo); padding-left: 10px; margin: 15px 0 10px 0; background: #fff8e1; }
-    #map { height: 300px; width: 100%; border-radius: 10px; margin-bottom: 15px; border: 2px solid #ccc;}
+    .login-sub {
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
+
+    .login-input {
+      width: 100%;
+      background: #0f0f11;
+      border: 1px solid #2e2e36;
+      border-radius: 10px;
+      color: #f0eff4;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: var(--yellow); }
+
+    .btn-login {
+      width: 100%;
+      background: var(--yellow);
+      color: #111;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.85rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-login:hover { opacity: 0.88; }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .login-error {
+      color: #f76c6c;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      display: none;
+      text-align: center;
+    }
+
+    .login-error.show { display: block; }
+
+    /* ── PORTAL ── */
+    #pantalla-portal { display: none; padding-bottom: 3rem; }
+
+    .topbar {
+      background: #111;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand { font-size: 1.1rem; font-weight: 700; color: var(--yellow); }
+    .topbar-email { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+    .btn-salir {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .main { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus { border-color: var(--accent); }
+
+    .field textarea { resize: vertical; min-height: 70px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.2rem;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      width: 100%;
+    }
+
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+
+    .tab {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab.active { background: #111; color: #fff; border-color: #111; }
+
+    /* ── PRODUCTOS ── */
+    .producto-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .producto-info { flex: 1; min-width: 0; }
+    .producto-nombre { font-weight: 600; font-size: 0.9rem; }
+    .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
+
+    .btn-eliminar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-eliminar:hover { background: #fee2e2; border-color: #fecaca; }
+
+    /* ── FORM NUEVO PRODUCTO ── */
+    .form-producto {
+      background: #fffbf0;
+      border: 1px dashed var(--yellow);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .form-producto.visible { display: block; }
+
+    .form-producto-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #b38000;
+      margin-bottom: 1rem;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111;
+      color: #fff;
+      padding: 0.75rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.ok { background: var(--green); }
+    .toast.err { background: var(--accent); }
+
+    .empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-ok  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    @media (max-width: 480px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div id="vista-locales">
-      <div class="header-plataforma">
-        <h1>Dale pué 🛵</h1>
-        <p>Lo nuestro, al toque</p>
-      </div>
-      <div id="lista-locales">
-        <p style="text-align:center;">Cargando locales...</p>
-      </div>
+<!-- LOGIN -->
+<div id="pantalla-login">
+  <div class="login-card">
+    <div class="login-logo">Dale pué 🛵</div>
+    <div class="login-sub">Portal dueños / encargados</div>
+
+    <label class="login-label">Correo electrónico</label>
+    <input type="email" id="l-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+
+    <label class="login-label">Contraseña</label>
+    <input type="password" id="l-pass" class="login-input" placeholder="••••••••"/>
+
+    <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="pantalla-portal">
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">Dale pué 🛵</div>
+      <div class="topbar-email" id="topbar-email">—</div>
     </div>
+    <button class="btn-salir" id="btn-salir">Salir</button>
+  </div>
 
-    <div id="vista-menu" style="display: none;">
-      <div id="header-dinamico"></div>
-      <div id="contenedor-categorias"></div>
+  <div class="main">
 
-      <div id="carrito">
-        <div class="header-carrito">
-          <h3 style="margin:0;">🛒 Tu Pedido</h3>
-          <button class="btn-vaciar" id="btnVaciar" onclick="confirmarVaciarCarrito()" style="display: none;">🗑️ Vaciar Carrito</button>
+    <!-- DATOS DEL LOCAL -->
+    <div class="section">
+      <div class="section-title">🏪 Datos del local</div>
+
+      <div class="field">
+        <label>Nombre del local</label>
+        <input type="text" id="f-nombre" placeholder="Ej: El Oeste"/>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" id="f-direccion" placeholder="Ej: Leguizamón 1594"/>
         </div>
-        <div id="listaCarrito"></div>
-        <div class="total" id="totalCarrito">Total: $0</div>
-        
-        <div class="form-group"><label>Nombre y Apellido:</label><input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez"></div>
-        <div class="form-group"><label>Entrega:</label>
-          <select id="tipoEntrega" onchange="toggleDireccion()"><option value="delivery">Envío a domicilio</option><option value="retiro">Retiro por el local</option></select>
+        <div class="field">
+          <label>WhatsApp (con código de país)</label>
+          <input type="tel" id="f-whatsapp" placeholder="5493874123456"/>
         </div>
-        <div id="seccionDireccion"><div class="form-group"><label>Dirección:</label><input type="text" id="direccionCliente" placeholder="Ej: Caseros 123">
-          <div class="grid-botones-ubicacion"><button class="btn-gps" id="btnGPS" onclick="obtenerUbicacionGPS()">📍 Usar GPS</button><button class="btn-mapa" id="btnMapa" onclick="abrirModalMapa()">🗺️ Buscar en mapa</button></div>
-        </div></div>
-        <div class="form-group"><label>Pago:</label><select id="metodoPago"><option>Efectivo</option><option>Transferencia / Billetera Virtual</option></select></div>
-        <button class="btn-whatsapp" onclick="enviarPedido()">Hacer pedido por WhatsApp</button>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Tipo de local</label>
+          <select id="f-tipo">
+            <option>Sandwichería</option>
+            <option>Pizzería</option>
+            <option>Parrilla</option>
+            <option>Minutas</option>
+            <option>Rotisería</option>
+            <option>Heladería</option>
+            <option>Café / Cafetería</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="f-estado">
+            <option value="abierto">Abierto ✅</option>
+            <option value="cerrado">Cerrado ❌</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
+    </div>
+
+    <!-- MENÚ -->
+    <div class="section">
+      <div class="section-title">🍽️ Menú</div>
+
+      <div class="tabs" id="tabs-categorias"></div>
+      <div id="lista-productos"><p class="empty">Cargando...</p></div>
+
+      <button class="btn btn-secondary" id="btn-mostrar-form" style="margin-top:1rem;">+ Agregar producto</button>
+
+      <div class="form-producto" id="form-producto">
+        <div class="form-producto-title">Nuevo producto</div>
+
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" id="p-nombre" placeholder="Ej: Milanesa clásica"/>
+        </div>
+        <div class="field">
+          <label>Descripción (opcional)</label>
+          <textarea id="p-desc" placeholder="Ej: Con lechuga, tomate y papas"></textarea>
+        </div>
+        <div class="row-3">
+          <div class="field">
+            <label>Precio ($)</label>
+            <input type="number" id="p-precio" placeholder="12000"/>
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <input type="text" id="p-categoria" placeholder="Sandwiches"/>
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="p-tipo">
+              <option value="comida">Comida 🍔</option>
+              <option value="bebida">Bebida 🥤</option>
+              <option value="alcohol">Alcohol 🍺</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green" id="btn-confirmar-producto">Guardar producto</button>
+          <button class="btn btn-secondary" id="btn-cancelar-producto">Cancelar</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL EXTRAS -->
-  <div id="modalExtras" class="modal-overlay">
-    <div class="modal-content">
-      <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
-      <div class="seccion-modal-titulo"><h4>Aderezos</h4></div>
-      <div class="grid-aderezos" id="contenedor-aderezos"></div>
-      <div class="seccion-modal-titulo"><h4>Adicionales (Opcional)</h4></div>
-      <div id="contenedor-adicionales">
-        <div class="opcion-check"><label><input type="checkbox" class="extra-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
-        <div class="opcion-check" style="margin-top:5px;"><label><input type="checkbox" class="extra-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
-      </div>
-      <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar</button>
-      <button class="btn-gps" style="background:#f1f1f1;" onclick="cerrarModalExtras()">Cancelar</button>
+    <!-- VISTA PREVIA -->
+    <div class="section">
+      <div class="section-title">👁️ Vista previa</div>
+      <div id="preview-local"><p class="empty">Guardá los datos del local para ver la vista previa.</p></div>
     </div>
-  </div>
 
-  <!-- MODAL MAPA -->
-  <div id="modalMapaContenedor" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="margin-top:0;">Ubicá tu casa 🏠</h3>
-      <div id="map"></div>
-      <button class="btn-whatsapp" style="background:#28a745; margin-top:10px;" onclick="confirmarMapa()">✅ Confirmar ubicación</button>
-      <button class="btn-gps" style="background:#f1f1f1; margin-top:10px;" onclick="cerrarModalMapa()">Cancelar</button>
-    </div>
   </div>
+</div>
 
-  <script>
-    // CONFIGURACIÓN FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
-      authDomain: "dale-pue.firebaseapp.com",
-      projectId: "dale-pue",
-      storageBucket: "dale-pue.firebasestorage.app",
-      messagingSenderId: "137759081638",
-      appId: "1:137759081638:web:0816dd9327837d4dc46067"
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCwfVFtJxYiA6i1R624IRmF0SoE1o1-RPE",
+    authDomain:        "dale-pue.firebaseapp.com",
+    projectId:         "dale-pue",
+    storageBucket:     "dale-pue.firebasestorage.app",
+    messagingSenderId: "137759081638",
+    appId:             "1:137759081638:web:0816dd9327837d4dc46067"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  // ── ESTADO ──
+  let localId       = null;
+  let localData     = null;
+  let catActiva     = null;
+
+  // ── UTILIDADES ──
+  function toast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function slugify(str) {
+    return str.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  // ── LOGIN ──
+  document.getElementById('btn-ingresar').addEventListener('click', async () => {
+    const email = document.getElementById('l-email').value.trim();
+    const pass  = document.getElementById('l-pass').value.trim();
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('btn-ingresar');
+
+    errEl.classList.remove('show');
+
+    if (!email || !pass) {
+      errEl.textContent = 'Completá email y contraseña.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Ingresando...';
+
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch(e) {
+      console.error('Error login:', e.code, e.message);
+      const msgs = {
+        'auth/user-not-found':    'No existe cuenta con ese correo.',
+        'auth/wrong-password':    'Contraseña incorrecta.',
+        'auth/invalid-email':     'Correo inválido.',
+        'auth/invalid-credential':'Email o contraseña incorrectos.',
+        'auth/too-many-requests': 'Demasiados intentos. Esperá un momento.',
+        'auth/network-request-failed': 'Error de red. Revisá tu conexión.',
+      };
+      errEl.textContent = msgs[e.code] || `Error: ${e.code}`;
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Ingresar';
+    }
+  });
+
+  document.getElementById('l-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
+  });
+
+  document.getElementById('btn-salir').addEventListener('click', () => auth.signOut());
+
+  // ── OBSERVER ──
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      document.getElementById('pantalla-login').style.display  = 'none';
+      document.getElementById('pantalla-portal').style.display = 'block';
+      document.getElementById('topbar-email').textContent = user.email;
+      await cargarLocal(user.uid);
+    } else {
+      document.getElementById('pantalla-login').style.display  = 'flex';
+      document.getElementById('pantalla-portal').style.display = 'none';
+    }
+  });
+
+  // ── CARGAR LOCAL ──
+  async function cargarLocal(uid) {
+    try {
+      const q = await db.collection('locales').where('dueno_uid', '==', uid).limit(1).get();
+      if (!q.empty) {
+        const snap = q.docs[0];
+        localId   = snap.id;
+        localData = snap.data();
+        rellenarForm(localData);
+        renderMenu(localData.menu || {});
+        renderPreview(localData);
+      } else {
+        localData = { menu: {} };
+        renderMenu({});
+      }
+    } catch(e) {
+      console.error('Error cargarLocal:', e);
+      toast('Error al cargar el local. Revisá tu conexión.', 'err');
+    }
+  }
+
+  // ── FORMULARIO LOCAL ──
+  function rellenarForm(d) {
+    document.getElementById('f-nombre').value    = d.nombre    || '';
+    document.getElementById('f-direccion').value = d.direccion || '';
+    document.getElementById('f-whatsapp').value  = d.whatsapp  || '';
+    document.getElementById('f-tipo').value      = d.tipo      || 'Sandwichería';
+    document.getElementById('f-estado').value    = d.estado    || 'abierto';
+  }
+
+  document.getElementById('btn-guardar-local').addEventListener('click', async () => {
+    const btn    = document.getElementById('btn-guardar-local');
+    const nombre = document.getElementById('f-nombre').value.trim();
+
+    if (!nombre) { toast('El nombre del local es obligatorio.', 'err'); return; }
+
+    const datos = {
+      nombre,
+      direccion: document.getElementById('f-direccion').value.trim(),
+      whatsapp:  document.getElementById('f-whatsapp').value.trim(),
+      tipo:      document.getElementById('f-tipo').value,
+      estado:    document.getElementById('f-estado').value,
+      dueno_uid: auth.currentUser.uid,
+      menu:      localData?.menu || {}
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
 
-    const aderezosLista = ["Ajo", "Ají", "Apio", "Morrón", "Kétchup", "Cheddar", "Mostaza", "Barbacoa", "Mayonesa", "Aceituna", "Roquefort", "Parmesano", "Salsa Golf", "Chimichurri"];
-    
-    let localesData = {};
-    let localActual = null;
-    let carrito = [];
-    let productoTemporal = null;
-    let linkGPS = "";
-    let mapaInstance = null, marcador = null, coordsTemp = null;
-
-    // CARGAR LOCALES DESDE FIREBASE
-    async function cargarLocales() {
-      const lista = document.getElementById('lista-locales');
-      try {
-        const querySnapshot = await db.collection('locales').get();
-        lista.innerHTML = "";
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          localesData[doc.id] = data;
-          
-          const tarjeta = document.createElement('div');
-          tarjeta.className = 'tarjeta-local';
-          if(data.colorBrand) tarjeta.style.borderLeftColor = data.colorBrand;
-          tarjeta.onclick = () => abrirLocal(doc.id);
-          
-          tarjeta.innerHTML = `
-            <div>
-              <h2>${data.nombre} ${data.estado === 'cerrado' ? '❌' : ''}</h2>
-              <p>${data.descCorta || data.tipo} • 📍 ${data.direccion}</p>
-            </div>
-            <div class="btn-entrar" style="background:${data.colorBrand || '#d9232d'}">Ver menú</div>
-          `;
-          lista.appendChild(tarjeta);
-        });
-      } catch (e) {
-        lista.innerHTML = "<p>Error al cargar. Pué, probá de nuevo.</p>";
+    try {
+      if (localId) {
+        await db.collection('locales').doc(localId).update(datos);
+      } else {
+        localId = slugify(nombre);
+        await db.collection('locales').doc(localId).set(datos);
       }
+      localData = { ...datos };
+      toast('✅ Local guardado.');
+      renderPreview(localData);
+    } catch(e) {
+      console.error('Error guardar local:', e);
+      toast('Error al guardar. Revisá tu conexión.', 'err');
     }
 
-    function abrirLocal(id) {
-      localActual = localesData[id];
-      document.getElementById('vista-locales').style.display = 'none';
-      document.getElementById('vista-menu').style.display = 'block';
-      
-      const header = document.getElementById('header-dinamico');
-      header.innerHTML = `
-        <div class="header-local" style="border-bottom: 5px solid ${localActual.colorBrand || '#ffb800'}">
-          <button class="btn-volver" onclick="volverInicio()">⬅ Volver</button>
-          <h1>${localActual.nombre.toUpperCase()}</h1>
-          <p>${localActual.descCorta || localActual.tipo} - ${localActual.direccion}</p>
+    btn.disabled    = false;
+    btn.textContent = 'Guardar datos del local';
+  });
+
+  // ── MENÚ ──
+  function renderMenu(menu) {
+    const cats   = Object.keys(menu);
+    const tabsCont = document.getElementById('tabs-categorias');
+    const lista    = document.getElementById('lista-productos');
+
+    tabsCont.innerHTML = '';
+
+    if (cats.length === 0) {
+      lista.innerHTML = '<p class="empty">No hay productos aún. Agregá el primero 👇</p>';
+      return;
+    }
+
+    if (!catActiva || !menu[catActiva]) catActiva = cats[0];
+
+    cats.forEach(cat => {
+      const tab = document.createElement('button');
+      tab.className = 'tab' + (cat === catActiva ? ' active' : '');
+      tab.textContent = cat;
+      tab.addEventListener('click', () => { catActiva = cat; renderMenu(localData.menu || {}); });
+      tabsCont.appendChild(tab);
+    });
+
+    const productos = menu[catActiva] || [];
+    lista.innerHTML = '';
+
+    if (productos.length === 0) {
+      lista.innerHTML = '<p class="empty">No hay productos en esta categoría.</p>';
+      return;
+    }
+
+    productos.forEach((p, idx) => {
+      const item = document.createElement('div');
+      item.className = 'producto-item';
+      item.innerHTML = `
+        <div class="producto-info">
+          <div class="producto-nombre">${p.nombre}</div>
+          <div class="producto-meta">${p.desc || '—'} · ${p.tipo}</div>
         </div>
-      `;
-      renderizarMenu(localActual.menu);
-      window.scrollTo(0,0);
+        <div class="producto-precio">$${p.precio}</div>
+        <button class="btn-eliminar" title="Eliminar">🗑️</button>`;
+      item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(catActiva, idx));
+      lista.appendChild(item);
+    });
+  }
+
+  // ── AGREGAR PRODUCTO ──
+  document.getElementById('btn-mostrar-form').addEventListener('click', () => {
+    const form = document.getElementById('form-producto');
+    form.classList.toggle('visible');
+    if (catActiva) document.getElementById('p-categoria').value = catActiva;
+  });
+
+  document.getElementById('btn-cancelar-producto').addEventListener('click', () => {
+    document.getElementById('form-producto').classList.remove('visible');
+    limpiarFormProducto();
+  });
+
+  document.getElementById('btn-confirmar-producto').addEventListener('click', async () => {
+    if (!localId) { toast('Primero guardá los datos del local.', 'err'); return; }
+
+    const nombre = document.getElementById('p-nombre').value.trim();
+    const precio = parseInt(document.getElementById('p-precio').value);
+    const cat    = document.getElementById('p-categoria').value.trim();
+
+    if (!nombre || !precio || !cat) {
+      toast('Nombre, precio y categoría son obligatorios.', 'err');
+      return;
     }
 
-    function renderizarMenu(menu) {
-      const cont = document.getElementById('contenedor-categorias');
-      cont.innerHTML = "";
-      
-      for (const [catNombre, productos] of Object.entries(menu)) {
-        const titulo = document.createElement('h2');
-        titulo.className = 'categoria-titulo';
-        titulo.innerText = catNombre + " 🍽️";
-        cont.appendChild(titulo);
+    const producto = {
+      nombre,
+      desc:  document.getElementById('p-desc').value.trim(),
+      precio,
+      tipo:  document.getElementById('p-tipo').value
+    };
 
-        productos.forEach(p => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `<div class="info-producto"><h3>${p.nombre}</h3><p class="desc">${p.desc || ''}</p><p class="precio">$${p.precio}</p></div>`;
-          
-          const btn = document.createElement('button');
-          btn.className = 'btn-agregar';
-          btn.innerText = "Agregar";
-          btn.onclick = () => (p.tipo === 'comida') ? abrirModalExtras(p) : agregarDirecto(p);
-          
-          card.appendChild(btn);
-          cont.appendChild(card);
-        });
-      }
+    if (!localData.menu) localData.menu = {};
+    if (!localData.menu[cat]) localData.menu[cat] = [];
+    localData.menu[cat].push(producto);
+
+    const btn = document.getElementById('btn-confirmar-producto');
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      await db.collection('locales').doc(localId).update({ menu: localData.menu });
+      catActiva = cat;
+      renderMenu(localData.menu);
+      document.getElementById('form-producto').classList.remove('visible');
+      limpiarFormProducto();
+      toast('✅ Producto agregado.');
+    } catch(e) {
+      console.error('Error agregar producto:', e);
+      toast('Error al guardar el producto.', 'err');
     }
 
-    function volverInicio() {
-      document.getElementById('vista-menu').style.display = 'none';
-      document.getElementById('vista-locales').style.display = 'block';
-      carrito = []; actualizarCarrito();
+    btn.disabled    = false;
+    btn.textContent = 'Guardar producto';
+  });
+
+  function limpiarFormProducto() {
+    ['p-nombre','p-desc','p-precio','p-categoria'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+
+  // ── ELIMINAR PRODUCTO ──
+  async function eliminarProducto(cat, idx) {
+    if (!confirm('¿Eliminás este producto?')) return;
+
+    localData.menu[cat].splice(idx, 1);
+    if (localData.menu[cat].length === 0) {
+      delete localData.menu[cat];
+      catActiva = Object.keys(localData.menu)[0] || null;
     }
 
-    // LÓGICA CARRITO Y EXTRAS (Mantenida del v0.8_67)
-    function agregarDirecto(p) {
-      carrito.push({ ...p, extras: [], aderezos: [], precioFinal: p.precio });
-      actualizarCarrito();
+    try {
+      await db.collection('locales').doc(localId).update({ menu: localData.menu });
+      renderMenu(localData.menu);
+      toast('Producto eliminado.');
+    } catch(e) {
+      toast('Error al eliminar.', 'err');
     }
+  }
 
-    function abrirModalExtras(p) {
-      productoTemporal = p;
-      document.getElementById("modalTitulo").innerText = p.nombre;
-      const contAde = document.getElementById("contenedor-aderezos");
-      contAde.innerHTML = "";
-      aderezosLista.forEach(a => { 
-        contAde.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="aderezo-cb" value="${a}"> ${a}</label></div>`; 
-      });
-      document.querySelectorAll(".extra-cb").forEach(cb => cb.checked = false);
-      document.getElementById("modalExtras").style.display = "flex";
-    }
+  // ── VISTA PREVIA ──
+  function renderPreview(d) {
+    const badge = d.estado === 'abierto'
+      ? '<span class="badge badge-ok">Abierto</span>'
+      : '<span class="badge badge-off">Cerrado</span>';
 
-    function cerrarModalExtras() { document.getElementById("modalExtras").style.display = "none"; }
+    const totalProductos = d.menu ? Object.values(d.menu).reduce((a, arr) => a + arr.length, 0) : 0;
+    const totalCats      = d.menu ? Object.keys(d.menu).length : 0;
 
-    function confirmarExtras() {
-      let pFinal = { ...productoTemporal, extras: [], aderezos: [] };
-      let totalP = pFinal.precio;
-      document.querySelectorAll(".aderezo-cb:checked").forEach(cb => pFinal.aderezos.push(cb.value));
-      document.querySelectorAll(".extra-cb:checked").forEach(cb => {
-        pFinal.extras.push({ n: cb.getAttribute("data-nombre"), p: parseInt(cb.value) });
-        totalP += parseInt(cb.value);
-      });
-      pFinal.precioFinal = totalP;
-      carrito.push(pFinal);
-      cerrarModalExtras(); actualizarCarrito();
-    }
-
-    function actualizarCarrito() {
-      const lista = document.getElementById("listaCarrito");
-      lista.innerHTML = "";
-      let total = 0;
-      document.getElementById("btnVaciar").style.display = (carrito.length > 0) ? "block" : "none";
-      
-      carrito.forEach((item, i) => {
-        let txt = "";
-        if (item.aderezos?.length > 0) txt += `<small>Aderezos: ${item.aderezos.join(", ")}</small>`;
-        if (item.extras?.length > 0) item.extras.forEach(e => txt += `<br><small style="color:red">+ ${e.n}</small>`);
-        
-        lista.innerHTML += `<div style="padding:10px 0; border-bottom:1px solid #eee">
-          <div style="display:flex; justify-content:space-between">
-            <strong>${item.nombre}</strong>
-            <span>$${item.precioFinal} <b onclick="carrito.splice(${i},1);actualizarCarrito()" style="color:red; cursor:pointer;">X</b></span>
-          </div>${txt}
-        </div>`;
-        total += item.precioFinal;
-      });
-      document.getElementById("totalCarrito").innerText = "Total: $" + total;
-    }
-
-    function confirmarVaciarCarrito() { if(confirm("¿Vaciamos el pedido?")) { carrito = []; actualizarCarrito(); } }
-    function toggleDireccion() { document.getElementById("seccionDireccion").style.display = (document.getElementById("tipoEntrega").value === "retiro") ? "none" : "block"; }
-
-    // MAPA Y GPS
-    function obtenerUbicacionGPS() {
-      const btn = document.getElementById("btnGPS");
-      btn.innerText = "⏳...";
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          linkGPS = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-          btn.innerText = "✅ GPS Listo"; btn.className = "btn-gps exito";
-        }, () => { alert("No se pudo obtener ubicación."); btn.innerText = "📍 GPS"; });
-      }
-    }
-
-    function abrirModalMapa() {
-      document.getElementById("modalMapaContenedor").style.display = "flex";
-      const latSalta = -24.7821, lngSalta = -65.4232;
-      if (!mapaInstance) {
-        mapaInstance = L.map('map').setView([latSalta, lngSalta], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapaInstance);
-        marcador = L.marker([latSalta, lngSalta], { draggable: true }).addTo(mapaInstance);
-        marcador.on('dragend', () => { coordsTemp = marcador.getLatLng(); });
-      }
-      setTimeout(() => { mapaInstance.invalidateSize(); }, 300);
-    }
-
-    function confirmarMapa() {
-      if (coordsTemp) {
-        linkGPS = `https://www.google.com/maps?q=${coordsTemp.lat},${coordsTemp.lng}`;
-        document.getElementById("btnMapa").innerText = "✅ Mapa Listo";
-        document.getElementById("btnMapa").className = "btn-mapa exito";
-      }
-      cerrarModalMapa();
-    }
-    function cerrarModalMapa() { document.getElementById("modalMapaContenedor").style.display = "none"; }
-
-    // ENVÍO WHATSAPP (Formato Estricto)
-    function enviarPedido() {
-      const n = document.getElementById("nombreCliente").value.trim();
-      if(!n || carrito.length === 0) { alert("Completá nombre y pedido."); return; }
-      
-      let m = `¡Hola *${localActual.nombre}*! 👋 Soy *${n}*. Pedido desde *Dale pué*:%0A%0A`;
-      let t = 0;
-      
-      carrito.forEach(i => {
-        let ico = i.tipo === "comida" ? "🍔" : (i.tipo === "alcohol" ? "🍺" : "🥤");
-        m += `${ico} *${i.nombre}* ($${i.precioFinal})%0A`;
-        if (i.aderezos?.length > 0) m += `   ⚠️ Aderezos: ${i.aderezos.join(", ")}%0A`;
-        if (i.extras?.length > 0) m += `   ⚠️ Extras: ${i.extras.map(e=>e.n).join(", ")}%0A`;
-        t += i.precioFinal;
-      });
-      
-      m += `%0A💰 *TOTAL: $${t}*%0A💳 *Pago:* ${document.getElementById("metodoPago").value}%0A🛵 *Entrega:* ${document.getElementById("tipoEntrega").value}%0A`;
-      if(document.getElementById("direccionCliente").value) m += `🏠 *Dirección:* ${document.getElementById("direccionCliente").value}%0A`;
-      if(linkGPS) m += `📍 *Mapa:* ${linkGPS}`;
-      
-      window.open(`https://wa.me/${localActual.whatsapp}?text=${m}`, "_blank");
-    }
-
-    window.onload = cargarLocales;
-  </script>
+    document.getElementById('preview-local').innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:.75rem;">
+        <div>
+          <div style="font-weight:700; font-size:1.1rem;">${d.nombre || '—'}</div>
+          <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${d.tipo || ''} • 📍 ${d.direccion || '—'}</div>
+        </div>
+        ${badge}
+      </div>
+      <div style="font-size:0.8rem; color:var(--muted);">
+        WhatsApp: ${d.whatsapp || '—'} &nbsp;|&nbsp;
+        ${totalProductos} productos en ${totalCats} categorías
+      </div>`;
+  }
+</script>
 </body>
 </html>
