@@ -256,6 +256,33 @@
     .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
 
+    .btn-editar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-editar:hover { background: #fef9c3; border-color: #fde047; }
+
+    .form-edicion {
+      display: none;
+      background: #f0fdf4;
+      border: 1px dashed var(--green);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+    .form-edicion.visible { display: block; }
+    .form-edicion-title { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-bottom: 0.75rem; }
+
     .btn-eliminar {
       width: 32px;
       height: 32px;
@@ -660,6 +687,9 @@
     }
 
     productos.forEach((p, idx) => {
+      const wrapper = document.createElement('div');
+
+      // Tarjeta del producto
       const item = document.createElement('div');
       item.className = 'producto-item';
       item.innerHTML = `
@@ -668,9 +698,72 @@
           <div class="producto-meta">${p.desc || '—'} · ${p.tipo}</div>
         </div>
         <div class="producto-precio">$${p.precio}</div>
-        <button class="btn-eliminar" title="Eliminar">🗑️</button>`;
+        <div style="display:flex; gap:0.3rem;">
+          <button class="btn-editar" title="Editar">✏️</button>
+          <button class="btn-eliminar" title="Eliminar">🗑️</button>
+        </div>`;
+
+      // Form de edición inline
+      const formEd = document.createElement('div');
+      formEd.className = 'form-edicion';
+      formEd.innerHTML = `
+        <div class="form-edicion-title">✏️ Editando: ${p.nombre}</div>
+        <div class="field"><label>Nombre</label><input type="text" class="ed-nombre" value="${p.nombre}"/></div>
+        <div class="field"><label>Descripción</label><textarea class="ed-desc">${p.desc || ''}</textarea></div>
+        <div class="row-2">
+          <div class="field"><label>Precio ($)</label><input type="number" class="ed-precio" value="${p.precio}"/></div>
+          <div class="field"><label>Tipo</label>
+            <select class="ed-tipo">
+              <option value="comida" ${p.tipo==='comida'?'selected':''}>Comida 🍔</option>
+              <option value="bebida" ${p.tipo==='bebida'?'selected':''}>Bebida 🥤</option>
+              <option value="alcohol" ${p.tipo==='alcohol'?'selected':''}>Alcohol 🍺</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green btn-guardar-edicion">Guardar cambios</button>
+          <button class="btn btn-secondary btn-cancelar-edicion">Cancelar</button>
+        </div>`;
+
+      // Eventos
+      item.querySelector('.btn-editar').addEventListener('click', () => {
+        formEd.classList.toggle('visible');
+      });
+
       item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(catActiva, idx));
-      lista.appendChild(item);
+
+      formEd.querySelector('.btn-cancelar-edicion').addEventListener('click', () => {
+        formEd.classList.remove('visible');
+      });
+
+      formEd.querySelector('.btn-guardar-edicion').addEventListener('click', async () => {
+        const nuevoNombre = formEd.querySelector('.ed-nombre').value.trim();
+        const nuevaDesc   = formEd.querySelector('.ed-desc').value.trim();
+        const nuevoPrecio = parseInt(formEd.querySelector('.ed-precio').value);
+        const nuevoTipo   = formEd.querySelector('.ed-tipo').value;
+
+        if (!nuevoNombre || !nuevoPrecio) { toast('Nombre y precio son obligatorios.', 'err'); return; }
+
+        localData.menu[catActiva][idx] = { nombre: nuevoNombre, desc: nuevaDesc, precio: nuevoPrecio, tipo: nuevoTipo };
+
+        const btn = formEd.querySelector('.btn-guardar-edicion');
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        try {
+          await db.collection('locales').doc(localId).update({ menu: localData.menu });
+          renderMenu(localData.menu);
+          toast('✅ Producto actualizado.');
+        } catch(e) {
+          toast('Error al guardar.', 'err');
+          btn.disabled = false;
+          btn.textContent = 'Guardar cambios';
+        }
+      });
+
+      wrapper.appendChild(item);
+      wrapper.appendChild(formEd);
+      lista.appendChild(wrapper);
     });
   }
 
