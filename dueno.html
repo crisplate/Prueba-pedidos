@@ -437,6 +437,12 @@
         </div>
       </div>
 
+      <div class="field">
+        <label>Horarios (se muestra en la app al cliente)</label>
+        <textarea id="f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Escribí cada línea por separado. Se muestra tal cual en la app.</small>
+      </div>
+
       <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
     </div>
 
@@ -615,6 +621,9 @@
     document.getElementById('f-whatsapp').value  = d.whatsapp  || '';
     document.getElementById('f-tipo').value      = d.tipo      || 'Sandwichería';
     document.getElementById('f-estado').value    = d.estado    || 'abierto';
+    document.getElementById('f-horarios').value  = d.horariosTxt
+      ? d.horariosTxt.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
+      : '';
   }
 
   document.getElementById('btn-guardar-local').addEventListener('click', async () => {
@@ -623,14 +632,20 @@
 
     if (!nombre) { toast('El nombre del local es obligatorio.', 'err'); return; }
 
+    const horariosRaw = document.getElementById('f-horarios').value.trim();
+    const horariosTxt = horariosRaw
+      ? horariosRaw.split('\n').map(l => `🕒 <b>${l.trim()}</b>`).join(' <br> ')
+      : '';
+
     const datos = {
       nombre,
-      direccion: document.getElementById('f-direccion').value.trim(),
-      whatsapp:  document.getElementById('f-whatsapp').value.trim(),
-      tipo:      document.getElementById('f-tipo').value,
-      estado:    document.getElementById('f-estado').value,
-      dueno_uid: auth.currentUser.uid,
-      menu:      localData?.menu || {}
+      direccion:   document.getElementById('f-direccion').value.trim(),
+      whatsapp:    document.getElementById('f-whatsapp').value.trim(),
+      tipo:        document.getElementById('f-tipo').value,
+      estado:      document.getElementById('f-estado').value,
+      horariosTxt,
+      dueno_uid:   auth.currentUser.uid,
+      menu:        localData?.menu || {}
     };
 
     btn.disabled    = true;
