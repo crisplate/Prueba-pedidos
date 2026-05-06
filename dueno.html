@@ -256,6 +256,59 @@
     .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
 
+    /* ── GESTIÓN CATEGORÍAS ── */
+    .cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .cat-acciones {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .btn-cat {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
+    .btn-cat:hover { background: var(--bg); }
+    .btn-cat.danger:hover { background: #fee2e2; border-color: #fecaca; }
+
+    /* ── TOGGLE DISPONIBLE ── */
+    .toggle-disponible {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .toggle-disponible.activo { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-disponible.inactivo { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .producto-item.no-disponible { opacity: 0.55; }
+
     .btn-editar {
       width: 32px;
       height: 32px;
@@ -683,7 +736,7 @@
 
   // ── MENÚ ──
   function renderMenu(menu) {
-    const cats   = Object.keys(menu);
+    const cats     = Object.keys(menu);
     const tabsCont = document.getElementById('tabs-categorias');
     const lista    = document.getElementById('lista-productos');
 
@@ -696,7 +749,8 @@
 
     if (!catActiva || !menu[catActiva]) catActiva = cats[0];
 
-    cats.forEach(cat => {
+    // ── TABS con botones de orden y acciones ──
+    cats.forEach((cat, catIdx) => {
       const tab = document.createElement('button');
       tab.className = 'tab' + (cat === catActiva ? ' active' : '');
       tab.textContent = cat;
@@ -704,32 +758,98 @@
       tabsCont.appendChild(tab);
     });
 
-    const productos = menu[catActiva] || [];
+    // ── HEADER DE CATEGORÍA CON ACCIONES ──
     lista.innerHTML = '';
+    const catHeader = document.createElement('div');
+    catHeader.className = 'cat-header';
+    const catIdx = cats.indexOf(catActiva);
+    catHeader.innerHTML = `
+      <span style="font-weight:600; font-size:0.9rem; color:var(--muted);">${catActiva}</span>
+      <div class="cat-acciones">
+        <button class="btn-cat" title="Subir categoría" id="btn-cat-subir">⬆️</button>
+        <button class="btn-cat" title="Bajar categoría" id="btn-cat-bajar">⬇️</button>
+        <button class="btn-cat" title="Renombrar categoría" id="btn-cat-renombrar">✏️</button>
+        <button class="btn-cat danger" title="Eliminar categoría completa" id="btn-cat-eliminar">🗑️</button>
+      </div>`;
+    lista.appendChild(catHeader);
+
+    // Subir categoría
+    catHeader.querySelector('#btn-cat-subir').addEventListener('click', async () => {
+      if (catIdx === 0) return;
+      const nuevoMenu = reordenarCat(menu, catActiva, -1);
+      await guardarMenu(nuevoMenu);
+    });
+
+    // Bajar categoría
+    catHeader.querySelector('#btn-cat-bajar').addEventListener('click', async () => {
+      if (catIdx === cats.length - 1) return;
+      const nuevoMenu = reordenarCat(menu, catActiva, 1);
+      await guardarMenu(nuevoMenu);
+    });
+
+    // Renombrar categoría
+    catHeader.querySelector('#btn-cat-renombrar').addEventListener('click', async () => {
+      const nuevoNombre = prompt(`Nuevo nombre para "${catActiva}":`, catActiva);
+      if (!nuevoNombre || nuevoNombre.trim() === catActiva) return;
+      const nuevoMenu = {};
+      for (let c in menu) {
+        nuevoMenu[c === catActiva ? nuevoNombre.trim() : c] = menu[c];
+      }
+      catActiva = nuevoNombre.trim();
+      await guardarMenu(nuevoMenu);
+    });
+
+    // Eliminar categoría completa
+    catHeader.querySelector('#btn-cat-eliminar').addEventListener('click', async () => {
+      const cant = (menu[catActiva] || []).length;
+      if (!confirm(`¿Eliminar la categoría "${catActiva}" con ${cant} producto${cant !== 1 ? 's' : ''}?`)) return;
+      const nuevoMenu = { ...menu };
+      delete nuevoMenu[catActiva];
+      catActiva = Object.keys(nuevoMenu)[0] || null;
+      await guardarMenu(nuevoMenu);
+    });
+
+    // ── PRODUCTOS ──
+    const productos = menu[catActiva] || [];
 
     if (productos.length === 0) {
-      lista.innerHTML = '<p class="empty">No hay productos en esta categoría.</p>';
+      lista.innerHTML += '<p class="empty">No hay productos en esta categoría.</p>';
       return;
     }
 
     productos.forEach((p, idx) => {
+      const disponible = p.disponible !== false; // true por defecto
       const wrapper = document.createElement('div');
 
-      // Tarjeta del producto
       const item = document.createElement('div');
-      item.className = 'producto-item';
+      item.className = 'producto-item' + (disponible ? '' : ' no-disponible');
       item.innerHTML = `
         <div class="producto-info">
           <div class="producto-nombre">${p.nombre}</div>
           <div class="producto-meta">${p.desc || '—'} · ${p.tipo}</div>
         </div>
         <div class="producto-precio">$${p.precio}</div>
-        <div style="display:flex; gap:0.3rem;">
+        <div style="display:flex; gap:0.3rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="toggle-disponible ${disponible ? 'activo' : 'inactivo'}" title="Disponibilidad">
+            ${disponible ? '✅ Disponible' : '❌ No disponible'}
+          </button>
           <button class="btn-editar" title="Editar">✏️</button>
           <button class="btn-eliminar" title="Eliminar">🗑️</button>
         </div>`;
 
-      // Form de edición inline
+      // Toggle disponibilidad
+      item.querySelector('.toggle-disponible').addEventListener('click', async () => {
+        localData.menu[catActiva][idx].disponible = !disponible;
+        await guardarMenu(localData.menu);
+      });
+
+      item.querySelector('.btn-editar').addEventListener('click', () => {
+        formEd.classList.toggle('visible');
+      });
+
+      item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(catActiva, idx));
+
+      // Form edición inline
       const formEd = document.createElement('div');
       formEd.className = 'form-edicion';
       formEd.innerHTML = `
@@ -751,13 +871,6 @@
           <button class="btn btn-secondary btn-cancelar-edicion">Cancelar</button>
         </div>`;
 
-      // Eventos
-      item.querySelector('.btn-editar').addEventListener('click', () => {
-        formEd.classList.toggle('visible');
-      });
-
-      item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(catActiva, idx));
-
       formEd.querySelector('.btn-cancelar-edicion').addEventListener('click', () => {
         formEd.classList.remove('visible');
       });
@@ -770,27 +883,50 @@
 
         if (!nuevoNombre || !nuevoPrecio) { toast('Nombre y precio son obligatorios.', 'err'); return; }
 
-        localData.menu[catActiva][idx] = { nombre: nuevoNombre, desc: nuevaDesc, precio: nuevoPrecio, tipo: nuevoTipo };
+        localData.menu[catActiva][idx] = {
+          ...localData.menu[catActiva][idx],
+          nombre: nuevoNombre,
+          desc:   nuevaDesc,
+          precio: nuevoPrecio,
+          tipo:   nuevoTipo
+        };
 
         const btn = formEd.querySelector('.btn-guardar-edicion');
         btn.disabled = true;
         btn.textContent = 'Guardando...';
 
-        try {
-          await db.collection('locales').doc(localId).update({ menu: localData.menu });
-          renderMenu(localData.menu);
-          toast('✅ Producto actualizado.');
-        } catch(e) {
-          toast('Error al guardar.', 'err');
-          btn.disabled = false;
-          btn.textContent = 'Guardar cambios';
-        }
+        await guardarMenu(localData.menu);
       });
 
       wrapper.appendChild(item);
       wrapper.appendChild(formEd);
       lista.appendChild(wrapper);
     });
+  }
+
+  // ── HELPERS MENU ──
+  function reordenarCat(menu, cat, direccion) {
+    const cats = Object.keys(menu);
+    const idx  = cats.indexOf(cat);
+    const nuevo = idx + direccion;
+    if (nuevo < 0 || nuevo >= cats.length) return menu;
+    // Intercambiar
+    [cats[idx], cats[nuevo]] = [cats[nuevo], cats[idx]];
+    const nuevoMenu = {};
+    cats.forEach(c => nuevoMenu[c] = menu[c]);
+    return nuevoMenu;
+  }
+
+  async function guardarMenu(nuevoMenu) {
+    try {
+      await db.collection('locales').doc(localId).update({ menu: nuevoMenu });
+      localData.menu = nuevoMenu;
+      renderMenu(nuevoMenu);
+      toast('✅ Guardado.');
+    } catch(e) {
+      console.error(e);
+      toast('Error al guardar.', 'err');
+    }
   }
 
   // ── AGREGAR PRODUCTO ──
