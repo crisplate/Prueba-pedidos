@@ -363,6 +363,7 @@
           whatsapp:   d.whatsapp   || '',
           mapaUrl:    d.mapaUrl    || '',
           estado:     d.estado     || 'abierto',
+          tags:       d.tags       || [],
           menu:       d.menu       || {},
           estaAbierto: function() { return this.estado === 'abierto'; }
         };
@@ -409,6 +410,11 @@
     for (let id in todosLosLocales) {
       const loc = todosLosLocales[id];
       let match = loc.nombre.toLowerCase().includes(t) || (loc.descCorta || '').toLowerCase().includes(t);
+      // Buscar en tags del local
+      if (!match && loc.tags) {
+        match = loc.tags.some(tag => tag.includes(t));
+      }
+      // Buscar en productos del menú
       if (!match && loc.menu) {
         for (let cat in loc.menu) {
           (loc.menu[cat] || []).forEach(item => {
