@@ -443,6 +443,12 @@
         <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Escribí cada línea por separado. Se muestra tal cual en la app.</small>
       </div>
 
+      <div class="field">
+        <label>Palabras clave (separadas por coma)</label>
+        <input type="text" id="f-tags" placeholder="Ej: milanesa, lomo, papas fritas, gaseosa, cerveza"/>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Ayudan a que los clientes encuentren tu local al buscar por productos.</small>
+      </div>
+
       <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
     </div>
 
@@ -624,6 +630,7 @@
     document.getElementById('f-horarios').value  = d.horariosTxt
       ? d.horariosTxt.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
       : '';
+    document.getElementById('f-tags').value = d.tags ? d.tags.join(', ') : '';
   }
 
   document.getElementById('btn-guardar-local').addEventListener('click', async () => {
@@ -637,6 +644,9 @@
       ? horariosRaw.split('\n').map(l => `🕒 <b>${l.trim()}</b>`).join(' <br> ')
       : '';
 
+    const tagsRaw = document.getElementById('f-tags').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [];
+
     const datos = {
       nombre,
       direccion:   document.getElementById('f-direccion').value.trim(),
@@ -644,6 +654,7 @@
       tipo:        document.getElementById('f-tipo').value,
       estado:      document.getElementById('f-estado').value,
       horariosTxt,
+      tags,
       dueno_uid:   auth.currentUser.uid,
       menu:        localData?.menu || {}
     };
