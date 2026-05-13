@@ -342,7 +342,7 @@
 
     history.replaceState({ vista: 'inicio' }, '', '#inicio');
    await cargarLocalesFirestore();
-if (location.hash === '#menu') {
+if (location.hash === '#menu' || location.hash === '#locales') {
   const idGuardado = localStorage.getItem('dp_localActivo');
   if (idGuardado && todosLosLocales[idGuardado]) {
     abrirLocal(idGuardado);
