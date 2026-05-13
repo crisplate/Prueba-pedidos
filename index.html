@@ -613,26 +613,6 @@ async function abrirLocal(id) {
   }
 }
 
-    // Botón WhatsApp
-    const btnWA = document.getElementById('btnWA');
-    const cartel = document.getElementById('cartel-cerrado-tmp');
-    if (cartel) cartel.remove();
-    if (!loc.estaAbierto()) {
-      const c = document.createElement('div');
-      c.id = 'cartel-cerrado-tmp';
-      c.className = 'cartel-cerrado';
-      c.innerHTML = '⛔ Local CERRADO. Podés ver el menú pero no se toman pedidos ahora.';
-      document.getElementById('menu-header').insertAdjacentElement('afterend', c);
-      btnWA.innerText = "Local Cerrado ⛔";
-      btnWA.disabled = true;
-      btnWA.style.background = "#999";
-    } else {
-      btnWA.innerText = "Hacer pedido por WhatsApp";
-      btnWA.disabled = false;
-      btnWA.style.background = "#25D366";
-    }
-  }
-
   // ── EXTRAS ──
   function abrirExtras(p) {
     prodTemp = p;
