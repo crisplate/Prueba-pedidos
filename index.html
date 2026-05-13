@@ -547,6 +547,7 @@ async function abrirLocal(id) {
   }
 
   localActivo = loc;
+  localStorage.setItem('dp_localActivo', id);
 
   // Carrito
   const cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
