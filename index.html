@@ -345,7 +345,7 @@
 if (location.hash === '#menu' || location.hash === '#locales') {
   const idGuardado = localStorage.getItem('dp_localActivo');
   if (idGuardado) {
-    await abrirLocal(idGuardado);
+   abrirLocal(idGuardado);
   } else {
     history.replaceState({ vista: 'inicio' }, '', '#inicio');
   }
