@@ -507,84 +507,111 @@
     return tarjeta;
   }
 
-  // ── ABRIR LOCAL ──
-  async function abrirLocal(id) {
-    // Primero buscamos en Firestore por si se actualizó
-    let loc = todosLosLocales[id];
-    if (localesFirestore[id]) {
-      try {
-        const snap = await db.collection('locales').doc(id).get();
-        if (snap.exists) {
-          const d = snap.data();
-          loc = {
-            ...localesFirestore[id],
-            menu:   d.menu   || {},
-            estado: d.estado || 'abierto',
-            estaAbierto: function() { return this.estado === 'abierto'; }
-          };
-          todosLosLocales[id] = loc;
-        }
-      } catch(e) { console.error('Error recargando local:', e); }
-    }
+// ── ABRIR LOCAL ──
+async function abrirLocal(id) {
+  linkGPS = "";
+  document.getElementById("btnGPS").innerText  = "📍 Usar GPS";
+  document.getElementById("btnGPS").className  = "btn-gps";
+  document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
+  document.getElementById("btnMapa").className = "btn-mapa";
+  document.getElementById("dirCliente").value  = "";
 
-    localActivo = loc;
-    linkGPS = "";
-    document.getElementById("btnGPS").innerText  = "📍 Usar GPS";
-    document.getElementById("btnGPS").className  = "btn-gps";
-    document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
-    document.getElementById("btnMapa").className = "btn-mapa";
-    document.getElementById("dirCliente").value  = "";
+  history.pushState({ vista: 'menu' }, '', '#menu');
+  document.getElementById('vista-inicio').style.display  = 'none';
+  document.getElementById('vista-locales').style.display = 'none';
+  document.getElementById('vista-menu').style.display    = 'block';
+  window.scrollTo(0,0);
 
-    // Carrito
-    const cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
-    if (cg && (Date.now() - cg.tiempo < 300000) && cg.localId === id) {
-      carrito = cg.items;
-    } else {
-      carrito = [];
-      localStorage.removeItem('dp_carrito');
-    }
-    renderCarrito();
+  // Spinner mientras carga
+  document.getElementById('menu-nombre').innerText   = '...';
+  document.getElementById('menu-horarios').innerHTML = '';
+  document.getElementById('contenedor-categorias').innerHTML =
+    '<p class="spinner">⏳ Cargando menú...</p>';
 
-    history.pushState({ vista: 'menu' }, '', '#menu');
-    document.getElementById('vista-inicio').style.display  = 'none';
-    document.getElementById('vista-locales').style.display = 'none';
-    document.getElementById('vista-menu').style.display    = 'block';
-    window.scrollTo(0,0);
+  // Cargar datos frescos si es local de Firestore
+  let loc = todosLosLocales[id];
+  if (localesFirestore[id]) {
+    try {
+      const snap = await db.collection('locales').doc(id).get();
+      if (snap.exists) {
+        const d = snap.data();
+        loc = {
+          ...localesFirestore[id],
+          menu:   d.menu   || {},
+          estado: d.estado || 'abierto',
+          estaAbierto: function() { return this.estado === 'abierto'; }
+        };
+        todosLosLocales[id] = loc;
+      }
+    } catch(e) { console.error('Error recargando local:', e); }
+  }
 
-    document.getElementById('menu-nombre').innerText   = loc.nombre;
-    document.getElementById('menu-horarios').innerHTML = loc.horariosTxt || '';
+  localActivo = loc;
 
-    // Renderizar menú
-    const cont = document.getElementById('contenedor-categorias');
-    cont.innerHTML = '';
+  // Carrito
+  const cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
+  if (cg && (Date.now() - cg.tiempo < 300000) && cg.localId === id) {
+    carrito = cg.items;
+  } else {
+    carrito = [];
+    localStorage.removeItem('dp_carrito');
+  }
+  renderCarrito();
 
-    const menu = loc.menu || {};
-    for (let cat in menu) {
-      const h2 = document.createElement('h2');
-      h2.className = 'categoria-titulo';
-      h2.innerText = cat;
-      cont.appendChild(h2);
-      const items = Array.isArray(menu[cat]) ? menu[cat] : [];
-      items.forEach(p => {
-        const disponible = p.disponible !== false;
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.opacity = disponible ? '1' : '0.5';
-        card.innerHTML = `<div class="info-producto">
-          <h3>${p.nombre}${!disponible ? ' <span style="font-size:0.75rem;color:#dc2626;font-weight:600;">· No disponible</span>' : ''}</h3>
-          <p class="desc">${p.desc || ''}</p>
-          <p class="precio">$${p.precio}</p>
-        </div>`;
-        if (disponible) {
-          const btn = document.createElement('button');
-          btn.className = 'btn-agregar';
-          btn.innerText = 'Agregar';
-          btn.onclick = () => p.tipo === 'comida' ? abrirExtras(p) : agregarDirecto(p);
-          card.appendChild(btn);
-        }
-        cont.appendChild(card);
-      });
-    }
+  // Render único con datos ya listos
+  document.getElementById('menu-nombre').innerText   = loc.nombre;
+  document.getElementById('menu-horarios').innerHTML = loc.horariosTxt || '';
+
+  const cont = document.getElementById('contenedor-categorias');
+  cont.innerHTML = '';
+
+  const menu = loc.menu || {};
+  for (let cat in menu) {
+    const h2 = document.createElement('h2');
+    h2.className = 'categoria-titulo';
+    h2.innerText = cat;
+    cont.appendChild(h2);
+    const items = Array.isArray(menu[cat]) ? menu[cat] : [];
+    items.forEach(p => {
+      const disponible = p.disponible !== false;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.opacity = disponible ? '1' : '0.5';
+      card.innerHTML = `<div class="info-producto">
+        <h3>${p.nombre}${!disponible ? ' <span style="font-size:0.75rem;color:#dc2626;font-weight:600;">· No disponible</span>' : ''}</h3>
+        <p class="desc">${p.desc || ''}</p>
+        <p class="precio">$${p.precio}</p>
+      </div>`;
+      if (disponible) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-agregar';
+        btn.innerText = 'Agregar';
+        btn.onclick = () => p.tipo === 'comida' ? abrirExtras(p) : agregarDirecto(p);
+        card.appendChild(btn);
+      }
+      cont.appendChild(card);
+    });
+  }
+
+  // Estado abierto/cerrado
+  const btnWA = document.getElementById('btnWA');
+  const cartel = document.getElementById('cartel-cerrado-tmp');
+  if (cartel) cartel.remove();
+  if (!loc.estaAbierto()) {
+    const c = document.createElement('div');
+    c.id = 'cartel-cerrado-tmp';
+    c.className = 'cartel-cerrado';
+    c.innerHTML = '⛔ Local CERRADO. Podés ver el menú pero no se toman pedidos ahora.';
+    document.getElementById('menu-header').insertAdjacentElement('afterend', c);
+    btnWA.innerText = "Local Cerrado ⛔";
+    btnWA.disabled = true;
+    btnWA.style.background = "#999";
+  } else {
+    btnWA.innerText = "Hacer pedido por WhatsApp";
+    btnWA.disabled = false;
+    btnWA.style.background = "#25D366";
+  }
+}
 
     // Botón WhatsApp
     const btnWA = document.getElementById('btnWA');
