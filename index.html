@@ -341,11 +341,11 @@
     document.getElementById("dirCliente").value = "";
 
     history.replaceState({ vista: 'inicio' }, '', '#inicio');
-   await cargarLocalesFirestore();
+  await cargarLocalesFirestore();
 if (location.hash === '#menu' || location.hash === '#locales') {
   const idGuardado = localStorage.getItem('dp_localActivo');
-  if (idGuardado && todosLosLocales[idGuardado]) {
-    abrirLocal(idGuardado);
+  if (idGuardado) {
+    await abrirLocal(idGuardado);
   } else {
     history.replaceState({ vista: 'inicio' }, '', '#inicio');
   }
