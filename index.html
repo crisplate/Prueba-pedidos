@@ -340,7 +340,7 @@
     document.getElementById("inputBuscador").addEventListener("keyup", buscarEnVivo);
     document.getElementById("dirCliente").value = "";
 
-  history.replaceState({ vista: 'inicio' }, '', '#inicio');
+    history.replaceState({ vista: 'inicio' }, '', '#inicio');
     await cargarLocalesFirestore();
   });
   // ── CARGAR LOCALES DESDE FIREBASE ──
