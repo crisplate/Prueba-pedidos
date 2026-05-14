@@ -340,9 +340,9 @@
     document.getElementById("inputBuscador").addEventListener("keyup", buscarEnVivo);
     document.getElementById("dirCliente").value = "";
 
-    history.replaceState({ vista: 'inicio' }, '', '#inicio');
-await cargarLocalesFirestore();
-});
+  history.replaceState({ vista: 'inicio' }, '', '#inicio');
+    await cargarLocalesFirestore();
+  });
   // ── CARGAR LOCALES DESDE FIREBASE ──
   async function cargarLocalesFirestore() {
     try {
