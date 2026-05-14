@@ -506,9 +506,9 @@
     return tarjeta;
   }
 
-// ── ABRIR LOCAL ──
-
-  linkGPS = "";
+  // ── ABRIR LOCAL ──
+  async function abrirLocal(id) {
+    linkGPS = "";
   document.getElementById("btnGPS").innerText  = "📍 Usar GPS";
   document.getElementById("btnGPS").className  = "btn-gps";
   document.getElementById("btnMapa").innerText = "🗺️ Buscar en mapa";
@@ -546,7 +546,6 @@
   }
 
   localActivo = loc;
-  localStorage.setItem('dp_localActivo', id);
 
   // Carrito
   const cg = JSON.parse(localStorage.getItem('dp_carrito') || 'null');
