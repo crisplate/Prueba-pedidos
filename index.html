@@ -341,15 +341,7 @@
     document.getElementById("dirCliente").value = "";
 
     history.replaceState({ vista: 'inicio' }, '', '#inicio');
-  await cargarLocalesFirestore();
-if (location.hash === '#menu' || location.hash === '#locales') {
-  const idGuardado = localStorage.getItem('dp_localActivo');
-  if (idGuardado) {
-   abrirLocal(idGuardado);
-  } else {
-    history.replaceState({ vista: 'inicio' }, '', '#inicio');
-  }
-}
+await cargarLocalesFirestore();
 });
   // ── CARGAR LOCALES DESDE FIREBASE ──
   async function cargarLocalesFirestore() {
