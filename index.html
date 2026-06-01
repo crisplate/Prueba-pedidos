@@ -320,6 +320,7 @@
   const aderezosLista = ["Ajo","Ají","Apio","Morrón","Kétchup","Cheddar","Mostaza","Barbacoa","Mayonesa","Aceituna","Roquefort","Parmesano","Salsa Golf","Chimichurri"];
   let localesFirestore = {};
   let todosLosLocales  = {};
+  let firestoreListo   = false;
   let localActivo      = null;
   let carrito          = [];
   let prodTemp         = null;
@@ -371,6 +372,7 @@
       console.error('Error cargando Firestore:', e);
     }
     todosLosLocales = { ...localesFirestore, ...localesDemo };
+    firestoreListo = true;
   }
 
   // ── HISTORY API ──
@@ -435,7 +437,15 @@
   }
 
   // ── ZONAS ──
-  function mostrarZona(zona) {
+  async function mostrarZona(zona) {
+    if (!firestoreListo) {
+      const cont = document.getElementById('contenedor-lista');
+      cont.innerHTML = '<p class="spinner">⏳ Cargando locales...</p>';
+      history.pushState({ vista: 'locales' }, '', '#locales');
+      document.getElementById('vista-inicio').style.display  = 'none';
+      document.getElementById('vista-locales').style.display = 'block';
+      await cargarLocalesFirestore();
+    }
     const lista = Object.values(todosLosLocales).filter(l => l.zona === zona);
     mostrarLista(lista, `📍 ZONA ${zona}`);
   }
