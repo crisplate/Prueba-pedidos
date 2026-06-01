@@ -660,6 +660,9 @@
         const snap = q.docs[0];
         localId   = snap.id;
         localData = snap.data();
+        if (!localData.categoriasOrden) {
+          localData.categoriasOrden = Object.keys(localData.menu || {});
+        }
         rellenarForm(localData);
         renderMenu(localData.menu || {});
         renderPreview(localData);
@@ -736,7 +739,10 @@
 
   // ── MENÚ ──
   function renderMenu(menu) {
-    const cats     = Object.keys(menu);
+    const orden = localData.categoriasOrden || [];
+    const keysMenu = Object.keys(menu);
+    const cats = orden.filter(c => keysMenu.includes(c))
+      .concat(keysMenu.filter(c => !orden.includes(c)));
     const tabsCont = document.getElementById('tabs-categorias');
     const lista    = document.getElementById('lista-productos');
 
@@ -776,15 +782,15 @@
     // Subir categoría
     catHeader.querySelector('#btn-cat-subir').addEventListener('click', async () => {
       if (catIdx === 0) return;
-      const nuevoMenu = reordenarCat(menu, catActiva, -1);
-      await guardarMenu(nuevoMenu);
+      const { menu: m, orden } = reordenarCat(menu, catActiva, -1);
+      await guardarMenu(m, orden);
     });
 
     // Bajar categoría
     catHeader.querySelector('#btn-cat-bajar').addEventListener('click', async () => {
       if (catIdx === cats.length - 1) return;
-      const nuevoMenu = reordenarCat(menu, catActiva, 1);
-      await guardarMenu(nuevoMenu);
+      const { menu: m, orden } = reordenarCat(menu, catActiva, 1);
+      await guardarMenu(m, orden);
     });
 
     // Renombrar categoría
@@ -795,8 +801,10 @@
       for (let c in menu) {
         nuevoMenu[c === catActiva ? nuevoNombre.trim() : c] = menu[c];
       }
+      const nuevoOrden = (localData.categoriasOrden || Object.keys(menu))
+        .map(c => c === catActiva ? nuevoNombre.trim() : c);
       catActiva = nuevoNombre.trim();
-      await guardarMenu(nuevoMenu);
+      await guardarMenu(nuevoMenu, nuevoOrden);
     });
 
     // Eliminar categoría completa
@@ -805,8 +813,10 @@
       if (!confirm(`¿Eliminar la categoría "${catActiva}" con ${cant} producto${cant !== 1 ? 's' : ''}?`)) return;
       const nuevoMenu = { ...menu };
       delete nuevoMenu[catActiva];
-      catActiva = Object.keys(nuevoMenu)[0] || null;
-      await guardarMenu(nuevoMenu);
+      const nuevoOrden = (localData.categoriasOrden || Object.keys(menu))
+        .filter(c => c !== catActiva);
+      catActiva = nuevoOrden[0] || null;
+      await guardarMenu(nuevoMenu, nuevoOrden);
     });
 
     // ── PRODUCTOS ──
@@ -906,21 +916,22 @@
 
   // ── HELPERS MENU ──
   function reordenarCat(menu, cat, direccion) {
-    const cats = Object.keys(menu);
-    const idx  = cats.indexOf(cat);
+    const orden = localData.categoriasOrden && localData.categoriasOrden.length
+      ? [...localData.categoriasOrden]
+      : Object.keys(menu);
+    const idx  = orden.indexOf(cat);
     const nuevo = idx + direccion;
-    if (nuevo < 0 || nuevo >= cats.length) return menu;
-    // Intercambiar
-    [cats[idx], cats[nuevo]] = [cats[nuevo], cats[idx]];
-    const nuevoMenu = {};
-    cats.forEach(c => nuevoMenu[c] = menu[c]);
-    return nuevoMenu;
+    if (nuevo < 0 || nuevo >= orden.length) return { menu, orden };
+    [orden[idx], orden[nuevo]] = [orden[nuevo], orden[idx]];
+    return { menu, orden };
   }
 
-  async function guardarMenu(nuevoMenu) {
+  async function guardarMenu(nuevoMenu, nuevoOrden) {
+    const orden = nuevoOrden || Object.keys(nuevoMenu);
     try {
-      await db.collection('locales').doc(localId).update({ menu: nuevoMenu });
+      await db.collection('locales').doc(localId).update({ menu: nuevoMenu, categoriasOrden: orden });
       localData.menu = nuevoMenu;
+      localData.categoriasOrden = orden;
       renderMenu(nuevoMenu);
       toast('✅ Guardado.');
     } catch(e) {
@@ -961,15 +972,19 @@
     };
 
     if (!localData.menu) localData.menu = {};
+    const catNueva = !localData.menu[cat];
     if (!localData.menu[cat]) localData.menu[cat] = [];
     localData.menu[cat].push(producto);
+    if (catNueva) {
+      localData.categoriasOrden = [...(localData.categoriasOrden || Object.keys(localData.menu).filter(c => c !== cat)), cat];
+    }
 
     const btn = document.getElementById('btn-confirmar-producto');
     btn.disabled    = true;
     btn.textContent = 'Guardando...';
 
     try {
-      await db.collection('locales').doc(localId).update({ menu: localData.menu });
+      await db.collection('locales').doc(localId).update({ menu: localData.menu, categoriasOrden: localData.categoriasOrden || Object.keys(localData.menu) });
       catActiva = cat;
       renderMenu(localData.menu);
       document.getElementById('form-producto').classList.remove('visible');
@@ -997,11 +1012,12 @@
     localData.menu[cat].splice(idx, 1);
     if (localData.menu[cat].length === 0) {
       delete localData.menu[cat];
-      catActiva = Object.keys(localData.menu)[0] || null;
+      localData.categoriasOrden = (localData.categoriasOrden || []).filter(c => c !== cat);
+      catActiva = localData.categoriasOrden[0] || null;
     }
 
     try {
-      await db.collection('locales').doc(localId).update({ menu: localData.menu });
+      await db.collection('locales').doc(localId).update({ menu: localData.menu, categoriasOrden: localData.categoriasOrden || Object.keys(localData.menu) });
       renderMenu(localData.menu);
       toast('Producto eliminado.');
     } catch(e) {
