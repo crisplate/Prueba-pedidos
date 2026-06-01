@@ -536,8 +536,9 @@
         const d = snap.data();
         loc = {
           ...localesFirestore[id],
-          menu:   d.menu   || {},
-          estado: d.estado || 'abierto',
+          menu:             d.menu             || {},
+          categoriasOrden:  d.categoriasOrden  || [],
+          estado:           d.estado           || 'abierto',
           estaAbierto: function() { return this.estado === 'abierto'; }
         };
         todosLosLocales[id] = loc;
@@ -565,7 +566,10 @@
   cont.innerHTML = '';
 
   const menu = loc.menu || {};
-  for (let cat in menu) {
+  const orden = (loc.categoriasOrden && loc.categoriasOrden.length)
+    ? loc.categoriasOrden.filter(c => menu[c])
+    : Object.keys(menu);
+  orden.forEach(cat => {
     const h2 = document.createElement('h2');
     h2.className = 'categoria-titulo';
     h2.innerText = cat;
@@ -590,7 +594,7 @@
       }
       cont.appendChild(card);
     });
-  }
+  });
 
   // Estado abierto/cerrado
   const btnWA = document.getElementById('btnWA');
