@@ -775,11 +775,33 @@
   // ── CARGAR LOCAL ──
   async function cargarLocal(uid) {
     try {
+      let snap = null;
+
+      // Buscar por dueno_uid primero
       const q = await db.collection('locales').where('dueno_uid', '==', uid).limit(1).get();
+
       if (!q.empty) {
-        const snap = q.docs[0];
+        snap = q.docs[0];
+      } else {
+        // Fallback: buscar por dueno_email en caso de condicion de carrera al registrarse
+        const user = auth.currentUser;
+        if (user && user.email) {
+          const q2 = await db.collection('locales')
+            .where('dueno_email', '==', user.email.toLowerCase())
+            .limit(1)
+            .get();
+          if (!q2.empty) {
+            snap = q2.docs[0];
+            // Vincular el uid ahora que lo tenemos
+            await db.collection('locales').doc(snap.id).update({ dueno_uid: uid });
+          }
+        }
+      }
+
+      if (snap) {
         localId   = snap.id;
         localData = snap.data();
+        localData.dueno_uid = uid;
         if (!localData.categoriasOrden) {
           localData.categoriasOrden = Object.keys(localData.menu || {});
         }
@@ -789,10 +811,11 @@
       } else {
         localData = { menu: {} };
         renderMenu({});
+        toast('No hay un local asociado a tu cuenta. Contacta al administrador.', 'err');
       }
     } catch(e) {
       console.error('Error cargarLocal:', e);
-      toast('Error al cargar el local. Revisá tu conexión.', 'err');
+      toast('Error al cargar el local. Revisa tu conexion.', 'err');
     }
   }
 
