@@ -418,19 +418,41 @@
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN / REGISTRO -->
 <div id="pantalla-login">
   <div class="login-card">
     <div class="login-logo">Dale pué 🛵</div>
     <div class="login-sub">Portal dueños / encargados</div>
 
-    <label class="login-label">Correo electrónico</label>
-    <input type="email" id="l-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+    <!-- Tabs login/registro -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#ffb800; color:#111;">Ingresar</button>
+      <button id="tab-registro" onclick="switchTab('registro')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#2e2e36; color:#888;">Primera vez</button>
+    </div>
 
-    <label class="login-label">Contraseña</label>
-    <input type="password" id="l-pass" class="login-input" placeholder="••••••••"/>
+    <!-- Panel login -->
+    <div id="panel-login">
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="l-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña</label>
+      <input type="password" id="l-pass" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    </div>
 
-    <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    <!-- Panel registro -->
+    <div id="panel-registro" style="display:none;">
+      <div style="background:#1f1f2e; border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.78rem; color:#aaa; line-height:1.5;">
+        Si es tu primera vez, creá tu cuenta con el email que te indicó el administrador. Si tu email no está autorizado, no podrás registrarte.
+      </div>
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="r-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña (mínimo 6 caracteres)</label>
+      <input type="password" id="r-pass" class="login-input" placeholder="••••••••"/>
+      <label class="login-label">Repetir contraseña</label>
+      <input type="password" id="r-pass2" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-registrar">Crear cuenta</button>
+    </div>
+
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
@@ -595,6 +617,104 @@
       .replace(/\s+/g, '')
       .replace(/[^a-z0-9]/g, '');
   }
+
+  // ── TABS LOGIN / REGISTRO ──
+  function switchTab(tab) {
+    const errEl = document.getElementById('login-error');
+    errEl.classList.remove('show');
+    if (tab === 'login') {
+      document.getElementById('panel-login').style.display    = 'block';
+      document.getElementById('panel-registro').style.display = 'none';
+      document.getElementById('tab-login').style.background    = '#ffb800';
+      document.getElementById('tab-login').style.color         = '#111';
+      document.getElementById('tab-registro').style.background = '#2e2e36';
+      document.getElementById('tab-registro').style.color      = '#888';
+    } else {
+      document.getElementById('panel-login').style.display    = 'none';
+      document.getElementById('panel-registro').style.display = 'block';
+      document.getElementById('tab-login').style.background    = '#2e2e36';
+      document.getElementById('tab-login').style.color         = '#888';
+      document.getElementById('tab-registro').style.background = '#ffb800';
+      document.getElementById('tab-registro').style.color      = '#111';
+    }
+  }
+
+  // ── REGISTRO NUEVO DUEÑO ──
+  document.getElementById('btn-registrar').addEventListener('click', async () => {
+    const email  = document.getElementById('r-email').value.trim();
+    const pass   = document.getElementById('r-pass').value.trim();
+    const pass2  = document.getElementById('r-pass2').value.trim();
+    const errEl  = document.getElementById('login-error');
+    const btn    = document.getElementById('btn-registrar');
+
+    errEl.classList.remove('show');
+
+    if (!email || !pass || !pass2) {
+      errEl.textContent = 'Completá todos los campos.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (pass.length < 6) {
+      errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (pass !== pass2) {
+      errEl.textContent = 'Las contraseñas no coinciden.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Verificando...';
+
+    try {
+      const q = await db.collection('locales')
+        .where('dueno_email', '==', email.toLowerCase())
+        .limit(1)
+        .get();
+
+      if (q.empty) {
+        errEl.textContent = 'Este email no está autorizado. Contactá al administrador.';
+        errEl.classList.add('show');
+        btn.disabled    = false;
+        btn.textContent = 'Crear cuenta';
+        return;
+      }
+
+      const snap     = q.docs[0];
+      const localDoc = snap.data();
+
+      if (localDoc.dueno_uid && localDoc.dueno_uid !== 'pendiente' && localDoc.dueno_uid !== '') {
+        errEl.textContent = 'Este email ya tiene una cuenta creada. Usá la opción Ingresar.';
+        errEl.classList.add('show');
+        btn.disabled    = false;
+        btn.textContent = 'Crear cuenta';
+        return;
+      }
+
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+      await db.collection('locales').doc(snap.id).update({
+        dueno_uid: cred.user.uid
+      });
+
+    } catch(e) {
+      console.error('Error registro:', e.code, e.message);
+      const msgs = {
+        'auth/email-already-in-use':   'Ya existe una cuenta con ese email. Usá la opción Ingresar.',
+        'auth/invalid-email':          'El correo ingresado no es válido.',
+        'auth/weak-password':          'La contraseña es muy débil.',
+        'auth/network-request-failed': 'Error de red. Revisá tu conexión.',
+      };
+      errEl.textContent = msgs[e.code] || `Error: ${e.code}`;
+      errEl.classList.add('show');
+      btn.disabled    = false;
+      btn.textContent = 'Crear cuenta';
+    }
+  });
 
   // ── LOGIN ──
   document.getElementById('btn-ingresar').addEventListener('click', async () => {
