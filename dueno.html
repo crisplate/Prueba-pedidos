@@ -414,6 +414,152 @@
     @media (max-width: 480px) {
       .row-2, .row-3 { grid-template-columns: 1fr; }
     }
+
+    /* ── GRUPOS DE OPCIONES ── */
+    .grupo-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+
+    .grupo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .grupo-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .grupo-nombre {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .grupo-tipos {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .grupo-acciones {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .grupo-body {
+      border-top: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      display: none;
+    }
+
+    .grupo-body.abierto { display: block; }
+
+    .item-opcion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
+    }
+
+    .item-opcion:last-child { border-bottom: none; }
+
+    .item-opcion-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-nombre-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      border-radius: 0;
+      padding: 0.2rem 0.3rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      width: 130px;
+    }
+
+    .item-nombre-input:focus { border-bottom-color: var(--accent); }
+
+    .item-precio-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      border-radius: 0;
+      padding: 0.2rem 0.3rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--green);
+      font-weight: 600;
+      outline: none;
+      width: 70px;
+      text-align: right;
+    }
+
+    .item-precio-input:focus { border-bottom-color: var(--green); }
+
+    .toggle-item {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .toggle-item.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-item.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .toggle-grupo {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .toggle-grupo.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-grupo.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .btn-agregar-item {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: none;
+      border: 1px dashed var(--accent);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+    }
+
+    .btn-agregar-item:hover { background: #fff0f0; }
   </style>
 </head>
 <body>
@@ -615,6 +761,38 @@
         <div class="row-2">
           <button class="btn btn-green" id="btn-confirmar-producto">Guardar producto</button>
           <button class="btn btn-secondary" id="btn-cancelar-producto">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUPOS DE OPCIONES -->
+    <div class="section">
+      <div class="section-title">⚙️ Opciones para los productos</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.5;">
+        Creá grupos de opciones que se muestran al cliente cuando agrega un producto. Cada grupo aplica a uno o varios tipos de producto (comida, bebida, alcohol). Podés activar o desactivar grupos e items individuales en cualquier momento.
+      </p>
+      <div id="lista-grupos"></div>
+      <button class="btn btn-secondary" id="btn-nuevo-grupo" style="margin-top:0.5rem;">+ Nuevo grupo de opciones</button>
+
+      <div class="form-producto" id="form-nuevo-grupo" style="margin-top:1rem;">
+        <div class="form-producto-title">Nuevo grupo</div>
+        <div class="row-2">
+          <div class="field">
+            <label>Nombre del grupo</label>
+            <input type="text" id="ng-nombre" placeholder="Ej: Aderezos, Temperatura, Extras"/>
+          </div>
+          <div class="field">
+            <label>Aplica a</label>
+            <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:0.1rem;">
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="comida" checked> Comida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="bebida"> Bebida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="alcohol"> Alcohol</label>
+            </div>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green" id="btn-confirmar-grupo">Crear grupo</button>
+          <button class="btn btn-secondary" id="btn-cancelar-grupo">Cancelar</button>
         </div>
       </div>
     </div>
@@ -852,12 +1030,15 @@
         if (!localData.categoriasOrden) {
           localData.categoriasOrden = Object.keys(localData.menu || {});
         }
+        if (!localData.grupos) localData.grupos = [];
         rellenarForm(localData);
         renderMenu(localData.menu || {});
+        renderGrupos();
         renderPreview(localData);
       } else {
-        localData = { menu: {} };
+        localData = { menu: {}, grupos: [] };
         renderMenu({});
+        renderGrupos();
         toast('No hay un local asociado a tu cuenta. Contacta al administrador.', 'err');
       }
     } catch(e) {
@@ -1229,7 +1410,194 @@
     }
   }
 
-  // ── COLOR PICKER ──
+  // ── GRUPOS DE OPCIONES ──
+
+  // Renderiza todos los grupos del local
+  function renderGrupos() {
+    const grupos = localData.grupos || [];
+    const cont   = document.getElementById('lista-grupos');
+    cont.innerHTML = '';
+
+    if (grupos.length === 0) {
+      cont.innerHTML = '<p class="empty" style="padding:1rem 0;">No hay grupos de opciones. Crea el primero.</p>';
+      return;
+    }
+
+    grupos.forEach((grupo, gi) => {
+      const card = document.createElement('div');
+      card.className = 'grupo-card';
+
+      const tiposLabel = (grupo.tipos || []).join(', ') || 'todos';
+      const grupoOn    = grupo.activo !== false;
+
+      card.innerHTML = `
+        <div class="grupo-header" id="gh-${gi}">
+          <div class="grupo-header-left">
+            <span style="font-size:1rem;">▾</span>
+            <div>
+              <div class="grupo-nombre">${grupo.nombre}</div>
+              <div class="grupo-tipos">Aplica a: ${tiposLabel}</div>
+            </div>
+          </div>
+          <div class="grupo-acciones">
+            <button class="toggle-grupo ${grupoOn ? 'on' : 'off'}" id="tg-${gi}">${grupoOn ? 'Activo' : 'Inactivo'}</button>
+            <button class="btn-cat" id="btn-renombrar-grupo-${gi}" title="Renombrar">✏️</button>
+            <button class="btn-cat danger" id="btn-eliminar-grupo-${gi}" title="Eliminar grupo">🗑️</button>
+          </div>
+        </div>
+        <div class="grupo-body abierto" id="gb-${gi}">
+          <div id="items-grupo-${gi}"></div>
+          <button class="btn-agregar-item" id="btn-add-item-${gi}">+ Agregar opcion</button>
+        </div>`;
+
+      cont.appendChild(card);
+
+      // Toggle abrir/cerrar cuerpo del grupo
+      document.getElementById(`gh-${gi}`).addEventListener('click', (e) => {
+        if (e.target.closest('.grupo-acciones')) return;
+        const body  = document.getElementById(`gb-${gi}`);
+        const arrow = document.getElementById(`gh-${gi}`).querySelector('span');
+        body.classList.toggle('abierto');
+        arrow.textContent = body.classList.contains('abierto') ? '▾' : '▸';
+      });
+
+      // Toggle activo/inactivo del grupo completo
+      document.getElementById(`tg-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        localData.grupos[gi].activo = !grupoOn;
+        await guardarGrupos();
+      });
+
+      // Renombrar grupo
+      document.getElementById(`btn-renombrar-grupo-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const nuevo = prompt(`Nuevo nombre para "${grupo.nombre}":`, grupo.nombre);
+        if (!nuevo || nuevo.trim() === grupo.nombre) return;
+        localData.grupos[gi].nombre = nuevo.trim();
+        await guardarGrupos();
+      });
+
+      // Eliminar grupo
+      document.getElementById(`btn-eliminar-grupo-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Eliminar el grupo "${grupo.nombre}" con todos sus items?`)) return;
+        localData.grupos.splice(gi, 1);
+        await guardarGrupos();
+      });
+
+      // Agregar item al grupo
+      document.getElementById(`btn-add-item-${gi}`).addEventListener('click', () => {
+        const nombre  = prompt('Nombre de la opcion (ej: Mayonesa, Fria, Bacon):');
+        if (!nombre || !nombre.trim()) return;
+        const precioStr = prompt('Precio adicional en $ (0 si es gratis):', '0');
+        const precio = parseInt(precioStr) || 0;
+        if (!localData.grupos[gi].items) localData.grupos[gi].items = [];
+        localData.grupos[gi].items.push({ nombre: nombre.trim(), precio, activo: true });
+        guardarGrupos();
+      });
+
+      // Renderizar items del grupo
+      renderItemsGrupo(gi, grupo.items || []);
+    });
+  }
+
+  function renderItemsGrupo(gi, items) {
+    const cont = document.getElementById(`items-grupo-${gi}`);
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    if (items.length === 0) {
+      cont.innerHTML = '<p style="font-size:0.8rem; color:var(--muted); padding:0.3rem 0;">Sin opciones todavia.</p>';
+      return;
+    }
+
+    items.forEach((item, ii) => {
+      const on  = item.activo !== false;
+      const div = document.createElement('div');
+      div.className = 'item-opcion';
+
+      const tienePrice = localData.grupos[gi].conPrecio !== false;
+
+      div.innerHTML = `
+        <div class="item-opcion-info">
+          <input type="text" class="item-nombre-input" value="${item.nombre}" data-gi="${gi}" data-ii="${ii}" title="Editar nombre"/>
+          <span style="font-size:0.75rem; color:var(--muted);">$</span>
+          <input type="number" class="item-precio-input" value="${item.precio || 0}" data-gi="${gi}" data-ii="${ii}" title="Precio adicional"/>
+        </div>
+        <div style="display:flex; gap:0.3rem; align-items:center;">
+          <button class="toggle-item ${on ? 'on' : 'off'}" data-gi="${gi}" data-ii="${ii}">${on ? 'Si' : 'No'}</button>
+          <button class="btn-cat danger btn-del-item" data-gi="${gi}" data-ii="${ii}" title="Eliminar">🗑️</button>
+        </div>`;
+
+      cont.appendChild(div);
+
+      // Editar nombre con debounce
+      div.querySelector('.item-nombre-input').addEventListener('change', async function() {
+        localData.grupos[gi].items[ii].nombre = this.value.trim();
+        await guardarGrupos(true);
+      });
+
+      // Editar precio con debounce
+      div.querySelector('.item-precio-input').addEventListener('change', async function() {
+        localData.grupos[gi].items[ii].precio = parseInt(this.value) || 0;
+        await guardarGrupos(true);
+      });
+
+      // Toggle activo item
+      div.querySelector('.toggle-item').addEventListener('click', async function() {
+        localData.grupos[gi].items[ii].activo = !on;
+        await guardarGrupos();
+      });
+
+      // Eliminar item
+      div.querySelector('.btn-del-item').addEventListener('click', async function() {
+        if (!confirm(`Eliminar "${item.nombre}"?`)) return;
+        localData.grupos[gi].items.splice(ii, 1);
+        await guardarGrupos();
+      });
+    });
+  }
+
+  async function guardarGrupos(silencioso = false) {
+    if (!localId) { toast('Primero guarda los datos del local.', 'err'); return; }
+    try {
+      await db.collection('locales').doc(localId).update({ grupos: localData.grupos || [] });
+      renderGrupos();
+      if (!silencioso) toast('Grupos guardados.');
+    } catch(e) {
+      console.error(e);
+      toast('Error al guardar grupos.', 'err');
+    }
+  }
+
+  // Form nuevo grupo
+  document.getElementById('btn-nuevo-grupo').addEventListener('click', () => {
+    document.getElementById('form-nuevo-grupo').classList.toggle('visible');
+  });
+
+  document.getElementById('btn-cancelar-grupo').addEventListener('click', () => {
+    document.getElementById('form-nuevo-grupo').classList.remove('visible');
+    document.getElementById('ng-nombre').value = '';
+  });
+
+  document.getElementById('btn-confirmar-grupo').addEventListener('click', async () => {
+    const nombre = document.getElementById('ng-nombre').value.trim();
+    if (!nombre) { toast('El nombre del grupo es obligatorio.', 'err'); return; }
+
+    const tipos = [...document.querySelectorAll('.ng-tipo:checked')].map(cb => cb.value);
+    if (tipos.length === 0) { toast('Selecciona al menos un tipo de producto.', 'err'); return; }
+
+    if (!localData.grupos) localData.grupos = [];
+    localData.grupos.push({ nombre, tipos, activo: true, items: [] });
+
+    document.getElementById('ng-nombre').value = '';
+    document.querySelectorAll('.ng-tipo').forEach(cb => cb.checked = cb.value === 'comida');
+    document.getElementById('form-nuevo-grupo').classList.remove('visible');
+
+    await guardarGrupos();
+  });
+
+
   function sincronizarColor(origen) {
     const picker = document.getElementById('f-color');
     const hex    = document.getElementById('f-color-hex');
