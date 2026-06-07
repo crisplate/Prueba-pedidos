@@ -21,6 +21,7 @@
       --accent: #d9232d;
       --dark: #111111;
       --green: #1a9e5a;
+      --yellow: #ffb800;
       --radius: 12px;
     }
 
@@ -31,273 +32,799 @@
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* Pantalla de Login Master */
+    /* LOGIN */
     #login-view {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       padding: 20px;
+      background: #111;
     }
+
     .login-box {
-      background: var(--white);
+      background: #1a1a1f;
+      border: 1px solid #2e2e36;
+      border-radius: 20px;
       padding: 2rem;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
       width: 100%;
-      max-width: 400px;
-      text-align: center;
+      max-width: 380px;
     }
-    .login-box h1 { margin-bottom: 0.5rem; color: var(--accent); }
-    .login-box p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
-    
-    input {
+
+    .login-logo { color: var(--yellow); font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .login-sub  { color: #666; font-size: 0.82rem; margin-bottom: 2rem; }
+
+    .login-label { display: block; font-size: 0.78rem; color: #888; margin-bottom: 0.3rem; font-weight: 500; }
+
+    .login-input {
       width: 100%;
-      padding: 0.8rem;
+      background: #0f0f11;
+      border: 1px solid #2e2e36;
+      border-radius: 10px;
+      color: #f0eff4;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      outline: none;
       margin-bottom: 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-family: inherit;
+      transition: border-color 0.2s;
     }
-    
-    button {
+    .login-input:focus { border-color: var(--yellow); }
+
+    .btn-login {
       width: 100%;
-      padding: 0.8rem;
-      background: var(--accent);
-      color: var(--white);
+      background: var(--yellow);
+      color: #111;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.85rem;
       cursor: pointer;
       transition: opacity 0.2s;
     }
-    button:hover { opacity: 0.9; }
+    .btn-login:hover { opacity: 0.88; }
 
-    /* Panel Master (Oculto por defecto) */
-    #admin-view { display: none; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
-    
-    header {
+    .login-error {
+      color: #f76c6c;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      display: none;
+      text-align: center;
+    }
+    .login-error.show { display: block; }
+
+    /* PANEL */
+    #admin-view { display: none; padding-bottom: 3rem; }
+
+    .topbar {
+      background: #111;
+      color: #fff;
+      padding: 1rem 1.5rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid var(--border);
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .btn-logout { background: var(--dark); width: auto; padding: 0.6rem 1.2rem; }
+    .topbar-brand { font-size: 1.1rem; font-weight: 700; color: var(--yellow); }
+    .topbar-sub   { font-size: 0.72rem; color: #666; margin-top: 2px; }
 
-    /* Tabla de Locales */
-    .table-container {
+    .btn-salir {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      width: auto;
+    }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
       background: var(--white);
-      border-radius: var(--radius);
       border: 1px solid var(--border);
-      overflow-x: auto;
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      text-align: center;
     }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 1rem; border-bottom: 1px solid var(--border); }
-    th { background: #faf9f6; color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
-    
-    .status-badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
+
+    .stat-numero { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat-label  { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+    .stat-verde  { color: var(--green); }
+    .stat-rojo   { color: var(--accent); }
+    .stat-amarillo { color: #b38000; }
+    .stat-azul   { color: #2563eb; }
+
+    /* SECCION */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      gap: 1rem;
+    }
+
+    .section-title { font-size: 1rem; font-weight: 600; }
+
+    /* ALTA LOCAL */
+    .alta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.65rem 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--accent); }
+
+    /* TABLA */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+    th { background: #faf9f6; color: var(--muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf8; }
+
+    .badge {
       display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
     }
-    .status-abierto { background: #e6f4ea; color: var(--green); }
-    .status-cerrado { background: #fce8e6; color: var(--accent); }
+    .badge-abierto  { background: #dcfce7; color: #166534; }
+    .badge-cerrado  { background: #fee2e2; color: #991b1b; }
+    .badge-vinculado { background: #dbeafe; color: #1e40af; }
+    .badge-pendiente { background: #fef9c3; color: #854d0e; }
 
-    .acciones { display: flex; gap: 0.5rem; }
-    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .btn-danger { background: var(--accent); }
+    .acciones { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
-    /* Toast */
+    .btn { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center;
+      padding: 0.5rem 0.9rem; 
+      border-radius: 8px; 
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem; 
+      font-weight: 600; 
+      border: none; 
+      cursor: pointer; 
+      transition: opacity 0.2s;
+      width: auto;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary   { background: var(--accent); color: #fff; }
+    .btn-green     { background: var(--green); color: #fff; }
+    .btn-dark      { background: #222; color: #fff; }
+    .btn-outline   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-warning   { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .btn-danger    { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* MODAL EDICION */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--muted);
+      width: auto;
+      padding: 0;
+    }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .mb { margin-bottom: 0.85rem; }
+
+    /* TOAST */
     #toast {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-      background: var(--dark); color: var(--white); padding: 12px 24px; border-radius: 8px;
-      font-weight: 500; transition: all 0.3s ease; opacity: 0; z-index: 9999;
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111; color: #fff;
+      padding: 0.75rem 1.4rem; border-radius: 999px;
+      font-size: 0.85rem; font-weight: 500;
+      transition: transform 0.3s ease;
+      z-index: 999; white-space: nowrap; opacity: 0;
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    #toast.ok  { background: var(--green); }
+    #toast.err { background: var(--accent); }
+
+    @media (max-width: 700px) {
+      .stats-grid  { grid-template-columns: 1fr 1fr; }
+      .alta-grid   { grid-template-columns: 1fr; }
+      .row-2       { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <div id="toast">Notificación</div>
+<div id="toast"></div>
 
-  <div id="login-view">
-    <div class="login-box">
-      <h1>Master Panel</h1>
-      <p>Acceso exclusivo de administrador</p>
-      <input type="email" id="email" placeholder="Correo electrónico" value="cristian_arispe93@hotmail.com" readonly style="background:#f5f4f0; color:#888;">
-      <input type="password" id="pass" placeholder="Tu contraseña de administrador">
-      <button onclick="loginMaster()">Ingresar al Panel</button>
+<!-- LOGIN -->
+<div id="login-view">
+  <div class="login-box">
+    <div class="login-logo">Dale pué 🛵</div>
+    <div class="login-sub">Panel de administración master</div>
+    <label class="login-label">Correo electrónico</label>
+    <input type="email" id="inp-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+    <label class="login-label">Contraseña</label>
+    <input type="password" id="inp-pass" class="login-input" placeholder="••••••••"/>
+    <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="admin-view">
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">Dale pué 🛵 — Master</div>
+      <div class="topbar-sub" id="topbar-email">—</div>
     </div>
+    <button class="btn-salir" onclick="auth.signOut()">Salir</button>
   </div>
 
-  <div id="admin-view">
-    <header>
-      <div>
-        <h2>Panel de Control Global</h2>
-        <p style="color: var(--muted); font-size: 0.9rem; margin-top:4px;">Gestión de locales de Dale pué</p>
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-numero stat-azul" id="stat-total">—</div>
+        <div class="stat-label">Locales totales</div>
       </div>
-      <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-    </header>
+      <div class="stat-card">
+        <div class="stat-numero stat-verde" id="stat-abiertos">—</div>
+        <div class="stat-label">Abiertos ahora</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-numero stat-rojo" id="stat-cerrados">—</div>
+        <div class="stat-label">Cerrados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-numero stat-amarillo" id="stat-pendientes">—</div>
+        <div class="stat-label">Alta pendiente</div>
+      </div>
+    </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre del Local</th>
-            <th>Email Dueño</th>
-            <th>Estado</th>
-            <th>Teléfono / WhatsApp</th>
-            <th>Acciones Rápidas</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-locales">
-          <tr><td colspan="5" style="text-align:center; padding: 2rem;">Cargando locales...</td></tr>
-        </tbody>
-      </table>
+    <!-- ALTA NUEVO LOCAL -->
+    <div class="section">
+      <div class="section-title">➕ Dar de alta nuevo local</div>
+      <div class="alta-grid">
+        <div class="field">
+          <label>Nombre del local</label>
+          <input type="text" id="alta-nombre" placeholder="Ej: El Oeste"/>
+        </div>
+        <div class="field">
+          <label>Email del dueño</label>
+          <input type="email" id="alta-email" placeholder="dueno@correo.com"/>
+        </div>
+        <div class="field">
+          <label>Zona</label>
+          <select id="alta-zona">
+            <option value="Centro">Centro</option>
+            <option value="Norte">Norte</option>
+            <option value="Sur">Sur</option>
+            <option value="Este">Este</option>
+            <option value="Oeste">Oeste</option>
+            <option value="Sureste">Sureste</option>
+          </select>
+        </div>
+        <button class="btn btn-green" id="btn-alta">Dar de alta</button>
+      </div>
+      <p style="font-size:0.75rem; color:var(--muted); margin-top:0.75rem;">
+        El dueño recibirá el link de dueno.html y al registrarse con ese email quedará vinculado automáticamente.
+      </p>
+    </div>
+
+    <!-- LISTA DE LOCALES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🏪 Locales registrados</div>
+        <input type="text" id="filtro" placeholder="Filtrar por nombre..." style="padding:0.5rem 0.8rem; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.85rem; outline:none; width:200px;"/>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Local</th>
+              <th>Dueño</th>
+              <th>Zona</th>
+              <th>Estado</th>
+              <th>Alta</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-locales">
+            <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL EDICION -->
+<div class="modal-overlay" id="modal-edicion">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>✏️ Editar local</span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+
+    <input type="hidden" id="ed-id"/>
+
+    <div class="row-2 mb">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="ed-nombre"/>
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <select id="ed-tipo">
+          <option>Sandwichería</option>
+          <option>Pizzería</option>
+          <option>Parrilla</option>
+          <option>Minutas</option>
+          <option>Rotisería</option>
+          <option>Heladería</option>
+          <option>Café / Cafetería</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row-2 mb">
+      <div class="field">
+        <label>Dirección</label>
+        <input type="text" id="ed-direccion"/>
+      </div>
+      <div class="field">
+        <label>WhatsApp</label>
+        <input type="tel" id="ed-whatsapp"/>
+      </div>
+    </div>
+
+    <div class="row-2 mb">
+      <div class="field">
+        <label>Zona</label>
+        <select id="ed-zona">
+          <option value="Centro">Centro</option>
+          <option value="Norte">Norte</option>
+          <option value="Sur">Sur</option>
+          <option value="Este">Este</option>
+          <option value="Oeste">Oeste</option>
+          <option value="Sureste">Sureste</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Estado</label>
+        <select id="ed-estado">
+          <option value="abierto">Abierto</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row-2 mb">
+      <div class="field">
+        <label>Latitud</label>
+        <input type="number" id="ed-lat" step="0.0001"/>
+      </div>
+      <div class="field">
+        <label>Longitud</label>
+        <input type="number" id="ed-lng" step="0.0001"/>
+      </div>
+    </div>
+
+    <div class="row-2 mb">
+      <div class="field">
+        <label>Descripción corta</label>
+        <input type="text" id="ed-desccorta"/>
+      </div>
+      <div class="field">
+        <label>Color de marca</label>
+        <input type="text" id="ed-color" placeholder="#d9232d"/>
+      </div>
+    </div>
+
+    <div class="field mb">
+      <label>Link Google Maps</label>
+      <input type="text" id="ed-mapaurl"/>
+    </div>
+
+    <div class="field mb">
+      <label>Email del dueño</label>
+      <input type="email" id="ed-duenoemail"/>
+    </div>
+
+    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+      <button class="btn btn-primary" id="btn-guardar-edicion" style="flex:1;">Guardar cambios</button>
+      <button class="btn btn-outline" onclick="cerrarModal()" style="flex:1;">Cancelar</button>
     </div>
   </div>
+</div>
 
-  <script>
-    // =========================================================
-    // 1. CONFIGURACIÓN DE FIREBASE (PEGÁ TUS CREDENCIALES ACÁ)
-    // =========================================================
-    const firebaseConfig = {
-  apiKey: "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
-  authDomain: "dale-pue.firebaseapp.com",
-  projectId: "dale-pue",
-  storageBucket: "dale-pue.firebasestorage.app",
-  messagingSenderId: "137759081638",
-  appId: "1:137759081638:web:0816dd9327837d4dc46067"
-};
+<script>
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
+    authDomain:        "dale-pue.firebaseapp.com",
+    projectId:         "dale-pue",
+    storageBucket:     "dale-pue.firebasestorage.app",
+    messagingSenderId: "137759081638",
+    appId:             "1:137759081638:web:0816dd9327837d4dc46067"
+  };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  // ── VERIFICACION DE ADMIN VIA FIRESTORE ──
+  // Tu uid va en la coleccion "admins" en Firestore, no en el codigo
+  async function esAdmin(uid) {
+    try {
+      const snap = await db.collection('admins').doc(uid).get();
+      return snap.exists;
+    } catch(e) {
+      return false;
     }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  }
 
-    const MASTER_EMAIL = "cristian_arispe93@hotmail.com";
-
-    // =========================================================
-    // 2. SISTEMA DE AUTENTICACIÓN
-    // =========================================================
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        if (user.email === MASTER_EMAIL) {
-          document.getElementById('login-view').style.display = 'none';
-          document.getElementById('admin-view').style.display = 'block';
-          cargarLocales();
-        } else {
-          toast("Acceso denegado. No sos el administrador.");
-          auth.signOut();
-        }
+  // ── AUTH ──
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      const admin = await esAdmin(user.uid);
+      if (admin) {
+        document.getElementById('login-view').style.display  = 'none';
+        document.getElementById('admin-view').style.display  = 'block';
+        document.getElementById('topbar-email').textContent  = user.email;
+        iniciarPanel();
       } else {
-        document.getElementById('login-view').style.display = 'flex';
-        document.getElementById('admin-view').style.display = 'none';
+        mostrarError('Acceso denegado.');
+        auth.signOut();
       }
+    } else {
+      document.getElementById('login-view').style.display  = 'flex';
+      document.getElementById('admin-view').style.display  = 'none';
+    }
+  });
+
+  document.getElementById('btn-ingresar').addEventListener('click', async () => {
+    const email = document.getElementById('inp-email').value.trim();
+    const pass  = document.getElementById('inp-pass').value.trim();
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('btn-ingresar');
+    errEl.classList.remove('show');
+    if (!email || !pass) { errEl.textContent = 'Completá email y contraseña.'; errEl.classList.add('show'); return; }
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch(e) {
+      const msgs = {
+        'auth/user-not-found':     'No existe cuenta con ese correo.',
+        'auth/wrong-password':     'Contraseña incorrecta.',
+        'auth/invalid-credential': 'Email o contraseña incorrectos.',
+        'auth/too-many-requests':  'Demasiados intentos. Esperá un momento.',
+      };
+      errEl.textContent = msgs[e.code] || 'Error al ingresar.';
+      errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Ingresar';
+    }
+  });
+
+  document.getElementById('inp-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
+  });
+
+  function mostrarError(msg) {
+    const e = document.getElementById('login-error');
+    e.textContent = msg; e.classList.add('show');
+  }
+
+  // ── PANEL ──
+  let todosLosLocales = [];
+  let filtroActual    = '';
+
+  function iniciarPanel() {
+    // Escucha en tiempo real
+    db.collection('locales').onSnapshot(snap => {
+      todosLosLocales = [];
+      snap.forEach(doc => todosLosLocales.push({ id: doc.id, ...doc.data() }));
+      actualizarStats();
+      renderTabla();
+    }, err => {
+      console.error(err);
+      toast('Error al cargar locales.', 'err');
     });
 
-    async function loginMaster() {
-      const email = document.getElementById('email').value;
-      const pass = document.getElementById('pass').value;
-      if(!pass) return toast("Ingresá tu contraseña");
-      try {
-        await auth.signInWithEmailAndPassword(email, pass);
-      } catch (error) {
-        toast("Error de acceso: Contraseña incorrecta");
-      }
+    // Filtro
+    document.getElementById('filtro').addEventListener('input', function() {
+      filtroActual = this.value.toLowerCase();
+      renderTabla();
+    });
+
+    // Alta
+    document.getElementById('btn-alta').addEventListener('click', altaLocal);
+
+    // Guardar edicion
+    document.getElementById('btn-guardar-edicion').addEventListener('click', guardarEdicion);
+  }
+
+  // ── STATS ──
+  function actualizarStats() {
+    const total     = todosLosLocales.length;
+    const abiertos  = todosLosLocales.filter(l => l.estado === 'abierto').length;
+    const cerrados  = todosLosLocales.filter(l => l.estado === 'cerrado').length;
+    const pendientes = todosLosLocales.filter(l => !l.dueno_uid || l.dueno_uid === 'pendiente').length;
+    document.getElementById('stat-total').textContent     = total;
+    document.getElementById('stat-abiertos').textContent  = abiertos;
+    document.getElementById('stat-cerrados').textContent  = cerrados;
+    document.getElementById('stat-pendientes').textContent = pendientes;
+  }
+
+  // ── TABLA ──
+  function renderTabla() {
+    const tbody  = document.getElementById('tbody-locales');
+    const lista  = todosLosLocales.filter(l =>
+      !filtroActual || (l.nombre || '').toLowerCase().includes(filtroActual)
+    );
+
+    tbody.innerHTML = '';
+
+    if (lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Sin resultados.</td></tr>';
+      return;
     }
 
-    function logout() {
-      auth.signOut();
-    }
+    lista.forEach(loc => {
+      const vinculado = loc.dueno_uid && loc.dueno_uid !== 'pendiente';
+      const badgeAlta = vinculado
+        ? '<span class="badge badge-vinculado">Vinculado</span>'
+        : '<span class="badge badge-pendiente">Pendiente</span>';
+      const badgeEstado = loc.estado === 'abierto'
+        ? '<span class="badge badge-abierto">Abierto</span>'
+        : '<span class="badge badge-cerrado">Cerrado</span>';
 
-    // =========================================================
-    // 3. LÓGICA DEL PANEL DE CONTROL
-    // =========================================================
-    async function cargarLocales() {
-      const tbody = document.getElementById('tabla-locales');
-      
-      // Escuchador en tiempo real de todos los locales
-      db.collection('locales').onSnapshot(snapshot => {
-        tbody.innerHTML = '';
-        if(snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay locales registrados aún.</td></tr>';
-          return;
-        }
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:600;">
+          <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${loc.colorBrand || '#d9232d'}; margin-right:6px; vertical-align:middle;"></span>
+          ${loc.nombre || 'Sin nombre'}
+          <div style="font-size:0.75rem; color:var(--muted); font-weight:400;">${loc.tipo || ''}</div>
+        </td>
+        <td style="font-size:0.82rem; color:var(--muted);">${loc.dueno_email || '—'}</td>
+        <td style="font-size:0.82rem;">${loc.zona || '—'}</td>
+        <td>${badgeEstado}</td>
+        <td>${badgeAlta}</td>
+        <td class="acciones">
+          <button class="btn btn-outline" onclick="abrirModal('${loc.id}')">✏️ Editar</button>
+          <button class="btn ${loc.estado === 'abierto' ? 'btn-warning' : 'btn-green'}" onclick="toggleEstado('${loc.id}','${loc.estado}')">
+            ${loc.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
+          </button>
+          <button class="btn btn-danger" onclick="eliminarLocal('${loc.id}','${loc.nombre}')">🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const tr = document.createElement('tr');
-          
-          const estadoClase = d.estado === 'abierto' ? 'status-abierto' : 'status-cerrado';
-          const estadoTexto = d.estado === 'abierto' ? '🟢 ABIERTO' : '🔴 CERRADO';
+  // ── ALTA LOCAL ──
+  async function altaLocal() {
+    const nombre = document.getElementById('alta-nombre').value.trim();
+    const email  = document.getElementById('alta-email').value.trim().toLowerCase();
+    const zona   = document.getElementById('alta-zona').value;
+    const btn    = document.getElementById('btn-alta');
 
-          tr.innerHTML = `
-            <td style="font-weight:600;">${d.nombre || 'Sin configurar'}</td>
-            <td style="color:var(--muted); font-size:0.9rem;">${d.dueno_email || '—'}</td>
-            <td><span class="status-badge ${estadoClase}">${estadoTexto}</span></td>
-            <td style="font-size:0.9rem;">${d.whatsapp || 'No registrado'}</td>
-            <td class="acciones">
-              <button class="btn-sm btn-outline" onclick="toggleEstado('${doc.id}', '${d.estado}')">
-                ${d.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
-              </button>
-              <button class="btn-sm btn-danger" onclick="eliminarLocal('${doc.id}', '${d.nombre}')">Eliminar</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }, error => {
-        console.error("Error cargando locales:", error);
-        toast("Error al cargar la base de datos.");
+    if (!nombre || !email) { toast('Nombre y email son obligatorios.', 'err'); return; }
+
+    // Verificar que el email no este ya usado
+    const existe = await db.collection('locales').where('dueno_email', '==', email).limit(1).get();
+    if (!existe.empty) { toast('Ya existe un local con ese email.', 'err'); return; }
+
+    btn.disabled = true; btn.textContent = 'Creando...';
+
+    const id = nombre.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+    try {
+      await db.collection('locales').doc(id).set({
+        nombre,
+        dueno_email: email,
+        dueno_uid:   'pendiente',
+        zona,
+        estado:      'cerrado',
+        menu:        {},
+        grupos:      [],
+        tags:        [],
+        colorBrand:  '#d9232d',
+        lat:         null,
+        lng:         null,
+        direccion:   '',
+        whatsapp:    '',
+        tipo:        'Otro',
+        descCorta:   '',
+        mapaUrl:     '',
+        horariosTxt: ''
       });
+      document.getElementById('alta-nombre').value = '';
+      document.getElementById('alta-email').value  = '';
+      toast('Local creado. El dueño puede registrarse ahora.', 'ok');
+    } catch(e) {
+      console.error(e);
+      toast('Error al crear el local.', 'err');
     }
 
-    // Cambiar estado abierto/cerrado con poder de Admin
-    async function toggleEstado(id, estadoActual) {
-      const nuevoEstado = estadoActual === 'abierto' ? 'cerrado' : 'abierto';
-      try {
-        await db.collection('locales').doc(id).update({ estado: nuevoEstado });
-        toast(`Local cambiado a ${nuevoEstado.toUpperCase()}`);
-      } catch (e) {
-        toast("Error al actualizar estado");
-        console.error(e);
-      }
+    btn.disabled = false; btn.textContent = 'Dar de alta';
+  }
+
+  // ── TOGGLE ESTADO ──
+  async function toggleEstado(id, estadoActual) {
+    const nuevo = estadoActual === 'abierto' ? 'cerrado' : 'abierto';
+    try {
+      await db.collection('locales').doc(id).update({ estado: nuevo });
+      toast('Estado actualizado.', 'ok');
+    } catch(e) {
+      toast('Error al actualizar.', 'err');
+    }
+  }
+
+  // ── ELIMINAR ──
+  async function eliminarLocal(id, nombre) {
+    if (!confirm(`Eliminar el local "${nombre}" definitivamente? Esta accion no se puede deshacer.`)) return;
+    try {
+      await db.collection('locales').doc(id).delete();
+      toast('Local eliminado.', 'ok');
+    } catch(e) {
+      toast('Error al eliminar.', 'err');
+    }
+  }
+
+  // ── MODAL EDICION ──
+  function abrirModal(id) {
+    const loc = todosLosLocales.find(l => l.id === id);
+    if (!loc) return;
+    document.getElementById('ed-id').value        = id;
+    document.getElementById('ed-nombre').value    = loc.nombre     || '';
+    document.getElementById('ed-tipo').value      = loc.tipo       || 'Otro';
+    document.getElementById('ed-direccion').value = loc.direccion  || '';
+    document.getElementById('ed-whatsapp').value  = loc.whatsapp   || '';
+    document.getElementById('ed-zona').value      = loc.zona       || 'Centro';
+    document.getElementById('ed-estado').value    = loc.estado     || 'cerrado';
+    document.getElementById('ed-lat').value       = loc.lat        || '';
+    document.getElementById('ed-lng').value       = loc.lng        || '';
+    document.getElementById('ed-desccorta').value = loc.descCorta  || '';
+    document.getElementById('ed-color').value     = loc.colorBrand || '#d9232d';
+    document.getElementById('ed-mapaurl').value   = loc.mapaUrl    || '';
+    document.getElementById('ed-duenoemail').value = loc.dueno_email || '';
+    document.getElementById('modal-edicion').classList.add('open');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-edicion').classList.remove('open');
+  }
+
+  async function guardarEdicion() {
+    const id  = document.getElementById('ed-id').value;
+    const btn = document.getElementById('btn-guardar-edicion');
+    if (!id) return;
+
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    const datos = {
+      nombre:     document.getElementById('ed-nombre').value.trim(),
+      tipo:       document.getElementById('ed-tipo').value,
+      direccion:  document.getElementById('ed-direccion').value.trim(),
+      whatsapp:   document.getElementById('ed-whatsapp').value.trim(),
+      zona:       document.getElementById('ed-zona').value,
+      estado:     document.getElementById('ed-estado').value,
+      lat:        parseFloat(document.getElementById('ed-lat').value) || null,
+      lng:        parseFloat(document.getElementById('ed-lng').value) || null,
+      descCorta:  document.getElementById('ed-desccorta').value.trim(),
+      colorBrand: document.getElementById('ed-color').value.trim() || '#d9232d',
+      mapaUrl:    document.getElementById('ed-mapaurl').value.trim(),
+      dueno_email: document.getElementById('ed-duenoemail').value.trim().toLowerCase(),
+    };
+
+    try {
+      await db.collection('locales').doc(id).update(datos);
+      toast('Local actualizado.', 'ok');
+      cerrarModal();
+    } catch(e) {
+      console.error(e);
+      toast('Error al guardar.', 'err');
     }
 
-    // Eliminar local por completo
-    async function eliminarLocal(id, nombre) {
-      if(!confirm(`⚠️ ATENCIÓN: ¿Estás seguro de eliminar por completo el local "${nombre}"? Esta acción no se puede deshacer.`)) return;
-      try {
-        await db.collection('locales').doc(id).delete();
-        toast("Local eliminado con éxito");
-      } catch (e) {
-        toast("Error al eliminar local");
-        console.error(e);
-      }
-    }
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+  }
 
-    // =========================================================
-    // 4. UTILIDADES (Toasts)
-    // =========================================================
-    let toastTimer;
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.innerText = msg;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-    }
-  </script>
+  // Cerrar modal clickando afuera
+  document.getElementById('modal-edicion').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+  });
+
+  // ── TOAST ──
+  let toastTimer;
+  function toast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${tipo}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = '', 3000);
+  }
+</script>
 </body>
 </html>
