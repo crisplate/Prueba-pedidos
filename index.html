@@ -229,10 +229,7 @@
 <div id="modalExtras" class="modal-overlay">
   <div class="modal-content">
     <h3 id="modalTitulo" style="margin-top:0;">Personalizar</h3>
-    <div class="seccion-modal-titulo"><h4>Aderezos</h4></div>
-    <div class="grid-aderezos" id="contenedor-aderezos"></div>
-    <div class="seccion-modal-titulo"><h4>Adicionales</h4></div>
-    <div id="contenedor-adicionales"></div>
+    <div id="contenedor-grupos-modal"></div>
     <button class="btn-whatsapp" style="background:#28a745; margin-top:20px;" onclick="confirmarExtras()">Confirmar y Agregar</button>
     <button class="btn-gps" style="background:#f1f1f1; color:#111; margin-top:10px; width:100%;" onclick="cerrarExtras()">Cancelar</button>
   </div>
@@ -317,7 +314,6 @@
   };
 
   // ── ESTADO ──
-  const aderezosLista = ["Ajo","Ají","Apio","Morrón","Kétchup","Cheddar","Mostaza","Barbacoa","Mayonesa","Aceituna","Roquefort","Parmesano","Salsa Golf","Chimichurri"];
   let localesFirestore = {};
   let todosLosLocales  = {};
   let firestoreListo   = false;
@@ -548,6 +544,7 @@
           ...localesFirestore[id],
           menu:             d.menu             || {},
           categoriasOrden:  d.categoriasOrden  || [],
+          grupos:           d.grupos           || [],
           estado:           d.estado           || 'abierto',
           estaAbierto: function() { return this.estado === 'abierto'; }
         };
@@ -599,7 +596,14 @@
         const btn = document.createElement('button');
         btn.className = 'btn-agregar';
         btn.innerText = 'Agregar';
-        btn.onclick = () => p.tipo === 'comida' ? abrirExtras(p) : agregarDirecto(p);
+        btn.onclick = () => {
+          const grupos = (localActivo.grupos || []).filter(g => g.activo !== false && (g.tipos || []).includes(p.tipo));
+          if (grupos.length > 0) {
+            abrirExtras(p);
+          } else {
+            agregarDirecto(p);
+          }
+        };
         card.appendChild(btn);
       }
       cont.appendChild(card);
@@ -626,31 +630,66 @@
   }
 }
 
-  // ── EXTRAS ──
+  // ── EXTRAS (grupos dinamicos) ──
   function abrirExtras(p) {
     prodTemp = p;
     document.getElementById("modalTitulo").innerText = p.nombre;
-    const cont = document.getElementById("contenedor-aderezos");
+    const cont   = document.getElementById("contenedor-grupos-modal");
     cont.innerHTML = "";
-    aderezosLista.forEach(a => {
-      cont.innerHTML += `<div class="opcion-check"><label><input type="checkbox" class="ade-cb" value="${a}"> ${a}</label></div>`;
-    });
-    document.getElementById("contenedor-adicionales").innerHTML = `
-      <div class="opcion-check"><label><input type="checkbox" class="ext-cb" value="1000" data-nombre="Jamón y Queso"> Jamón y Queso (+$1000)</label></div>
-      <div class="opcion-check"><label><input type="checkbox" class="ext-cb" value="3000" data-nombre="Baño Cheddar"> Baño de Cheddar (+$3000)</label></div>
-      <div class="opcion-check"><label><input type="checkbox" class="ext-cb" value="3500" data-nombre="Bacon y Cheddar"> Bacon y Cheddar (+$3500)</label></div>`;
+
+    const grupos = (localActivo.grupos || []).filter(g =>
+      g.activo !== false && (g.tipos || []).includes(p.tipo)
+    );
+
+    if (grupos.length === 0) {
+      cont.innerHTML = '<p style="color:#888; font-size:0.85rem;">Sin opciones disponibles.</p>';
+    } else {
+      grupos.forEach((grupo, gi) => {
+        const itemsActivos = (grupo.items || []).filter(it => it.activo !== false);
+        if (itemsActivos.length === 0) return;
+
+        const seccion = document.createElement('div');
+        seccion.innerHTML = `<div class="seccion-modal-titulo"><h4>${grupo.nombre}</h4></div>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'grid-aderezos';
+
+        itemsActivos.forEach((item, ii) => {
+          const precio = item.precio ? ` (+$${item.precio})` : '';
+          grid.innerHTML += `<div class="opcion-check">
+            <label>
+              <input type="checkbox" class="grupo-cb" 
+                data-grupo="${grupo.nombre}" 
+                data-nombre="${item.nombre}" 
+                data-precio="${item.precio || 0}">
+              ${item.nombre}${precio}
+            </label>
+          </div>`;
+        });
+
+        seccion.appendChild(grid);
+        cont.appendChild(seccion);
+      });
+    }
+
     document.getElementById("modalExtras").style.display = "flex";
   }
 
   function cerrarExtras() { document.getElementById("modalExtras").style.display = "none"; }
 
   function confirmarExtras() {
-    const p = { ...prodTemp, aderezos: [], extras: [], precioFinal: prodTemp.precio };
-    document.querySelectorAll(".ade-cb:checked").forEach(cb => p.aderezos.push(cb.value));
-    document.querySelectorAll(".ext-cb:checked").forEach(cb => {
-      p.extras.push({ n: cb.dataset.nombre, v: parseInt(cb.value) });
-      p.precioFinal += parseInt(cb.value);
+    const p = { ...prodTemp, opciones: [], precioFinal: prodTemp.precio };
+
+    document.querySelectorAll(".grupo-cb:checked").forEach(cb => {
+      const precio = parseInt(cb.dataset.precio) || 0;
+      p.opciones.push({ grupo: cb.dataset.grupo, nombre: cb.dataset.nombre, precio });
+      p.precioFinal += precio;
     });
+
+    // Compatibilidad con el formato de mensaje de WhatsApp
+    p.aderezos = p.opciones.filter(o => o.precio === 0).map(o => o.nombre);
+    p.extras   = p.opciones.filter(o => o.precio > 0).map(o => ({ n: `${o.grupo}: ${o.nombre}`, v: o.precio }));
+
     carrito.push(p);
     cerrarExtras();
     renderCarrito();
