@@ -524,6 +524,53 @@
         <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Ayudan a que los clientes encuentren tu local al buscar por productos.</small>
       </div>
 
+      <div class="row-2">
+        <div class="field">
+          <label>Descripción corta (se ve en la lista de locales)</label>
+          <input type="text" id="f-desccorta" placeholder="Ej: Sandwiches y minutas"/>
+        </div>
+        <div class="field">
+          <label>Zona</label>
+          <select id="f-zona">
+            <option value="Centro">Centro</option>
+            <option value="Norte">Norte</option>
+            <option value="Sur">Sur</option>
+            <option value="Este">Este</option>
+            <option value="Oeste">Oeste</option>
+            <option value="Sureste">Sureste</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Color de marca (se usa en la tarjeta del local)</label>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+          <input type="color" id="f-color" value="#d9232d" style="width:48px; height:42px; padding:2px; border-radius:8px; border:1px solid var(--border); background:var(--bg); cursor:pointer;"/>
+          <input type="text" id="f-color-hex" placeholder="#d9232d" style="flex:1;" oninput="sincronizarColor('hex')"/>
+        </div>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Elegí un color que represente tu marca. Se muestra en la app del cliente.</small>
+      </div>
+
+      <div class="field">
+        <label>Link de Google Maps (para que los clientes puedan ir al local)</label>
+        <input type="text" id="f-mapaurl" placeholder="Ej: https://maps.app.goo.gl/..."/>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Abrí Google Maps, buscá tu local, hacé clic en Compartir y copiá el link corto.</small>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Latitud (para el radar GPS)</label>
+          <input type="number" id="f-lat" placeholder="-24.7821" step="0.0001"/>
+        </div>
+        <div class="field">
+          <label>Longitud (para el radar GPS)</label>
+          <input type="number" id="f-lng" placeholder="-65.4232" step="0.0001"/>
+        </div>
+      </div>
+      <div style="background:#fffbf0; border:1px solid #ffe08a; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.78rem; color:#7a6000; line-height:1.6;">
+        💡 Para obtener las coordenadas: abrí <a href="https://www.google.com/maps" target="_blank" style="color:var(--accent);">Google Maps</a>, buscá tu local, hacé clic derecho sobre el punto exacto y copiá los números que aparecen (primero latitud, luego longitud).
+      </div>
+
       <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
     </div>
 
@@ -829,7 +876,15 @@
     document.getElementById('f-horarios').value  = d.horariosTxt
       ? d.horariosTxt.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
       : '';
-    document.getElementById('f-tags').value = d.tags ? d.tags.join(', ') : '';
+    document.getElementById('f-tags').value      = d.tags ? d.tags.join(', ') : '';
+    document.getElementById('f-desccorta').value = d.descCorta || '';
+    document.getElementById('f-zona').value      = d.zona      || 'Centro';
+    document.getElementById('f-mapaurl').value   = d.mapaUrl   || '';
+    document.getElementById('f-lat').value       = d.lat       || '';
+    document.getElementById('f-lng').value       = d.lng       || '';
+    const color = d.colorBrand || '#d9232d';
+    document.getElementById('f-color').value     = color;
+    document.getElementById('f-color-hex').value = color;
   }
 
   document.getElementById('btn-guardar-local').addEventListener('click', async () => {
@@ -854,6 +909,12 @@
       estado:      document.getElementById('f-estado').value,
       horariosTxt,
       tags,
+      descCorta:   document.getElementById('f-desccorta').value.trim(),
+      zona:        document.getElementById('f-zona').value,
+      colorBrand:  document.getElementById('f-color-hex').value.trim() || document.getElementById('f-color').value,
+      mapaUrl:     document.getElementById('f-mapaurl').value.trim(),
+      lat:         parseFloat(document.getElementById('f-lat').value) || null,
+      lng:         parseFloat(document.getElementById('f-lng').value) || null,
       dueno_uid:   auth.currentUser.uid,
       menu:        localData?.menu || {}
     };
@@ -1168,7 +1229,21 @@
     }
   }
 
-  // ── VISTA PREVIA ──
+  // ── COLOR PICKER ──
+  function sincronizarColor(origen) {
+    const picker = document.getElementById('f-color');
+    const hex    = document.getElementById('f-color-hex');
+    if (!picker || !hex) return;
+    if (origen === 'hex') {
+      const val = hex.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) picker.value = val;
+    } else {
+      hex.value = picker.value;
+    }
+  }
+
+  document.getElementById('f-color').addEventListener('input', () => sincronizarColor('picker'));
+
   function renderPreview(d) {
     const badge = d.estado === 'abierto'
       ? '<span class="badge badge-ok">Abierto</span>'
@@ -1176,18 +1251,26 @@
 
     const totalProductos = d.menu ? Object.values(d.menu).reduce((a, arr) => a + arr.length, 0) : 0;
     const totalCats      = d.menu ? Object.keys(d.menu).length : 0;
+    const color          = d.colorBrand || '#d9232d';
 
     document.getElementById('preview-local').innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:.75rem;">
-        <div>
-          <div style="font-weight:700; font-size:1.1rem;">${d.nombre || '—'}</div>
-          <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${d.tipo || ''} • 📍 ${d.direccion || '—'}</div>
+      <div style="border-left:5px solid ${color}; padding-left:0.75rem; margin-bottom:.75rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;">${d.nombre || '—'}</div>
+            <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${d.descCorta || d.tipo || ''} · ${d.tipo || ''}</div>
+            <div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">📍 ${d.direccion || '—'} · Zona: ${d.zona || '—'}</div>
+          </div>
+          ${badge}
         </div>
-        ${badge}
       </div>
-      <div style="font-size:0.8rem; color:var(--muted);">
-        WhatsApp: ${d.whatsapp || '—'} &nbsp;|&nbsp;
-        ${totalProductos} productos en ${totalCats} categorías
+      <div style="font-size:0.8rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+        <span>WhatsApp: ${d.whatsapp || '—'}</span>
+        <span>·</span>
+        <span>${totalProductos} productos en ${totalCats} categorías</span>
+        <span>·</span>
+        <span style="display:inline-flex; align-items:center; gap:4px;">Color: <span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:${color}; border:1px solid #ccc;"></span></span>
+        ${d.lat && d.lng ? `<span>· GPS: ${d.lat}, ${d.lng}</span>` : '<span style="color:#dc2626;">· ⚠️ Sin coordenadas GPS</span>'}
       </div>`;
   }
 </script>
