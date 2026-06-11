@@ -259,60 +259,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ── LOCALES DEMO (hardcodeados hasta tener más locales reales) ──
-  const localesDemo = {
-    pizzanorte: {
-      id: "pizzanorte", nombre: "Pizzería Norteña (Demo)", zona: "Norte",
-      descCorta: "Pizzas a la piedra", direccion: "Av. Bolivia 1200",
-      colorBrand: "#007bff", lat: -24.7500, lng: -65.4000,
-      horariosTxt: "🕒 <b>Todos los días:</b> 20:00 a 00:00",
-      whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl",
-      estado: "abierto",
-      menu: { "Especialidades 🍕": [{ nombre: "Pizza Muzzarella", desc: "Clásica al horno", precio: 8500, tipo: "comida", conExtras: false }] },
-      estaAbierto: () => true
-    },
-    burgereste: {
-      id: "burgereste", nombre: "Burger Este (Demo)", zona: "Este",
-      descCorta: "Hamburguesas Smash", direccion: "Barrio Autódromo",
-      colorBrand: "#20c997", lat: -24.7950, lng: -65.3800,
-      horariosTxt: "🕒 <b>Jue a Dom:</b> 19:30 a 01:00",
-      whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl",
-      estado: "abierto",
-      menu: { "Burgers 🍔": [{ nombre: "Doble Cheeseburger", desc: "Doble carne smash", precio: 6500, tipo: "comida", conExtras: true }] },
-      estaAbierto: () => true
-    },
-    lomitooeste: {
-      id: "lomitooeste", nombre: "Lomitos del Oeste (Demo)", zona: "Oeste",
-      descCorta: "Lomos gigantes", direccion: "Av. Perón 3000",
-      colorBrand: "#fd7e14", lat: -24.7900, lng: -65.4500,
-      horariosTxt: "🕒 <b>Mié a Dom:</b> 20:00 a 02:00",
-      whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl",
-      estado: "abierto",
-      menu: { "Lomos 🥩": [{ nombre: "Lomo Completo", desc: "Especial de la casa", precio: 10500, tipo: "comida", conExtras: true }] },
-      estaAbierto: () => true
-    },
-    empanadasur: {
-      id: "empanadasur", nombre: "Empanadas del Sur (Demo)", zona: "Sur",
-      descCorta: "Empanadas al horno", direccion: "Rotonda de Limache",
-      colorBrand: "#6f42c1", lat: -24.8300, lng: -65.4200,
-      horariosTxt: "🕒 <b>Todos los días:</b> 11:30 a 15:00",
-      whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl",
-      estado: "abierto",
-      menu: { "Empanadas 🥟": [{ nombre: "Docena Mixta", desc: "6 carne, 3 pollo, 3 queso", precio: 7800, tipo: "comida", conExtras: false }] },
-      estaAbierto: () => true
-    },
-    panchosureste: {
-      id: "panchosureste", nombre: "Panchos Sureños (Demo)", zona: "Sureste",
-      descCorta: "Súper panchos", direccion: "Barrio Solidaridad",
-      colorBrand: "#e83e8c", lat: -24.8200, lng: -65.3900,
-      horariosTxt: "🕒 <b>Vie a Dom:</b> 20:00 a 05:00 AM",
-      whatsapp: "5491124500967", mapaUrl: "https://maps.app.goo.gl",
-      estado: "abierto",
-      menu: { "Rápida 🌭": [{ nombre: "Súper Pancho", desc: "Con salsas a elección", precio: 3000, tipo: "comida", conExtras: true }] },
-      estaAbierto: () => true
-    }
-  };
-
   // ── ESTADO ──
   let localesFirestore = {};
   let todosLosLocales  = {};
@@ -367,7 +313,7 @@
     } catch(e) {
       console.error('Error cargando Firestore:', e);
     }
-    todosLosLocales = { ...localesFirestore, ...localesDemo };
+    todosLosLocales = { ...localesFirestore };
     firestoreListo = true;
   }
 
