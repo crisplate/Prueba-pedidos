@@ -998,17 +998,24 @@
   });
 
   // ── CARGAR LOCAL ──
-  async function cargarLocal(uid) {
+  // Reintenta hasta MAX_INTENTOS veces con espera creciente.
+  // Necesario cuando el dueno se registra por primera vez: el write de dueno_uid
+  // en Firestore puede no estar disponible inmediatamente al dispararse onAuthStateChanged.
+  const MAX_INTENTOS = 5;
+  const ESPERA_BASE_MS = 800; // primer reintento a 800 ms, luego 1600, 2400…
+
+  async function cargarLocal(uid, intento = 1) {
     try {
       let snap = null;
 
-      // Buscar por dueno_uid primero
+      // 1. Buscar por dueno_uid (camino normal para dueños ya vinculados)
       const q = await db.collection('locales').where('dueno_uid', '==', uid).limit(1).get();
 
       if (!q.empty) {
         snap = q.docs[0];
       } else {
-        // Fallback: buscar por dueno_email en caso de condicion de carrera al registrarse
+        // 2. Fallback por email: cubre el caso de primera vez donde el write
+        //    de dueno_uid aún no propagó cuando se dispara onAuthStateChanged.
         const user = auth.currentUser;
         if (user && user.email) {
           const q2 = await db.collection('locales')
@@ -1017,7 +1024,7 @@
             .get();
           if (!q2.empty) {
             snap = q2.docs[0];
-            // Vincular el uid ahora que lo tenemos
+            // Vincular el uid ahora que lo encontramos por email
             await db.collection('locales').doc(snap.id).update({ dueno_uid: uid });
           }
         }
@@ -1036,6 +1043,15 @@
         renderGrupos();
         renderPreview(localData);
       } else {
+        // 3. Si no encontramos nada y quedan reintentos, esperamos y volvemos a intentar.
+        //    Esto cubre el caso extremo donde la escritura aún no fue visible.
+        if (intento < MAX_INTENTOS) {
+          const espera = ESPERA_BASE_MS * intento;
+          console.warn(`cargarLocal: local no encontrado, reintento ${intento}/${MAX_INTENTOS - 1} en ${espera}ms`);
+          await new Promise(res => setTimeout(res, espera));
+          return cargarLocal(uid, intento + 1);
+        }
+        // Agotamos los reintentos
         localData = { menu: {}, grupos: [] };
         renderMenu({});
         renderGrupos();
@@ -1043,6 +1059,13 @@
       }
     } catch(e) {
       console.error('Error cargarLocal:', e);
+      // Reintentar también ante errores de red transitorios
+      if (intento < MAX_INTENTOS) {
+        const espera = ESPERA_BASE_MS * intento;
+        console.warn(`cargarLocal: error de red, reintento ${intento}/${MAX_INTENTOS - 1} en ${espera}ms`);
+        await new Promise(res => setTimeout(res, espera));
+        return cargarLocal(uid, intento + 1);
+      }
       toast('Error al cargar el local. Revisa tu conexion.', 'err');
     }
   }
