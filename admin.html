@@ -9,6 +9,20 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
+  <!-- EmailJS: envio de email al dueno cuando se da de alta un local -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    // ── EMAILJS CONFIG ──
+    // Completar con los datos de tu cuenta en emailjs.com:
+    //   Service ID  → Email Services del dashboard
+    //   Template ID → Email Templates del dashboard
+    //   Public Key  → Account > API Keys
+    const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';   // ej: 'service_abc123'
+    const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';  // ej: 'template_xyz456'
+    const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';   // ej: 'AbCdEfGhIjKlMnOp'
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  </script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
@@ -720,9 +734,29 @@
         mapaUrl:     '',
         horariosTxt: ''
       });
+
       document.getElementById('alta-nombre').value = '';
       document.getElementById('alta-email').value  = '';
-      toast('Local creado. El dueño puede registrarse ahora.', 'ok');
+      toast('Local creado. Enviando email al dueno...', 'ok');
+
+      // ── ENVIO DE EMAIL AL DUENO VIA EMAILJS ──
+      // Variables que debe tener el template en emailjs.com:
+      //   {{to_email}}      → destinatario
+      //   {{local_nombre}}  → nombre del local
+      //   {{portal_url}}    → link al portal del dueno
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          to_email:     email,
+          local_nombre: nombre,
+          portal_url:   'https://dalepue.com.ar/dueno.html',
+        });
+        toast('Local creado y email enviado al dueno.', 'ok');
+      } catch(mailErr) {
+        // El local ya se creo OK. El fallo de email es no bloqueante.
+        console.warn('EmailJS error (local creado igual):', mailErr);
+        toast('Local creado. No se pudo enviar el email (revisar config EmailJS).', 'err');
+      }
+
     } catch(e) {
       console.error(e);
       toast('Error al crear el local.', 'err');
