@@ -17,9 +17,9 @@
     //   Service ID  → Email Services del dashboard
     //   Template ID → Email Templates del dashboard
     //   Public Key  → Account > API Keys
-    const EMAILJS_SERVICE_ID  = 'service_ovj53yu';   // ej: 'service_abc123'
-    const EMAILJS_TEMPLATE_ID = 'template_f65j29s';  // ej: 'template_xyz456'
-    const EMAILJS_PUBLIC_KEY  = 'poHYFNrlQTqZwacPx';   // ej: 'AbCdEfGhIjKlMnOp'
+    const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';   // ej: 'service_abc123'
+    const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';  // ej: 'template_xyz456'
+    const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';   // ej: 'AbCdEfGhIjKlMnOp'
     emailjs.init(EMAILJS_PUBLIC_KEY);
   </script>
 
@@ -301,7 +301,234 @@
     }
 
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
     .mb { margin-bottom: 0.85rem; }
+
+    /* ── GESTION DE LOCAL (modal grande, portado de dueno.html) ── */
+    .modal-gestion-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      z-index: 600;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .modal-gestion-overlay.open { display: flex; }
+
+    .modal-gestion-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 760px;
+      margin: 1rem 0 3rem 0;
+    }
+
+    .modal-gestion-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .gestion-section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .gestion-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .field textarea { resize: vertical; min-height: 70px; }
+
+    /* TABS CATEGORIAS */
+    .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .tab {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab.active { background: #111; color: #fff; border-color: #111; }
+
+    /* PRODUCTOS */
+    .producto-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .producto-info { flex: 1; min-width: 140px; }
+    .producto-nombre { font-weight: 600; font-size: 0.9rem; }
+    .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
+    .producto-item.no-disponible { opacity: 0.55; }
+
+    .cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+    .cat-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; }
+    .btn-cat {
+      width: 30px; height: 30px; border-radius: 7px;
+      border: 1px solid var(--border); background: var(--white);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: background 0.15s;
+    }
+    .btn-cat:hover { background: var(--bg); }
+    .btn-cat.danger:hover { background: #fee2e2; border-color: #fecaca; }
+
+    .toggle-disponible {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--white); white-space: nowrap; transition: all 0.2s;
+    }
+    .toggle-disponible.activo   { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-disponible.inactivo { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .btn-editar, .btn-eliminar {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--white);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: background 0.15s; flex-shrink: 0;
+    }
+    .btn-editar:hover   { background: #fef9c3; border-color: #fde047; }
+    .btn-eliminar:hover { background: #fee2e2; border-color: #fecaca; }
+
+    .form-edicion {
+      display: none; background: #f0fdf4; border: 1px dashed var(--green);
+      border-radius: var(--radius); padding: 1rem; margin-top: 0.5rem;
+    }
+    .form-edicion.visible { display: block; }
+    .form-edicion-title { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-bottom: 0.75rem; }
+
+    .form-producto {
+      background: #fffbf0; border: 1px dashed var(--yellow);
+      border-radius: var(--radius); padding: 1.2rem; margin-top: 1rem; display: none;
+    }
+    .form-producto.visible { display: block; }
+    .form-producto-title { font-size: 0.85rem; font-weight: 600; color: #b38000; margin-bottom: 1rem; }
+
+    .empty { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.88rem; }
+
+    .badge-ok  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    /* GRUPOS DE OPCIONES */
+    .grupo-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden;
+    }
+    .grupo-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1rem; gap: 0.5rem; cursor: pointer;
+    }
+    .grupo-header-left { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+    .grupo-nombre { font-weight: 600; font-size: 0.9rem; }
+    .grupo-tipos { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .grupo-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; }
+    .grupo-body { border-top: 1px solid var(--border); padding: 0.75rem 1rem; display: none; }
+    .grupo-body.abierto { display: block; }
+
+    .item-opcion {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border); gap: 0.5rem; flex-wrap: wrap;
+    }
+    .item-opcion:last-child { border-bottom: none; }
+    .item-opcion-info { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+
+    .item-nombre-input {
+      background: transparent; border: none; border-bottom: 1px dashed var(--border);
+      border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; color: var(--text); outline: none; width: 130px;
+    }
+    .item-nombre-input:focus { border-bottom-color: var(--accent); }
+
+    .item-precio-input {
+      background: transparent; border: none; border-bottom: 1px dashed var(--border);
+      border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; color: var(--green); font-weight: 600; outline: none;
+      width: 70px; text-align: right;
+    }
+    .item-precio-input:focus { border-bottom-color: var(--green); }
+
+    .toggle-item {
+      font-size: 0.72rem; font-weight: 600; padding: 3px 7px; border-radius: 999px;
+      border: 1px solid var(--border); cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    }
+    .toggle-item.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-item.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .toggle-grupo {
+      font-size: 0.75rem; font-weight: 600; padding: 4px 9px; border-radius: 999px;
+      border: 1px solid var(--border); cursor: pointer; white-space: nowrap;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .toggle-grupo.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-grupo.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .btn-agregar-item {
+      font-size: 0.8rem; font-weight: 600; color: var(--accent); background: none;
+      border: 1px dashed var(--accent); border-radius: 8px; padding: 0.4rem 0.75rem;
+      cursor: pointer; margin-top: 0.5rem; transition: background 0.15s;
+    }
+    .btn-agregar-item:hover { background: #fff0f0; }
+
+    @media (max-width: 700px) {
+      .stats-grid  { grid-template-columns: 1fr 1fr; }
+      .alta-grid   { grid-template-columns: 1fr; }
+      .row-2       { grid-template-columns: 1fr; }
+      .row-3       { grid-template-columns: 1fr; }
+    }
 
     /* TOAST */
     #toast {
@@ -316,12 +543,6 @@
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     #toast.ok  { background: var(--green); }
     #toast.err { background: var(--accent); }
-
-    @media (max-width: 700px) {
-      .stats-grid  { grid-template-columns: 1fr 1fr; }
-      .alta-grid   { grid-template-columns: 1fr; }
-      .row-2       { grid-template-columns: 1fr; }
-    }
   </style>
 </head>
 <body>
@@ -533,7 +754,193 @@
   </div>
 </div>
 
+<!-- MODAL GESTION DE LOCAL (datos + menu + grupos, equivalente a dueno.html) -->
+<div class="modal-gestion-overlay" id="modal-gestion">
+  <div class="modal-gestion-box">
+    <div class="modal-gestion-title">
+      <span>🍽️ Gestionar local: <span id="gestion-nombre-local">—</span></span>
+      <button class="modal-close" onclick="cerrarGestion()">✕</button>
+    </div>
+
+    <!-- DATOS DEL LOCAL -->
+    <div class="gestion-section">
+      <div class="gestion-section-title">🏪 Datos del local</div>
+
+      <div class="field">
+        <label>Nombre del local</label>
+        <input type="text" id="am-f-nombre" placeholder="Ej: El Oeste"/>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" id="am-f-direccion" placeholder="Ej: Leguizamón 1594"/>
+        </div>
+        <div class="field">
+          <label>WhatsApp (con código de país)</label>
+          <input type="tel" id="am-f-whatsapp" placeholder="5493874123456"/>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Tipo de local</label>
+          <select id="am-f-tipo">
+            <option>Sandwichería</option>
+            <option>Pizzería</option>
+            <option>Parrilla</option>
+            <option>Minutas</option>
+            <option>Rotisería</option>
+            <option>Heladería</option>
+            <option>Café / Cafetería</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="am-f-estado">
+            <option value="abierto">Abierto ✅</option>
+            <option value="cerrado">Cerrado ❌</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Horarios (se muestra en la app al cliente)</label>
+        <textarea id="am-f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Escribí cada línea por separado. Se muestra tal cual en la app.</small>
+      </div>
+
+      <div class="field">
+        <label>Palabras clave (separadas por coma)</label>
+        <input type="text" id="am-f-tags" placeholder="Ej: milanesa, lomo, papas fritas, gaseosa, cerveza"/>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Descripción corta</label>
+          <input type="text" id="am-f-desccorta" placeholder="Ej: Sandwiches y minutas"/>
+        </div>
+        <div class="field">
+          <label>Zona</label>
+          <select id="am-f-zona">
+            <option value="Centro">Centro</option>
+            <option value="Norte">Norte</option>
+            <option value="Sur">Sur</option>
+            <option value="Este">Este</option>
+            <option value="Oeste">Oeste</option>
+            <option value="Sureste">Sureste</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Color de marca</label>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+          <input type="color" id="am-f-color" value="#d9232d" style="width:48px; height:42px; padding:2px; border-radius:8px; border:1px solid var(--border); background:var(--white); cursor:pointer;"/>
+          <input type="text" id="am-f-color-hex" placeholder="#d9232d" style="flex:1;"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Link de Google Maps</label>
+        <input type="text" id="am-f-mapaurl" placeholder="Ej: https://maps.app.goo.gl/..."/>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Latitud</label>
+          <input type="number" id="am-f-lat" placeholder="-24.7821" step="0.0001"/>
+        </div>
+        <div class="field">
+          <label>Longitud</label>
+          <input type="number" id="am-f-lng" placeholder="-65.4232" step="0.0001"/>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="am-btn-guardar-local" style="width:100%;">Guardar datos del local</button>
+    </div>
+
+    <!-- MENU -->
+    <div class="gestion-section">
+      <div class="gestion-section-title">🍽️ Menú</div>
+
+      <div class="tabs" id="am-tabs-categorias"></div>
+      <div id="am-lista-productos"><p class="empty">Cargando...</p></div>
+
+      <button class="btn btn-outline" id="am-btn-mostrar-form" style="margin-top:1rem; width:100%;">+ Agregar producto</button>
+
+      <div class="form-producto" id="am-form-producto">
+        <div class="form-producto-title">Nuevo producto</div>
+
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" id="am-p-nombre" placeholder="Ej: Milanesa clásica"/>
+        </div>
+        <div class="field">
+          <label>Descripción (opcional)</label>
+          <textarea id="am-p-desc" placeholder="Ej: Con lechuga, tomate y papas"></textarea>
+        </div>
+        <div class="row-3">
+          <div class="field">
+            <label>Precio ($)</label>
+            <input type="number" id="am-p-precio" placeholder="12000"/>
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <input type="text" id="am-p-categoria" placeholder="Sandwiches"/>
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="am-p-tipo">
+              <option value="comida">Comida 🍔</option>
+              <option value="bebida">Bebida 🥤</option>
+              <option value="alcohol">Alcohol 🍺</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green" id="am-btn-confirmar-producto">Guardar producto</button>
+          <button class="btn btn-outline" id="am-btn-cancelar-producto">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUPOS DE OPCIONES -->
+    <div class="gestion-section">
+      <div class="gestion-section-title">⚙️ Opciones para los productos</div>
+      <div id="am-lista-grupos"></div>
+      <button class="btn btn-outline" id="am-btn-nuevo-grupo" style="margin-top:0.5rem; width:100%;">+ Nuevo grupo de opciones</button>
+
+      <div class="form-producto" id="am-form-nuevo-grupo" style="margin-top:1rem;">
+        <div class="form-producto-title">Nuevo grupo</div>
+        <div class="row-2">
+          <div class="field">
+            <label>Nombre del grupo</label>
+            <input type="text" id="am-ng-nombre" placeholder="Ej: Aderezos, Temperatura, Extras"/>
+          </div>
+          <div class="field">
+            <label>Aplica a</label>
+            <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:0.1rem;">
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="comida" checked> Comida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="bebida"> Bebida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="alcohol"> Alcohol</label>
+            </div>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green" id="am-btn-confirmar-grupo">Crear grupo</button>
+          <button class="btn btn-outline" id="am-btn-cancelar-grupo">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-outline" onclick="cerrarGestion()" style="width:100%;">Cerrar</button>
+  </div>
+</div>
+
 <script>
+
   const firebaseConfig = {
     apiKey:            "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
     authDomain:        "dale-pue.firebaseapp.com",
@@ -685,6 +1092,7 @@
         <td>${badgeEstado}</td>
         <td>${badgeAlta}</td>
         <td class="acciones">
+          <button class="btn btn-dark" onclick="abrirGestion('${loc.id}')">🍽️ Gestionar</button>
           <button class="btn btn-outline" onclick="abrirModal('${loc.id}')">✏️ Editar</button>
           <button class="btn ${loc.estado === 'abierto' ? 'btn-warning' : 'btn-green'}" onclick="toggleEstado('${loc.id}','${loc.estado}')">
             ${loc.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
@@ -848,6 +1256,574 @@
   // Cerrar modal clickando afuera
   document.getElementById('modal-edicion').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
+  });
+
+  // ════════════════════════════════════════════════════════════
+  // ── GESTION DE LOCAL (modal grande: datos + menu + grupos) ──
+  // Permite al admin editar un local completo sin necesitar
+  // las credenciales del dueño. Mismo destino en Firestore que
+  // dueno.html, pero usando el localId fijo del local elegido.
+  // ════════════════════════════════════════════════════════════
+
+  let gLocalId    = null;
+  let gLocalData  = null;
+  let gCatActiva  = null;
+
+  async function abrirGestion(id) {
+    const loc = todosLosLocales.find(l => l.id === id);
+    if (!loc) return;
+
+    gLocalId   = id;
+    gLocalData = JSON.parse(JSON.stringify(loc)); // copia local de trabajo
+    if (!gLocalData.categoriasOrden) gLocalData.categoriasOrden = Object.keys(gLocalData.menu || {});
+    if (!gLocalData.grupos) gLocalData.grupos = [];
+    gCatActiva = null;
+
+    document.getElementById('gestion-nombre-local').textContent = loc.nombre || id;
+    gRellenarForm(gLocalData);
+    gRenderMenu(gLocalData.menu || {});
+    gRenderGrupos();
+
+    document.getElementById('modal-gestion').classList.add('open');
+  }
+
+  function cerrarGestion() {
+    document.getElementById('modal-gestion').classList.remove('open');
+    gLocalId   = null;
+    gLocalData = null;
+    gCatActiva = null;
+  }
+
+  // Cerrar clickeando afuera
+  document.getElementById('modal-gestion').addEventListener('click', function(e) {
+    if (e.target === this) cerrarGestion();
+  });
+
+  // ── FORMULARIO DATOS DEL LOCAL ──
+  function gRellenarForm(d) {
+    document.getElementById('am-f-nombre').value    = d.nombre    || '';
+    document.getElementById('am-f-direccion').value = d.direccion || '';
+    document.getElementById('am-f-whatsapp').value  = d.whatsapp  || '';
+    document.getElementById('am-f-tipo').value      = d.tipo      || 'Otro';
+    document.getElementById('am-f-estado').value    = d.estado    || 'cerrado';
+    document.getElementById('am-f-horarios').value  = d.horariosTxt
+      ? d.horariosTxt.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
+      : '';
+    document.getElementById('am-f-tags').value      = d.tags ? d.tags.join(', ') : '';
+    document.getElementById('am-f-desccorta').value = d.descCorta || '';
+    document.getElementById('am-f-zona').value      = d.zona      || 'Centro';
+    document.getElementById('am-f-mapaurl').value   = d.mapaUrl   || '';
+    document.getElementById('am-f-lat').value       = d.lat       || '';
+    document.getElementById('am-f-lng').value       = d.lng       || '';
+    const color = d.colorBrand || '#d9232d';
+    document.getElementById('am-f-color').value     = color;
+    document.getElementById('am-f-color-hex').value = color;
+  }
+
+  document.getElementById('am-f-color').addEventListener('input', function() {
+    document.getElementById('am-f-color-hex').value = this.value;
+  });
+  document.getElementById('am-f-color-hex').addEventListener('input', function() {
+    const val = this.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) document.getElementById('am-f-color').value = val;
+  });
+
+  document.getElementById('am-btn-guardar-local').addEventListener('click', async () => {
+    if (!gLocalId) return;
+    const btn    = document.getElementById('am-btn-guardar-local');
+    const nombre = document.getElementById('am-f-nombre').value.trim();
+
+    if (!nombre) { toast('El nombre del local es obligatorio.', 'err'); return; }
+
+    const horariosRaw = document.getElementById('am-f-horarios').value.trim();
+    const horariosTxt = horariosRaw
+      ? horariosRaw.split('\n').map(l => `🕒 <b>${l.trim()}</b>`).join(' <br> ')
+      : '';
+
+    const tagsRaw = document.getElementById('am-f-tags').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [];
+
+    const datos = {
+      nombre,
+      direccion:  document.getElementById('am-f-direccion').value.trim(),
+      whatsapp:   document.getElementById('am-f-whatsapp').value.trim(),
+      tipo:       document.getElementById('am-f-tipo').value,
+      estado:     document.getElementById('am-f-estado').value,
+      horariosTxt,
+      tags,
+      descCorta:  document.getElementById('am-f-desccorta').value.trim(),
+      zona:       document.getElementById('am-f-zona').value,
+      colorBrand: document.getElementById('am-f-color-hex').value.trim() || document.getElementById('am-f-color').value,
+      mapaUrl:    document.getElementById('am-f-mapaurl').value.trim(),
+      lat:        parseFloat(document.getElementById('am-f-lat').value) || null,
+      lng:        parseFloat(document.getElementById('am-f-lng').value) || null,
+    };
+
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      await db.collection('locales').doc(gLocalId).update(datos);
+      gLocalData = { ...gLocalData, ...datos };
+      document.getElementById('gestion-nombre-local').textContent = nombre;
+      toast('✅ Datos del local guardados.');
+    } catch(e) {
+      console.error('Error guardar local (gestion):', e);
+      toast('Error al guardar. Revisá tu conexión.', 'err');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Guardar datos del local';
+  });
+
+  // ── MENU ──
+  function gRenderMenu(menu) {
+    const orden = gLocalData.categoriasOrden || [];
+    const keysMenu = Object.keys(menu);
+    const cats = orden.filter(c => keysMenu.includes(c))
+      .concat(keysMenu.filter(c => !orden.includes(c)));
+    const tabsCont = document.getElementById('am-tabs-categorias');
+    const lista    = document.getElementById('am-lista-productos');
+
+    tabsCont.innerHTML = '';
+
+    if (cats.length === 0) {
+      lista.innerHTML = '<p class="empty">No hay productos aún. Agregá el primero 👇</p>';
+      return;
+    }
+
+    if (!gCatActiva || !menu[gCatActiva]) gCatActiva = cats[0];
+
+    cats.forEach((cat) => {
+      const tab = document.createElement('button');
+      tab.className = 'tab' + (cat === gCatActiva ? ' active' : '');
+      tab.textContent = cat;
+      tab.addEventListener('click', () => { gCatActiva = cat; gRenderMenu(gLocalData.menu || {}); });
+      tabsCont.appendChild(tab);
+    });
+
+    lista.innerHTML = '';
+    const catHeader = document.createElement('div');
+    catHeader.className = 'cat-header';
+    const catIdx = cats.indexOf(gCatActiva);
+    catHeader.innerHTML = `
+      <span style="font-weight:600; font-size:0.9rem; color:var(--muted);">${gCatActiva}</span>
+      <div class="cat-acciones">
+        <button class="btn-cat" title="Subir categoría" id="am-btn-cat-subir">⬆️</button>
+        <button class="btn-cat" title="Bajar categoría" id="am-btn-cat-bajar">⬇️</button>
+        <button class="btn-cat" title="Renombrar categoría" id="am-btn-cat-renombrar">✏️</button>
+        <button class="btn-cat danger" title="Eliminar categoría completa" id="am-btn-cat-eliminar">🗑️</button>
+      </div>`;
+    lista.appendChild(catHeader);
+
+    catHeader.querySelector('#am-btn-cat-subir').addEventListener('click', async () => {
+      if (catIdx === 0) return;
+      const { menu: m, orden } = gReordenarCat(menu, gCatActiva, -1);
+      await gGuardarMenu(m, orden);
+    });
+
+    catHeader.querySelector('#am-btn-cat-bajar').addEventListener('click', async () => {
+      if (catIdx === cats.length - 1) return;
+      const { menu: m, orden } = gReordenarCat(menu, gCatActiva, 1);
+      await gGuardarMenu(m, orden);
+    });
+
+    catHeader.querySelector('#am-btn-cat-renombrar').addEventListener('click', async () => {
+      const nuevoNombre = prompt(`Nuevo nombre para "${gCatActiva}":`, gCatActiva);
+      if (!nuevoNombre || nuevoNombre.trim() === gCatActiva) return;
+      const nuevoMenu = {};
+      for (let c in menu) {
+        nuevoMenu[c === gCatActiva ? nuevoNombre.trim() : c] = menu[c];
+      }
+      const nuevoOrden = (gLocalData.categoriasOrden || Object.keys(menu))
+        .map(c => c === gCatActiva ? nuevoNombre.trim() : c);
+      gCatActiva = nuevoNombre.trim();
+      await gGuardarMenu(nuevoMenu, nuevoOrden);
+    });
+
+    catHeader.querySelector('#am-btn-cat-eliminar').addEventListener('click', async () => {
+      const cant = (menu[gCatActiva] || []).length;
+      if (!confirm(`¿Eliminar la categoría "${gCatActiva}" con ${cant} producto${cant !== 1 ? 's' : ''}?`)) return;
+      const nuevoMenu = { ...menu };
+      delete nuevoMenu[gCatActiva];
+      const nuevoOrden = (gLocalData.categoriasOrden || Object.keys(menu))
+        .filter(c => c !== gCatActiva);
+      gCatActiva = nuevoOrden[0] || null;
+      await gGuardarMenu(nuevoMenu, nuevoOrden);
+    });
+
+    const productos = menu[gCatActiva] || [];
+
+    if (productos.length === 0) {
+      lista.innerHTML += '<p class="empty">No hay productos en esta categoría.</p>';
+      return;
+    }
+
+    productos.forEach((p, idx) => {
+      const disponible = p.disponible !== false;
+      const wrapper = document.createElement('div');
+
+      const item = document.createElement('div');
+      item.className = 'producto-item' + (disponible ? '' : ' no-disponible');
+      item.innerHTML = `
+        <div class="producto-info">
+          <div class="producto-nombre">${p.nombre}</div>
+          <div class="producto-meta">${p.desc || '—'} · ${p.tipo}</div>
+        </div>
+        <div class="producto-precio">$${p.precio}</div>
+        <div style="display:flex; gap:0.3rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="toggle-disponible ${disponible ? 'activo' : 'inactivo'}" title="Disponibilidad">
+            ${disponible ? '✅ Disponible' : '❌ No disponible'}
+          </button>
+          <button class="btn-editar" title="Editar">✏️</button>
+          <button class="btn-eliminar" title="Eliminar">🗑️</button>
+        </div>`;
+
+      item.querySelector('.toggle-disponible').addEventListener('click', async () => {
+        gLocalData.menu[gCatActiva][idx].disponible = !disponible;
+        await gGuardarMenu(gLocalData.menu);
+      });
+
+      item.querySelector('.btn-editar').addEventListener('click', () => {
+        formEd.classList.toggle('visible');
+      });
+
+      item.querySelector('.btn-eliminar').addEventListener('click', () => gEliminarProducto(gCatActiva, idx));
+
+      const formEd = document.createElement('div');
+      formEd.className = 'form-edicion';
+      formEd.innerHTML = `
+        <div class="form-edicion-title">✏️ Editando: ${p.nombre}</div>
+        <div class="field"><label>Nombre</label><input type="text" class="ed-nombre" value="${p.nombre}"/></div>
+        <div class="field"><label>Descripción</label><textarea class="ed-desc">${p.desc || ''}</textarea></div>
+        <div class="row-2">
+          <div class="field"><label>Precio ($)</label><input type="number" class="ed-precio" value="${p.precio}"/></div>
+          <div class="field"><label>Tipo</label>
+            <select class="ed-tipo">
+              <option value="comida" ${p.tipo==='comida'?'selected':''}>Comida 🍔</option>
+              <option value="bebida" ${p.tipo==='bebida'?'selected':''}>Bebida 🥤</option>
+              <option value="alcohol" ${p.tipo==='alcohol'?'selected':''}>Alcohol 🍺</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <button class="btn btn-green btn-guardar-edicion">Guardar cambios</button>
+          <button class="btn btn-outline btn-cancelar-edicion">Cancelar</button>
+        </div>`;
+
+      formEd.querySelector('.btn-cancelar-edicion').addEventListener('click', () => {
+        formEd.classList.remove('visible');
+      });
+
+      formEd.querySelector('.btn-guardar-edicion').addEventListener('click', async () => {
+        const nuevoNombre = formEd.querySelector('.ed-nombre').value.trim();
+        const nuevaDesc   = formEd.querySelector('.ed-desc').value.trim();
+        const nuevoPrecio = parseInt(formEd.querySelector('.ed-precio').value);
+        const nuevoTipo   = formEd.querySelector('.ed-tipo').value;
+
+        if (!nuevoNombre || !nuevoPrecio) { toast('Nombre y precio son obligatorios.', 'err'); return; }
+
+        gLocalData.menu[gCatActiva][idx] = {
+          ...gLocalData.menu[gCatActiva][idx],
+          nombre: nuevoNombre,
+          desc:   nuevaDesc,
+          precio: nuevoPrecio,
+          tipo:   nuevoTipo
+        };
+
+        const btnE = formEd.querySelector('.btn-guardar-edicion');
+        btnE.disabled = true;
+        btnE.textContent = 'Guardando...';
+
+        await gGuardarMenu(gLocalData.menu);
+      });
+
+      wrapper.appendChild(item);
+      wrapper.appendChild(formEd);
+      lista.appendChild(wrapper);
+    });
+  }
+
+  function gReordenarCat(menu, cat, direccion) {
+    const orden = gLocalData.categoriasOrden && gLocalData.categoriasOrden.length
+      ? [...gLocalData.categoriasOrden]
+      : Object.keys(menu);
+    const idx  = orden.indexOf(cat);
+    const nuevo = idx + direccion;
+    if (nuevo < 0 || nuevo >= orden.length) return { menu, orden };
+    [orden[idx], orden[nuevo]] = [orden[nuevo], orden[idx]];
+    return { menu, orden };
+  }
+
+  async function gGuardarMenu(nuevoMenu, nuevoOrden) {
+    const orden = nuevoOrden || Object.keys(nuevoMenu);
+    try {
+      await db.collection('locales').doc(gLocalId).update({ menu: nuevoMenu, categoriasOrden: orden });
+      gLocalData.menu = nuevoMenu;
+      gLocalData.categoriasOrden = orden;
+      gRenderMenu(nuevoMenu);
+      toast('✅ Guardado.');
+    } catch(e) {
+      console.error(e);
+      toast('Error al guardar.', 'err');
+    }
+  }
+
+  // ── AGREGAR PRODUCTO ──
+  document.getElementById('am-btn-mostrar-form').addEventListener('click', () => {
+    const form = document.getElementById('am-form-producto');
+    form.classList.toggle('visible');
+    if (gCatActiva) document.getElementById('am-p-categoria').value = gCatActiva;
+  });
+
+  document.getElementById('am-btn-cancelar-producto').addEventListener('click', () => {
+    document.getElementById('am-form-producto').classList.remove('visible');
+    gLimpiarFormProducto();
+  });
+
+  document.getElementById('am-btn-confirmar-producto').addEventListener('click', async () => {
+    if (!gLocalId) return;
+
+    const nombre = document.getElementById('am-p-nombre').value.trim();
+    const precio = parseInt(document.getElementById('am-p-precio').value);
+    const cat    = document.getElementById('am-p-categoria').value.trim();
+
+    if (!nombre || !precio || !cat) {
+      toast('Nombre, precio y categoría son obligatorios.', 'err');
+      return;
+    }
+
+    const producto = {
+      nombre,
+      desc:  document.getElementById('am-p-desc').value.trim(),
+      precio,
+      tipo:  document.getElementById('am-p-tipo').value
+    };
+
+    if (!gLocalData.menu) gLocalData.menu = {};
+    const catNueva = !gLocalData.menu[cat];
+    if (!gLocalData.menu[cat]) gLocalData.menu[cat] = [];
+    gLocalData.menu[cat].push(producto);
+    if (catNueva) {
+      gLocalData.categoriasOrden = [...(gLocalData.categoriasOrden || Object.keys(gLocalData.menu).filter(c => c !== cat)), cat];
+    }
+
+    const btn = document.getElementById('am-btn-confirmar-producto');
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      await db.collection('locales').doc(gLocalId).update({ menu: gLocalData.menu, categoriasOrden: gLocalData.categoriasOrden || Object.keys(gLocalData.menu) });
+      gCatActiva = cat;
+      gRenderMenu(gLocalData.menu);
+      document.getElementById('am-form-producto').classList.remove('visible');
+      gLimpiarFormProducto();
+      toast('✅ Producto agregado.');
+    } catch(e) {
+      console.error('Error agregar producto (gestion):', e);
+      toast('Error al guardar el producto.', 'err');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Guardar producto';
+  });
+
+  function gLimpiarFormProducto() {
+    ['am-p-nombre','am-p-desc','am-p-precio','am-p-categoria'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+
+  // ── ELIMINAR PRODUCTO ──
+  async function gEliminarProducto(cat, idx) {
+    if (!confirm('¿Eliminás este producto?')) return;
+
+    gLocalData.menu[cat].splice(idx, 1);
+    if (gLocalData.menu[cat].length === 0) {
+      delete gLocalData.menu[cat];
+      gLocalData.categoriasOrden = (gLocalData.categoriasOrden || []).filter(c => c !== cat);
+      gCatActiva = gLocalData.categoriasOrden[0] || null;
+    }
+
+    try {
+      await db.collection('locales').doc(gLocalId).update({ menu: gLocalData.menu, categoriasOrden: gLocalData.categoriasOrden || Object.keys(gLocalData.menu) });
+      gRenderMenu(gLocalData.menu);
+      toast('Producto eliminado.');
+    } catch(e) {
+      toast('Error al eliminar.', 'err');
+    }
+  }
+
+  // ── GRUPOS DE OPCIONES ──
+  function gRenderGrupos() {
+    const grupos = gLocalData.grupos || [];
+    const cont   = document.getElementById('am-lista-grupos');
+    cont.innerHTML = '';
+
+    if (grupos.length === 0) {
+      cont.innerHTML = '<p class="empty" style="padding:1rem 0;">No hay grupos de opciones. Crea el primero.</p>';
+      return;
+    }
+
+    grupos.forEach((grupo, gi) => {
+      const card = document.createElement('div');
+      card.className = 'grupo-card';
+
+      const tiposLabel = (grupo.tipos || []).join(', ') || 'todos';
+      const grupoOn    = grupo.activo !== false;
+
+      card.innerHTML = `
+        <div class="grupo-header" id="am-gh-${gi}">
+          <div class="grupo-header-left">
+            <span style="font-size:1rem;">▾</span>
+            <div>
+              <div class="grupo-nombre">${grupo.nombre}</div>
+              <div class="grupo-tipos">Aplica a: ${tiposLabel}</div>
+            </div>
+          </div>
+          <div class="grupo-acciones">
+            <button class="toggle-grupo ${grupoOn ? 'on' : 'off'}" id="am-tg-${gi}">${grupoOn ? 'Activo' : 'Inactivo'}</button>
+            <button class="btn-cat" id="am-btn-renombrar-grupo-${gi}" title="Renombrar">✏️</button>
+            <button class="btn-cat danger" id="am-btn-eliminar-grupo-${gi}" title="Eliminar grupo">🗑️</button>
+          </div>
+        </div>
+        <div class="grupo-body abierto" id="am-gb-${gi}">
+          <div id="am-items-grupo-${gi}"></div>
+          <button class="btn-agregar-item" id="am-btn-add-item-${gi}">+ Agregar opcion</button>
+        </div>`;
+
+      cont.appendChild(card);
+
+      document.getElementById(`am-gh-${gi}`).addEventListener('click', (e) => {
+        if (e.target.closest('.grupo-acciones')) return;
+        const body  = document.getElementById(`am-gb-${gi}`);
+        const arrow = document.getElementById(`am-gh-${gi}`).querySelector('span');
+        body.classList.toggle('abierto');
+        arrow.textContent = body.classList.contains('abierto') ? '▾' : '▸';
+      });
+
+      document.getElementById(`am-tg-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        gLocalData.grupos[gi].activo = !grupoOn;
+        await gGuardarGrupos();
+      });
+
+      document.getElementById(`am-btn-renombrar-grupo-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const nuevo = prompt(`Nuevo nombre para "${grupo.nombre}":`, grupo.nombre);
+        if (!nuevo || nuevo.trim() === grupo.nombre) return;
+        gLocalData.grupos[gi].nombre = nuevo.trim();
+        await gGuardarGrupos();
+      });
+
+      document.getElementById(`am-btn-eliminar-grupo-${gi}`).addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Eliminar el grupo "${grupo.nombre}" con todos sus items?`)) return;
+        gLocalData.grupos.splice(gi, 1);
+        await gGuardarGrupos();
+      });
+
+      document.getElementById(`am-btn-add-item-${gi}`).addEventListener('click', () => {
+        const nombre  = prompt('Nombre de la opcion (ej: Mayonesa, Fria, Bacon):');
+        if (!nombre || !nombre.trim()) return;
+        const precioStr = prompt('Precio adicional en $ (0 si es gratis):', '0');
+        const precio = parseInt(precioStr) || 0;
+        if (!gLocalData.grupos[gi].items) gLocalData.grupos[gi].items = [];
+        gLocalData.grupos[gi].items.push({ nombre: nombre.trim(), precio, activo: true });
+        gGuardarGrupos();
+      });
+
+      gRenderItemsGrupo(gi, grupo.items || []);
+    });
+  }
+
+  function gRenderItemsGrupo(gi, items) {
+    const cont = document.getElementById(`am-items-grupo-${gi}`);
+    if (!cont) return;
+    cont.innerHTML = '';
+
+    if (items.length === 0) {
+      cont.innerHTML = '<p style="font-size:0.8rem; color:var(--muted); padding:0.3rem 0;">Sin opciones todavia.</p>';
+      return;
+    }
+
+    items.forEach((item, ii) => {
+      const on  = item.activo !== false;
+      const div = document.createElement('div');
+      div.className = 'item-opcion';
+
+      div.innerHTML = `
+        <div class="item-opcion-info">
+          <input type="text" class="item-nombre-input" value="${item.nombre}" data-gi="${gi}" data-ii="${ii}" title="Editar nombre"/>
+          <span style="font-size:0.75rem; color:var(--muted);">$</span>
+          <input type="number" class="item-precio-input" value="${item.precio || 0}" data-gi="${gi}" data-ii="${ii}" title="Precio adicional"/>
+        </div>
+        <div style="display:flex; gap:0.3rem; align-items:center;">
+          <button class="toggle-item ${on ? 'on' : 'off'}" data-gi="${gi}" data-ii="${ii}">${on ? 'Si' : 'No'}</button>
+          <button class="btn-cat danger btn-del-item" data-gi="${gi}" data-ii="${ii}" title="Eliminar">🗑️</button>
+        </div>`;
+
+      cont.appendChild(div);
+
+      div.querySelector('.item-nombre-input').addEventListener('change', async function() {
+        gLocalData.grupos[gi].items[ii].nombre = this.value.trim();
+        await gGuardarGrupos(true);
+      });
+
+      div.querySelector('.item-precio-input').addEventListener('change', async function() {
+        gLocalData.grupos[gi].items[ii].precio = parseInt(this.value) || 0;
+        await gGuardarGrupos(true);
+      });
+
+      div.querySelector('.toggle-item').addEventListener('click', async function() {
+        gLocalData.grupos[gi].items[ii].activo = !on;
+        await gGuardarGrupos();
+      });
+
+      div.querySelector('.btn-del-item').addEventListener('click', async function() {
+        if (!confirm(`Eliminar "${item.nombre}"?`)) return;
+        gLocalData.grupos[gi].items.splice(ii, 1);
+        await gGuardarGrupos();
+      });
+    });
+  }
+
+  async function gGuardarGrupos(silencioso = false) {
+    if (!gLocalId) return;
+    try {
+      await db.collection('locales').doc(gLocalId).update({ grupos: gLocalData.grupos || [] });
+      gRenderGrupos();
+      if (!silencioso) toast('Grupos guardados.');
+    } catch(e) {
+      console.error(e);
+      toast('Error al guardar grupos.', 'err');
+    }
+  }
+
+  document.getElementById('am-btn-nuevo-grupo').addEventListener('click', () => {
+    document.getElementById('am-form-nuevo-grupo').classList.toggle('visible');
+  });
+
+  document.getElementById('am-btn-cancelar-grupo').addEventListener('click', () => {
+    document.getElementById('am-form-nuevo-grupo').classList.remove('visible');
+    document.getElementById('am-ng-nombre').value = '';
+  });
+
+  document.getElementById('am-btn-confirmar-grupo').addEventListener('click', async () => {
+    const nombre = document.getElementById('am-ng-nombre').value.trim();
+    if (!nombre) { toast('El nombre del grupo es obligatorio.', 'err'); return; }
+
+    const tipos = [...document.querySelectorAll('.am-ng-tipo:checked')].map(cb => cb.value);
+    if (tipos.length === 0) { toast('Selecciona al menos un tipo de producto.', 'err'); return; }
+
+    if (!gLocalData.grupos) gLocalData.grupos = [];
+    gLocalData.grupos.push({ nombre, tipos, activo: true, items: [] });
+
+    document.getElementById('am-ng-nombre').value = '';
+    document.querySelectorAll('.am-ng-tipo').forEach(cb => cb.checked = cb.value === 'comida');
+    document.getElementById('am-form-nuevo-grupo').classList.remove('visible');
+
+    await gGuardarGrupos();
   });
 
   // ── TOAST ──
