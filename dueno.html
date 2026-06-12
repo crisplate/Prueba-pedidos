@@ -3,74 +3,76 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel Master — Dale pué</title>
+  <title>Portal Dueño — Dale pué</title>
 
+  <!-- Firebase compat (más simple y confiable) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <!-- EmailJS: envio de email al dueno cuando se da de alta un local -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script>
-    // ── EMAILJS CONFIG ──
-    // Completar con los datos de tu cuenta en emailjs.com:
-    //   Service ID  → Email Services del dashboard
-    //   Template ID → Email Templates del dashboard
-    //   Public Key  → Account > API Keys
-    const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';   // ej: 'service_abc123'
-    const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';  // ej: 'template_xyz456'
-    const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';   // ej: 'AbCdEfGhIjKlMnOp'
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-  </script>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
-    :root {
-      --bg: #f5f4f0;
-      --white: #ffffff;
-      --border: #e2e0d8;
-      --text: #1a1a18;
-      --muted: #7a7870;
-      --accent: #d9232d;
-      --dark: #111111;
-      --green: #1a9e5a;
-      --yellow: #ffb800;
-      --radius: 12px;
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f5f4f0;
+      --white:   #ffffff;
+      --border:  #e2e0d8;
+      --text:    #1a1a18;
+      --muted:   #7a7870;
+      --accent:  #d9232d;
+      --yellow:  #ffb800;
+      --green:   #1a9e5a;
+      --radius:  12px;
+    }
 
     body {
       font-family: 'DM Sans', sans-serif;
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
     }
 
-    /* LOGIN */
-    #login-view {
+    /* ── LOGIN ── */
+    #pantalla-login {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      padding: 1rem;
       background: #111;
     }
 
-    .login-box {
+    .login-card {
       background: #1a1a1f;
       border: 1px solid #2e2e36;
       border-radius: 20px;
       padding: 2rem;
       width: 100%;
-      max-width: 380px;
+      max-width: 360px;
     }
 
-    .login-logo { color: var(--yellow); font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; }
-    .login-sub  { color: #666; font-size: 0.82rem; margin-bottom: 2rem; }
+    .login-logo {
+      color: var(--yellow);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
 
-    .login-label { display: block; font-size: 0.78rem; color: #888; margin-bottom: 0.3rem; font-weight: 500; }
+    .login-sub {
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
 
     .login-input {
       width: 100%;
@@ -85,6 +87,7 @@
       margin-bottom: 1rem;
       transition: border-color 0.2s;
     }
+
     .login-input:focus { border-color: var(--yellow); }
 
     .btn-login {
@@ -100,7 +103,9 @@
       cursor: pointer;
       transition: opacity 0.2s;
     }
+
     .btn-login:hover { opacity: 0.88; }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .login-error {
       color: #f76c6c;
@@ -109,10 +114,11 @@
       display: none;
       text-align: center;
     }
+
     .login-error.show { display: block; }
 
-    /* PANEL */
-    #admin-view { display: none; padding-bottom: 3rem; }
+    /* ── PORTAL ── */
+    #pantalla-portal { display: none; padding-bottom: 3rem; }
 
     .topbar {
       background: #111;
@@ -125,8 +131,9 @@
       top: 0;
       z-index: 100;
     }
+
     .topbar-brand { font-size: 1.1rem; font-weight: 700; color: var(--yellow); }
-    .topbar-sub   { font-size: 0.72rem; color: #666; margin-top: 2px; }
+    .topbar-email { font-size: 0.75rem; color: #888; margin-top: 2px; }
 
     .btn-salir {
       background: #333;
@@ -137,35 +144,10 @@
       font-family: 'DM Sans', sans-serif;
       font-size: 0.82rem;
       cursor: pointer;
-      width: auto;
     }
 
-    .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .main { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
 
-    /* STATS */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.2rem;
-      text-align: center;
-    }
-
-    .stat-numero { font-size: 2rem; font-weight: 700; line-height: 1; }
-    .stat-label  { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-    .stat-verde  { color: var(--green); }
-    .stat-rojo   { color: var(--accent); }
-    .stat-amarillo { color: #b38000; }
-    .stat-azul   { color: #2563eb; }
-
-    /* SECCION */
     .section {
       background: var(--white);
       border: 1px solid var(--border);
@@ -174,186 +156,17 @@
       margin-bottom: 1.5rem;
     }
 
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.2rem;
-      gap: 1rem;
-    }
-
-    .section-title { font-size: 1rem; font-weight: 600; }
-
-    /* ALTA LOCAL */
-    .alta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      gap: 0.75rem;
-      align-items: end;
-    }
-
-    .field label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--muted);
-      margin-bottom: 0.3rem;
-    }
-
-    .field input, .field select {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      padding: 0.65rem 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .field input:focus, .field select:focus { border-color: var(--accent); }
-
-    /* TABLA */
-    .table-wrap { overflow-x: auto; }
-
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
-    th { background: #faf9f6; color: var(--muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafaf8; }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 700;
-    }
-    .badge-abierto  { background: #dcfce7; color: #166534; }
-    .badge-cerrado  { background: #fee2e2; color: #991b1b; }
-    .badge-vinculado { background: #dbeafe; color: #1e40af; }
-    .badge-pendiente { background: #fef9c3; color: #854d0e; }
-
-    .acciones { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-
-    .btn { 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center;
-      padding: 0.5rem 0.9rem; 
-      border-radius: 8px; 
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.8rem; 
-      font-weight: 600; 
-      border: none; 
-      cursor: pointer; 
-      transition: opacity 0.2s;
-      width: auto;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn-primary   { background: var(--accent); color: #fff; }
-    .btn-green     { background: var(--green); color: #fff; }
-    .btn-dark      { background: #222; color: #fff; }
-    .btn-outline   { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .btn-warning   { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
-    .btn-danger    { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-
-    /* MODAL EDICION */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 500;
-      padding: 1rem;
-    }
-    .modal-overlay.open { display: flex; }
-
-    .modal-box {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 1.75rem;
-      width: 100%;
-      max-width: 580px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-title {
+    .section-title {
       font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 1.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--muted);
-      width: auto;
-      padding: 0;
-    }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
-    .mb { margin-bottom: 0.85rem; }
-
-    /* ── GESTION DE LOCAL (modal grande, portado de dueno.html) ── */
-    .modal-gestion-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: flex-start;
-      justify-content: center;
-      z-index: 600;
-      padding: 1rem;
-      overflow-y: auto;
-    }
-    .modal-gestion-overlay.open { display: flex; }
-
-    .modal-gestion-box {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 1.75rem;
-      width: 100%;
-      max-width: 760px;
-      margin: 1rem 0 3rem 0;
-    }
-
-    .modal-gestion-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 1.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .gestion-section {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .gestion-section-title {
-      font-size: 0.95rem;
       font-weight: 600;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
     .field { margin-bottom: 1rem; }
+
     .field label {
       display: block;
       font-size: 0.78rem;
@@ -361,9 +174,12 @@
       color: var(--muted);
       margin-bottom: 0.35rem;
     }
-    .field input, .field select, .field textarea {
+
+    .field input,
+    .field select,
+    .field textarea {
       width: 100%;
-      background: var(--white);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       color: var(--text);
@@ -373,11 +189,42 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus { border-color: var(--accent); }
+
     .field textarea { resize: vertical; min-height: 70px; }
 
-    /* TABS CATEGORIAS */
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.2rem;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      width: 100%;
+    }
+
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* ── TABS ── */
     .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+
     .tab {
       padding: 0.4rem 0.9rem;
       border-radius: 999px;
@@ -388,11 +235,12 @@
       cursor: pointer;
       transition: all 0.15s;
     }
+
     .tab.active { background: #111; color: #fff; border-color: #111; }
 
-    /* PRODUCTOS */
+    /* ── PRODUCTOS ── */
     .producto-item {
-      background: var(--white);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 0.9rem 1rem;
@@ -401,14 +249,14 @@
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      flex-wrap: wrap;
     }
-    .producto-info { flex: 1; min-width: 140px; }
+
+    .producto-info { flex: 1; min-width: 0; }
     .producto-nombre { font-weight: 600; font-size: 0.9rem; }
     .producto-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
-    .producto-item.no-disponible { opacity: 0.55; }
 
+    /* ── GESTIÓN CATEGORÍAS ── */
     .cat-header {
       display: flex;
       align-items: center;
@@ -416,376 +264,381 @@
       margin-bottom: 1rem;
       gap: 0.5rem;
     }
-    .cat-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; }
-    .btn-cat {
-      width: 30px; height: 30px; border-radius: 7px;
-      border: 1px solid var(--border); background: var(--white);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 13px; transition: background 0.15s;
+
+    .cat-acciones {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
     }
+
+    .btn-cat {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
     .btn-cat:hover { background: var(--bg); }
     .btn-cat.danger:hover { background: #fee2e2; border-color: #fecaca; }
 
+    /* ── TOGGLE DISPONIBLE ── */
     .toggle-disponible {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.75rem; font-weight: 600; cursor: pointer;
-      padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border);
-      background: var(--white); white-space: nowrap; transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      white-space: nowrap;
+      transition: all 0.2s;
     }
-    .toggle-disponible.activo   { background: #dcfce7; color: #166534; border-color: #86efac; }
+
+    .toggle-disponible.activo { background: #dcfce7; color: #166534; border-color: #86efac; }
     .toggle-disponible.inactivo { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
-    .btn-editar, .btn-eliminar {
-      width: 32px; height: 32px; border-radius: 8px;
-      border: 1px solid var(--border); background: var(--white);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; transition: background 0.15s; flex-shrink: 0;
+    .producto-item.no-disponible { opacity: 0.55; }
+
+    .btn-editar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+      flex-shrink: 0;
     }
-    .btn-editar:hover   { background: #fef9c3; border-color: #fde047; }
-    .btn-eliminar:hover { background: #fee2e2; border-color: #fecaca; }
+    .btn-editar:hover { background: #fef9c3; border-color: #fde047; }
 
     .form-edicion {
-      display: none; background: #f0fdf4; border: 1px dashed var(--green);
-      border-radius: var(--radius); padding: 1rem; margin-top: 0.5rem;
+      display: none;
+      background: #f0fdf4;
+      border: 1px dashed var(--green);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 0.5rem;
     }
     .form-edicion.visible { display: block; }
     .form-edicion-title { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-bottom: 0.75rem; }
 
-    .form-producto {
-      background: #fffbf0; border: 1px dashed var(--yellow);
-      border-radius: var(--radius); padding: 1.2rem; margin-top: 1rem; display: none;
+    .btn-eliminar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+      flex-shrink: 0;
     }
-    .form-producto.visible { display: block; }
-    .form-producto-title { font-size: 0.85rem; font-weight: 600; color: #b38000; margin-bottom: 1rem; }
 
-    .empty { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.88rem; }
+    .btn-eliminar:hover { background: #fee2e2; border-color: #fecaca; }
+
+    /* ── FORM NUEVO PRODUCTO ── */
+    .form-producto {
+      background: #fffbf0;
+      border: 1px dashed var(--yellow);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .form-producto.visible { display: block; }
+
+    .form-producto-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #b38000;
+      margin-bottom: 1rem;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111;
+      color: #fff;
+      padding: 0.75rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.ok { background: var(--green); }
+    .toast.err { background: var(--accent); }
+
+    .empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
 
     .badge-ok  { background: #dcfce7; color: #166534; }
     .badge-off { background: #fee2e2; color: #991b1b; }
 
-    /* GRUPOS DE OPCIONES */
+    @media (max-width: 480px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── GRUPOS DE OPCIONES ── */
     .grupo-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
     }
+
     .grupo-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1rem; gap: 0.5rem; cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+      cursor: pointer;
     }
-    .grupo-header-left { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
-    .grupo-nombre { font-weight: 600; font-size: 0.9rem; }
-    .grupo-tipos { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
-    .grupo-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; }
-    .grupo-body { border-top: 1px solid var(--border); padding: 0.75rem 1rem; display: none; }
+
+    .grupo-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .grupo-nombre {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .grupo-tipos {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .grupo-acciones {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .grupo-body {
+      border-top: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      display: none;
+    }
+
     .grupo-body.abierto { display: block; }
 
     .item-opcion {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.5rem 0; border-bottom: 1px solid var(--border); gap: 0.5rem; flex-wrap: wrap;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
     }
+
     .item-opcion:last-child { border-bottom: none; }
-    .item-opcion-info { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+
+    .item-opcion-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 0;
+    }
 
     .item-nombre-input {
-      background: transparent; border: none; border-bottom: 1px dashed var(--border);
-      border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif;
-      font-size: 0.88rem; color: var(--text); outline: none; width: 130px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      border-radius: 0;
+      padding: 0.2rem 0.3rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      width: 130px;
     }
+
     .item-nombre-input:focus { border-bottom-color: var(--accent); }
 
     .item-precio-input {
-      background: transparent; border: none; border-bottom: 1px dashed var(--border);
-      border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem; color: var(--green); font-weight: 600; outline: none;
-      width: 70px; text-align: right;
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      border-radius: 0;
+      padding: 0.2rem 0.3rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--green);
+      font-weight: 600;
+      outline: none;
+      width: 70px;
+      text-align: right;
     }
+
     .item-precio-input:focus { border-bottom-color: var(--green); }
 
     .toggle-item {
-      font-size: 0.72rem; font-weight: 600; padding: 3px 7px; border-radius: 999px;
-      border: 1px solid var(--border); cursor: pointer; white-space: nowrap; transition: all 0.15s;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
     }
+
     .toggle-item.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
     .toggle-item.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
     .toggle-grupo {
-      font-size: 0.75rem; font-weight: 600; padding: 4px 9px; border-radius: 999px;
-      border: 1px solid var(--border); cursor: pointer; white-space: nowrap;
-      transition: all 0.15s; flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
     }
+
     .toggle-grupo.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
     .toggle-grupo.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
     .btn-agregar-item {
-      font-size: 0.8rem; font-weight: 600; color: var(--accent); background: none;
-      border: 1px dashed var(--accent); border-radius: 8px; padding: 0.4rem 0.75rem;
-      cursor: pointer; margin-top: 0.5rem; transition: background 0.15s;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: none;
+      border: 1px dashed var(--accent);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
     }
+
     .btn-agregar-item:hover { background: #fff0f0; }
-
-    @media (max-width: 700px) {
-      .stats-grid  { grid-template-columns: 1fr 1fr; }
-      .alta-grid   { grid-template-columns: 1fr; }
-      .row-2       { grid-template-columns: 1fr; }
-      .row-3       { grid-template-columns: 1fr; }
-    }
-
-    /* TOAST */
-    #toast {
-      position: fixed; bottom: 1.5rem; left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #111; color: #fff;
-      padding: 0.75rem 1.4rem; border-radius: 999px;
-      font-size: 0.85rem; font-weight: 500;
-      transition: transform 0.3s ease;
-      z-index: 999; white-space: nowrap; opacity: 0;
-    }
-    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    #toast.ok  { background: var(--green); }
-    #toast.err { background: var(--accent); }
   </style>
 </head>
 <body>
 
-<div id="toast"></div>
-
-<!-- LOGIN -->
-<div id="login-view">
-  <div class="login-box">
+<!-- LOGIN / REGISTRO -->
+<div id="pantalla-login">
+  <div class="login-card">
     <div class="login-logo">Dale pué 🛵</div>
-    <div class="login-sub">Panel de administración master</div>
-    <label class="login-label">Correo electrónico</label>
-    <input type="email" id="inp-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
-    <label class="login-label">Contraseña</label>
-    <input type="password" id="inp-pass" class="login-input" placeholder="••••••••"/>
-    <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    <div class="login-sub">Portal dueños / encargados</div>
+
+    <!-- Tabs login/registro -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#ffb800; color:#111;">Ingresar</button>
+      <button id="tab-registro" onclick="switchTab('registro')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#2e2e36; color:#888;">Primera vez</button>
+    </div>
+
+    <!-- Panel login -->
+    <div id="panel-login">
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="l-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña</label>
+      <input type="password" id="l-pass" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    </div>
+
+    <!-- Panel registro -->
+    <div id="panel-registro" style="display:none;">
+      <div style="background:#1f1f2e; border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.78rem; color:#aaa; line-height:1.5;">
+        Si es tu primera vez, creá tu cuenta con el email que te indicó el administrador. Si tu email no está autorizado, no podrás registrarte.
+      </div>
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="r-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña (mínimo 6 caracteres)</label>
+      <input type="password" id="r-pass" class="login-input" placeholder="••••••••"/>
+      <label class="login-label">Repetir contraseña</label>
+      <input type="password" id="r-pass2" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-registrar">Crear cuenta</button>
+    </div>
+
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
 
-<!-- PANEL -->
-<div id="admin-view">
+<!-- PORTAL -->
+<div id="pantalla-portal">
   <div class="topbar">
     <div>
-      <div class="topbar-brand">Dale pué 🛵 — Master</div>
-      <div class="topbar-sub" id="topbar-email">—</div>
+      <div class="topbar-brand">Dale pué 🛵</div>
+      <div class="topbar-email" id="topbar-email">—</div>
     </div>
-    <button class="btn-salir" onclick="auth.signOut()">Salir</button>
+    <button class="btn-salir" id="btn-salir">Salir</button>
   </div>
 
   <div class="main">
 
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-numero stat-azul" id="stat-total">—</div>
-        <div class="stat-label">Locales totales</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-numero stat-verde" id="stat-abiertos">—</div>
-        <div class="stat-label">Abiertos ahora</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-numero stat-rojo" id="stat-cerrados">—</div>
-        <div class="stat-label">Cerrados</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-numero stat-amarillo" id="stat-pendientes">—</div>
-        <div class="stat-label">Alta pendiente</div>
-      </div>
-    </div>
-
-    <!-- ALTA NUEVO LOCAL -->
-    <div class="section">
-      <div class="section-title">➕ Dar de alta nuevo local</div>
-      <div class="alta-grid">
-        <div class="field">
-          <label>Nombre del local</label>
-          <input type="text" id="alta-nombre" placeholder="Ej: El Oeste"/>
-        </div>
-        <div class="field">
-          <label>Email del dueño</label>
-          <input type="email" id="alta-email" placeholder="dueno@correo.com"/>
-        </div>
-        <div class="field">
-          <label>Zona</label>
-          <select id="alta-zona">
-            <option value="Centro">Centro</option>
-            <option value="Norte">Norte</option>
-            <option value="Sur">Sur</option>
-            <option value="Este">Este</option>
-            <option value="Oeste">Oeste</option>
-            <option value="Sureste">Sureste</option>
-          </select>
-        </div>
-        <button class="btn btn-green" id="btn-alta">Dar de alta</button>
-      </div>
-      <p style="font-size:0.75rem; color:var(--muted); margin-top:0.75rem;">
-        El dueño recibirá el link de dueno.html y al registrarse con ese email quedará vinculado automáticamente.
-      </p>
-    </div>
-
-    <!-- LISTA DE LOCALES -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">🏪 Locales registrados</div>
-        <input type="text" id="filtro" placeholder="Filtrar por nombre..." style="padding:0.5rem 0.8rem; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.85rem; outline:none; width:200px;"/>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Local</th>
-              <th>Dueño</th>
-              <th>Zona</th>
-              <th>Estado</th>
-              <th>Alta</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-locales">
-            <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- MODAL EDICION -->
-<div class="modal-overlay" id="modal-edicion">
-  <div class="modal-box">
-    <div class="modal-title">
-      <span>✏️ Editar local</span>
-      <button class="modal-close" onclick="cerrarModal()">✕</button>
-    </div>
-
-    <input type="hidden" id="ed-id"/>
-
-    <div class="row-2 mb">
-      <div class="field">
-        <label>Nombre</label>
-        <input type="text" id="ed-nombre"/>
-      </div>
-      <div class="field">
-        <label>Tipo</label>
-        <select id="ed-tipo">
-          <option>Sandwichería</option>
-          <option>Pizzería</option>
-          <option>Parrilla</option>
-          <option>Minutas</option>
-          <option>Rotisería</option>
-          <option>Heladería</option>
-          <option>Café / Cafetería</option>
-          <option>Otro</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row-2 mb">
-      <div class="field">
-        <label>Dirección</label>
-        <input type="text" id="ed-direccion"/>
-      </div>
-      <div class="field">
-        <label>WhatsApp</label>
-        <input type="tel" id="ed-whatsapp"/>
-      </div>
-    </div>
-
-    <div class="row-2 mb">
-      <div class="field">
-        <label>Zona</label>
-        <select id="ed-zona">
-          <option value="Centro">Centro</option>
-          <option value="Norte">Norte</option>
-          <option value="Sur">Sur</option>
-          <option value="Este">Este</option>
-          <option value="Oeste">Oeste</option>
-          <option value="Sureste">Sureste</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Estado</label>
-        <select id="ed-estado">
-          <option value="abierto">Abierto</option>
-          <option value="cerrado">Cerrado</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row-2 mb">
-      <div class="field">
-        <label>Latitud</label>
-        <input type="number" id="ed-lat" step="0.0001"/>
-      </div>
-      <div class="field">
-        <label>Longitud</label>
-        <input type="number" id="ed-lng" step="0.0001"/>
-      </div>
-    </div>
-
-    <div class="row-2 mb">
-      <div class="field">
-        <label>Descripción corta</label>
-        <input type="text" id="ed-desccorta"/>
-      </div>
-      <div class="field">
-        <label>Color de marca</label>
-        <input type="text" id="ed-color" placeholder="#d9232d"/>
-      </div>
-    </div>
-
-    <div class="field mb">
-      <label>Link Google Maps</label>
-      <input type="text" id="ed-mapaurl"/>
-    </div>
-
-    <div class="field mb">
-      <label>Email del dueño</label>
-      <input type="email" id="ed-duenoemail"/>
-    </div>
-
-    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
-      <button class="btn btn-primary" id="btn-guardar-edicion" style="flex:1;">Guardar cambios</button>
-      <button class="btn btn-outline" onclick="cerrarModal()" style="flex:1;">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL GESTION DE LOCAL (datos + menu + grupos, equivalente a dueno.html) -->
-<div class="modal-gestion-overlay" id="modal-gestion">
-  <div class="modal-gestion-box">
-    <div class="modal-gestion-title">
-      <span>🍽️ Gestionar local: <span id="gestion-nombre-local">—</span></span>
-      <button class="modal-close" onclick="cerrarGestion()">✕</button>
-    </div>
-
     <!-- DATOS DEL LOCAL -->
-    <div class="gestion-section">
-      <div class="gestion-section-title">🏪 Datos del local</div>
+    <div class="section">
+      <div class="section-title">🏪 Datos del local</div>
 
       <div class="field">
         <label>Nombre del local</label>
-        <input type="text" id="am-f-nombre" placeholder="Ej: El Oeste"/>
+        <input type="text" id="f-nombre" placeholder="Ej: El Oeste"/>
       </div>
 
       <div class="row-2">
         <div class="field">
           <label>Dirección</label>
-          <input type="text" id="am-f-direccion" placeholder="Ej: Leguizamón 1594"/>
+          <input type="text" id="f-direccion" placeholder="Ej: Leguizamón 1594"/>
         </div>
         <div class="field">
           <label>WhatsApp (con código de país)</label>
-          <input type="tel" id="am-f-whatsapp" placeholder="5493874123456"/>
+          <input type="tel" id="f-whatsapp" placeholder="5493874123456"/>
         </div>
       </div>
 
       <div class="row-2">
         <div class="field">
           <label>Tipo de local</label>
-          <select id="am-f-tipo">
+          <select id="f-tipo">
             <option>Sandwichería</option>
             <option>Pizzería</option>
             <option>Parrilla</option>
@@ -798,7 +651,7 @@
         </div>
         <div class="field">
           <label>Estado</label>
-          <select id="am-f-estado">
+          <select id="f-estado">
             <option value="abierto">Abierto ✅</option>
             <option value="cerrado">Cerrado ❌</option>
           </select>
@@ -807,23 +660,24 @@
 
       <div class="field">
         <label>Horarios (se muestra en la app al cliente)</label>
-        <textarea id="am-f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
+        <textarea id="f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
         <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Escribí cada línea por separado. Se muestra tal cual en la app.</small>
       </div>
 
       <div class="field">
         <label>Palabras clave (separadas por coma)</label>
-        <input type="text" id="am-f-tags" placeholder="Ej: milanesa, lomo, papas fritas, gaseosa, cerveza"/>
+        <input type="text" id="f-tags" placeholder="Ej: milanesa, lomo, papas fritas, gaseosa, cerveza"/>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Ayudan a que los clientes encuentren tu local al buscar por productos.</small>
       </div>
 
       <div class="row-2">
         <div class="field">
-          <label>Descripción corta</label>
-          <input type="text" id="am-f-desccorta" placeholder="Ej: Sandwiches y minutas"/>
+          <label>Descripción corta (se ve en la lista de locales)</label>
+          <input type="text" id="f-desccorta" placeholder="Ej: Sandwiches y minutas"/>
         </div>
         <div class="field">
           <label>Zona</label>
-          <select id="am-f-zona">
+          <select id="f-zona">
             <option value="Centro">Centro</option>
             <option value="Norte">Norte</option>
             <option value="Sur">Sur</option>
@@ -835,64 +689,69 @@
       </div>
 
       <div class="field">
-        <label>Color de marca</label>
+        <label>Color de marca (se usa en la tarjeta del local)</label>
         <div style="display:flex; gap:0.75rem; align-items:center;">
-          <input type="color" id="am-f-color" value="#d9232d" style="width:48px; height:42px; padding:2px; border-radius:8px; border:1px solid var(--border); background:var(--white); cursor:pointer;"/>
-          <input type="text" id="am-f-color-hex" placeholder="#d9232d" style="flex:1;"/>
+          <input type="color" id="f-color" value="#d9232d" style="width:48px; height:42px; padding:2px; border-radius:8px; border:1px solid var(--border); background:var(--bg); cursor:pointer;"/>
+          <input type="text" id="f-color-hex" placeholder="#d9232d" style="flex:1;" oninput="sincronizarColor('hex')"/>
         </div>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Elegí un color que represente tu marca. Se muestra en la app del cliente.</small>
       </div>
 
       <div class="field">
-        <label>Link de Google Maps</label>
-        <input type="text" id="am-f-mapaurl" placeholder="Ej: https://maps.app.goo.gl/..."/>
+        <label>Link de Google Maps (para que los clientes puedan ir al local)</label>
+        <input type="text" id="f-mapaurl" placeholder="Ej: https://maps.app.goo.gl/..."/>
+        <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Abrí Google Maps, buscá tu local, hacé clic en Compartir y copiá el link corto.</small>
       </div>
 
       <div class="row-2">
         <div class="field">
-          <label>Latitud</label>
-          <input type="number" id="am-f-lat" placeholder="-24.7821" step="0.0001"/>
+          <label>Latitud (para el radar GPS)</label>
+          <input type="number" id="f-lat" placeholder="-24.7821" step="0.0001"/>
         </div>
         <div class="field">
-          <label>Longitud</label>
-          <input type="number" id="am-f-lng" placeholder="-65.4232" step="0.0001"/>
+          <label>Longitud (para el radar GPS)</label>
+          <input type="number" id="f-lng" placeholder="-65.4232" step="0.0001"/>
         </div>
       </div>
+      <div style="background:#fffbf0; border:1px solid #ffe08a; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.78rem; color:#7a6000; line-height:1.6;">
+        💡 Para obtener las coordenadas: abrí <a href="https://www.google.com/maps" target="_blank" style="color:var(--accent);">Google Maps</a>, buscá tu local, hacé clic derecho sobre el punto exacto y copiá los números que aparecen (primero latitud, luego longitud).
+      </div>
 
-      <button class="btn btn-primary" id="am-btn-guardar-local" style="width:100%;">Guardar datos del local</button>
+      <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
     </div>
 
-    <!-- MENU -->
-    <div class="gestion-section">
-      <div class="gestion-section-title">🍽️ Menú</div>
+    <!-- MENÚ -->
+    <div class="section">
+      <div class="section-title">🍽️ Menú</div>
 
-      <div class="tabs" id="am-tabs-categorias"></div>
-      <div id="am-lista-productos"><p class="empty">Cargando...</p></div>
+      <div class="tabs" id="tabs-categorias"></div>
+      <div id="lista-productos"><p class="empty">Cargando...</p></div>
 
-      <button class="btn btn-outline" id="am-btn-mostrar-form" style="margin-top:1rem; width:100%;">+ Agregar producto</button>
+      <button class="btn btn-secondary" id="btn-mostrar-form" style="margin-top:1rem;">+ Agregar producto</button>
 
-      <div class="form-producto" id="am-form-producto">
+      <div class="form-producto" id="form-producto">
         <div class="form-producto-title">Nuevo producto</div>
 
         <div class="field">
           <label>Nombre</label>
-          <input type="text" id="am-p-nombre" placeholder="Ej: Milanesa clásica"/>
+          <input type="text" id="p-nombre" placeholder="Ej: Milanesa clásica"/>
         </div>
         <div class="field">
           <label>Descripción (opcional)</label>
-          <textarea id="am-p-desc" placeholder="Ej: Con lechuga, tomate y papas"></textarea>
+          <textarea id="p-desc" placeholder="Ej: Con lechuga, tomate y papas"></textarea>
         </div>
         <div class="row-3">
           <div class="field">
             <label>Precio ($)</label>
-            <input type="number" id="am-p-precio" placeholder="12000"/>
+            <input type="number" id="p-precio" placeholder="12000"/>
           </div>
           <div class="field">
             <label>Categoría</label>
-            <input type="text" id="am-p-categoria" placeholder="Sandwiches"/>
+            <input type="text" id="p-categoria" placeholder="Sandwiches"/>
           </div>
           <div class="field">
             <label>Tipo</label>
-            <select id="am-p-tipo">
+            <select id="p-tipo">
               <option value="comida">Comida 🍔</option>
               <option value="bebida">Bebida 🥤</option>
               <option value="alcohol">Alcohol 🍺</option>
@@ -900,47 +759,57 @@
           </div>
         </div>
         <div class="row-2">
-          <button class="btn btn-green" id="am-btn-confirmar-producto">Guardar producto</button>
-          <button class="btn btn-outline" id="am-btn-cancelar-producto">Cancelar</button>
+          <button class="btn btn-green" id="btn-confirmar-producto">Guardar producto</button>
+          <button class="btn btn-secondary" id="btn-cancelar-producto">Cancelar</button>
         </div>
       </div>
     </div>
 
     <!-- GRUPOS DE OPCIONES -->
-    <div class="gestion-section">
-      <div class="gestion-section-title">⚙️ Opciones para los productos</div>
-      <div id="am-lista-grupos"></div>
-      <button class="btn btn-outline" id="am-btn-nuevo-grupo" style="margin-top:0.5rem; width:100%;">+ Nuevo grupo de opciones</button>
+    <div class="section">
+      <div class="section-title">⚙️ Opciones para los productos</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.5;">
+        Creá grupos de opciones que se muestran al cliente cuando agrega un producto. Cada grupo aplica a uno o varios tipos de producto (comida, bebida, alcohol). Podés activar o desactivar grupos e items individuales en cualquier momento.
+      </p>
+      <div id="lista-grupos"></div>
+      <button class="btn btn-secondary" id="btn-nuevo-grupo" style="margin-top:0.5rem;">+ Nuevo grupo de opciones</button>
 
-      <div class="form-producto" id="am-form-nuevo-grupo" style="margin-top:1rem;">
+      <div class="form-producto" id="form-nuevo-grupo" style="margin-top:1rem;">
         <div class="form-producto-title">Nuevo grupo</div>
         <div class="row-2">
           <div class="field">
             <label>Nombre del grupo</label>
-            <input type="text" id="am-ng-nombre" placeholder="Ej: Aderezos, Temperatura, Extras"/>
+            <input type="text" id="ng-nombre" placeholder="Ej: Aderezos, Temperatura, Extras"/>
           </div>
           <div class="field">
             <label>Aplica a</label>
             <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:0.1rem;">
-              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="comida" checked> Comida</label>
-              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="bebida"> Bebida</label>
-              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="am-ng-tipo" value="alcohol"> Alcohol</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="comida" checked> Comida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="bebida"> Bebida</label>
+              <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="alcohol"> Alcohol</label>
             </div>
           </div>
         </div>
         <div class="row-2">
-          <button class="btn btn-green" id="am-btn-confirmar-grupo">Crear grupo</button>
-          <button class="btn btn-outline" id="am-btn-cancelar-grupo">Cancelar</button>
+          <button class="btn btn-green" id="btn-confirmar-grupo">Crear grupo</button>
+          <button class="btn btn-secondary" id="btn-cancelar-grupo">Cancelar</button>
         </div>
       </div>
     </div>
 
-    <button class="btn btn-outline" onclick="cerrarGestion()" style="width:100%;">Cerrar</button>
+    <!-- VISTA PREVIA -->
+    <div class="section">
+      <div class="section-title">👁️ Vista previa</div>
+      <div id="preview-local"><p class="empty">Guardá los datos del local para ver la vista previa.</p></div>
+    </div>
+
   </div>
 </div>
 
-<script>
+<div class="toast" id="toast"></div>
 
+<script>
+  // ── FIREBASE CONFIG ──
   const firebaseConfig = {
     apiKey:            "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
     authDomain:        "dale-pue.firebaseapp.com",
@@ -950,425 +819,325 @@
     appId:             "1:137759081638:web:0816dd9327837d4dc46067"
   };
 
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db   = firebase.firestore();
 
-  // ── VERIFICACION DE ADMIN VIA FIRESTORE ──
-  // Tu uid va en la coleccion "admins" en Firestore, no en el codigo
-  async function esAdmin(uid) {
-    try {
-      const snap = await db.collection('admins').doc(uid).get();
-      return snap.exists;
-    } catch(e) {
-      return false;
-    }
+  // ── ESTADO ──
+  let localId       = null;
+  let localData     = null;
+  let catActiva     = null;
+
+  // ── UTILIDADES ──
+  function toast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${tipo} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  // ── AUTH ──
-  auth.onAuthStateChanged(async user => {
-    if (user) {
-      const admin = await esAdmin(user.uid);
-      if (admin) {
-        document.getElementById('login-view').style.display  = 'none';
-        document.getElementById('admin-view').style.display  = 'block';
-        document.getElementById('topbar-email').textContent  = user.email;
-        iniciarPanel();
-      } else {
-        mostrarError('Acceso denegado.');
-        auth.signOut();
-      }
-    } else {
-      document.getElementById('login-view').style.display  = 'flex';
-      document.getElementById('admin-view').style.display  = 'none';
-    }
-  });
+  function slugify(str) {
+    return str.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
 
-  document.getElementById('btn-ingresar').addEventListener('click', async () => {
-    const email = document.getElementById('inp-email').value.trim();
-    const pass  = document.getElementById('inp-pass').value.trim();
+  // ── TABS LOGIN / REGISTRO ──
+  function switchTab(tab) {
     const errEl = document.getElementById('login-error');
-    const btn   = document.getElementById('btn-ingresar');
     errEl.classList.remove('show');
-    if (!email || !pass) { errEl.textContent = 'Completá email y contraseña.'; errEl.classList.add('show'); return; }
-    btn.disabled = true; btn.textContent = 'Ingresando...';
-    try {
-      await auth.signInWithEmailAndPassword(email, pass);
-    } catch(e) {
-      const msgs = {
-        'auth/user-not-found':     'No existe cuenta con ese correo.',
-        'auth/wrong-password':     'Contraseña incorrecta.',
-        'auth/invalid-credential': 'Email o contraseña incorrectos.',
-        'auth/too-many-requests':  'Demasiados intentos. Esperá un momento.',
-      };
-      errEl.textContent = msgs[e.code] || 'Error al ingresar.';
-      errEl.classList.add('show');
-      btn.disabled = false; btn.textContent = 'Ingresar';
+    if (tab === 'login') {
+      document.getElementById('panel-login').style.display    = 'block';
+      document.getElementById('panel-registro').style.display = 'none';
+      document.getElementById('tab-login').style.background    = '#ffb800';
+      document.getElementById('tab-login').style.color         = '#111';
+      document.getElementById('tab-registro').style.background = '#2e2e36';
+      document.getElementById('tab-registro').style.color      = '#888';
+    } else {
+      document.getElementById('panel-login').style.display    = 'none';
+      document.getElementById('panel-registro').style.display = 'block';
+      document.getElementById('tab-login').style.background    = '#2e2e36';
+      document.getElementById('tab-login').style.color         = '#888';
+      document.getElementById('tab-registro').style.background = '#ffb800';
+      document.getElementById('tab-registro').style.color      = '#111';
     }
-  });
-
-  document.getElementById('inp-pass').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
-  });
-
-  function mostrarError(msg) {
-    const e = document.getElementById('login-error');
-    e.textContent = msg; e.classList.add('show');
   }
 
-  // ── PANEL ──
-  let todosLosLocales = [];
-  let filtroActual    = '';
+  // ── REGISTRO NUEVO DUEÑO ──
+  document.getElementById('btn-registrar').addEventListener('click', async () => {
+    const email  = document.getElementById('r-email').value.trim();
+    const pass   = document.getElementById('r-pass').value.trim();
+    const pass2  = document.getElementById('r-pass2').value.trim();
+    const errEl  = document.getElementById('login-error');
+    const btn    = document.getElementById('btn-registrar');
 
-  function iniciarPanel() {
-    // Escucha en tiempo real
-    db.collection('locales').onSnapshot(snap => {
-      todosLosLocales = [];
-      snap.forEach(doc => todosLosLocales.push({ id: doc.id, ...doc.data() }));
-      actualizarStats();
-      renderTabla();
-    }, err => {
-      console.error(err);
-      toast('Error al cargar locales.', 'err');
-    });
+    errEl.classList.remove('show');
 
-    // Filtro
-    document.getElementById('filtro').addEventListener('input', function() {
-      filtroActual = this.value.toLowerCase();
-      renderTabla();
-    });
-
-    // Alta
-    document.getElementById('btn-alta').addEventListener('click', altaLocal);
-
-    // Guardar edicion
-    document.getElementById('btn-guardar-edicion').addEventListener('click', guardarEdicion);
-  }
-
-  // ── STATS ──
-  function actualizarStats() {
-    const total     = todosLosLocales.length;
-    const abiertos  = todosLosLocales.filter(l => l.estado === 'abierto').length;
-    const cerrados  = todosLosLocales.filter(l => l.estado === 'cerrado').length;
-    const pendientes = todosLosLocales.filter(l => !l.dueno_uid || l.dueno_uid === 'pendiente').length;
-    document.getElementById('stat-total').textContent     = total;
-    document.getElementById('stat-abiertos').textContent  = abiertos;
-    document.getElementById('stat-cerrados').textContent  = cerrados;
-    document.getElementById('stat-pendientes').textContent = pendientes;
-  }
-
-  // ── TABLA ──
-  function renderTabla() {
-    const tbody  = document.getElementById('tbody-locales');
-    const lista  = todosLosLocales.filter(l =>
-      !filtroActual || (l.nombre || '').toLowerCase().includes(filtroActual)
-    );
-
-    tbody.innerHTML = '';
-
-    if (lista.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Sin resultados.</td></tr>';
+    if (!email || !pass || !pass2) {
+      errEl.textContent = 'Completá todos los campos.';
+      errEl.classList.add('show');
       return;
     }
 
-    lista.forEach(loc => {
-      const vinculado = loc.dueno_uid && loc.dueno_uid !== 'pendiente';
-      const badgeAlta = vinculado
-        ? '<span class="badge badge-vinculado">Vinculado</span>'
-        : '<span class="badge badge-pendiente">Pendiente</span>';
-      const badgeEstado = loc.estado === 'abierto'
-        ? '<span class="badge badge-abierto">Abierto</span>'
-        : '<span class="badge badge-cerrado">Cerrado</span>';
+    if (pass.length < 6) {
+      errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      errEl.classList.add('show');
+      return;
+    }
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight:600;">
-          <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${loc.colorBrand || '#d9232d'}; margin-right:6px; vertical-align:middle;"></span>
-          ${loc.nombre || 'Sin nombre'}
-          <div style="font-size:0.75rem; color:var(--muted); font-weight:400;">${loc.tipo || ''}</div>
-        </td>
-        <td style="font-size:0.82rem; color:var(--muted);">${loc.dueno_email || '—'}</td>
-        <td style="font-size:0.82rem;">${loc.zona || '—'}</td>
-        <td>${badgeEstado}</td>
-        <td>${badgeAlta}</td>
-        <td class="acciones">
-          <button class="btn btn-dark" onclick="abrirGestion('${loc.id}')">🍽️ Gestionar</button>
-          <button class="btn btn-outline" onclick="abrirModal('${loc.id}')">✏️ Editar</button>
-          <button class="btn ${loc.estado === 'abierto' ? 'btn-warning' : 'btn-green'}" onclick="toggleEstado('${loc.id}','${loc.estado}')">
-            ${loc.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
-          </button>
-          <button class="btn btn-danger" onclick="eliminarLocal('${loc.id}','${loc.nombre}')">🗑️</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  }
+    if (pass !== pass2) {
+      errEl.textContent = 'Las contraseñas no coinciden.';
+      errEl.classList.add('show');
+      return;
+    }
 
-  // ── ALTA LOCAL ──
-  async function altaLocal() {
-    const nombre = document.getElementById('alta-nombre').value.trim();
-    const email  = document.getElementById('alta-email').value.trim().toLowerCase();
-    const zona   = document.getElementById('alta-zona').value;
-    const btn    = document.getElementById('btn-alta');
-
-    if (!nombre || !email) { toast('Nombre y email son obligatorios.', 'err'); return; }
-
-    // Verificar que el email no este ya usado
-    const existe = await db.collection('locales').where('dueno_email', '==', email).limit(1).get();
-    if (!existe.empty) { toast('Ya existe un local con ese email.', 'err'); return; }
-
-    btn.disabled = true; btn.textContent = 'Creando...';
-
-    const id = nombre.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    btn.disabled    = true;
+    btn.textContent = 'Verificando...';
 
     try {
-      await db.collection('locales').doc(id).set({
-        nombre,
-        dueno_email: email,
-        dueno_uid:   'pendiente',
-        zona,
-        estado:      'cerrado',
-        menu:        {},
-        grupos:      [],
-        tags:        [],
-        colorBrand:  '#d9232d',
-        lat:         null,
-        lng:         null,
-        direccion:   '',
-        whatsapp:    '',
-        tipo:        'Otro',
-        descCorta:   '',
-        mapaUrl:     '',
-        horariosTxt: ''
-      });
+      const q = await db.collection('locales')
+        .where('dueno_email', '==', email.toLowerCase())
+        .limit(1)
+        .get();
 
-      document.getElementById('alta-nombre').value = '';
-      document.getElementById('alta-email').value  = '';
-      toast('Local creado. Enviando email al dueno...', 'ok');
-
-      // ── ENVIO DE EMAIL AL DUENO VIA EMAILJS ──
-      // Variables que debe tener el template en emailjs.com:
-      //   {{to_email}}      → destinatario
-      //   {{local_nombre}}  → nombre del local
-      //   {{portal_url}}    → link al portal del dueno
-      try {
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-          to_email:     email,
-          local_nombre: nombre,
-          portal_url:   'https://dalepue.com.ar/dueno.html',
-        });
-        toast('Local creado y email enviado al dueno.', 'ok');
-      } catch(mailErr) {
-        // El local ya se creo OK. El fallo de email es no bloqueante.
-        console.warn('EmailJS error (local creado igual):', mailErr);
-        toast('Local creado. No se pudo enviar el email (revisar config EmailJS).', 'err');
+      if (q.empty) {
+        errEl.textContent = 'Este email no está autorizado. Contactá al administrador.';
+        errEl.classList.add('show');
+        btn.disabled    = false;
+        btn.textContent = 'Crear cuenta';
+        return;
       }
 
+      const snap     = q.docs[0];
+      const localDoc = snap.data();
+
+      if (localDoc.dueno_uid && localDoc.dueno_uid !== 'pendiente' && localDoc.dueno_uid !== '') {
+        errEl.textContent = 'Este email ya tiene una cuenta creada. Usá la opción Ingresar.';
+        errEl.classList.add('show');
+        btn.disabled    = false;
+        btn.textContent = 'Crear cuenta';
+        return;
+      }
+
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+      await db.collection('locales').doc(snap.id).update({
+        dueno_uid: cred.user.uid
+      });
+
     } catch(e) {
-      console.error(e);
-      toast('Error al crear el local.', 'err');
+      console.error('Error registro:', e.code, e.message);
+      const msgs = {
+        'auth/email-already-in-use':   'Ya existe una cuenta con ese email. Usá la opción Ingresar.',
+        'auth/invalid-email':          'El correo ingresado no es válido.',
+        'auth/weak-password':          'La contraseña es muy débil.',
+        'auth/network-request-failed': 'Error de red. Revisá tu conexión.',
+      };
+      errEl.textContent = msgs[e.code] || `Error: ${e.code}`;
+      errEl.classList.add('show');
+      btn.disabled    = false;
+      btn.textContent = 'Crear cuenta';
     }
-
-    btn.disabled = false; btn.textContent = 'Dar de alta';
-  }
-
-  // ── TOGGLE ESTADO ──
-  async function toggleEstado(id, estadoActual) {
-    const nuevo = estadoActual === 'abierto' ? 'cerrado' : 'abierto';
-    try {
-      await db.collection('locales').doc(id).update({ estado: nuevo });
-      toast('Estado actualizado.', 'ok');
-    } catch(e) {
-      toast('Error al actualizar.', 'err');
-    }
-  }
-
-  // ── ELIMINAR ──
-  async function eliminarLocal(id, nombre) {
-    if (!confirm(`Eliminar el local "${nombre}" definitivamente? Esta accion no se puede deshacer.`)) return;
-    try {
-      await db.collection('locales').doc(id).delete();
-      toast('Local eliminado.', 'ok');
-    } catch(e) {
-      toast('Error al eliminar.', 'err');
-    }
-  }
-
-  // ── MODAL EDICION ──
-  function abrirModal(id) {
-    const loc = todosLosLocales.find(l => l.id === id);
-    if (!loc) return;
-    document.getElementById('ed-id').value        = id;
-    document.getElementById('ed-nombre').value    = loc.nombre     || '';
-    document.getElementById('ed-tipo').value      = loc.tipo       || 'Otro';
-    document.getElementById('ed-direccion').value = loc.direccion  || '';
-    document.getElementById('ed-whatsapp').value  = loc.whatsapp   || '';
-    document.getElementById('ed-zona').value      = loc.zona       || 'Centro';
-    document.getElementById('ed-estado').value    = loc.estado     || 'cerrado';
-    document.getElementById('ed-lat').value       = loc.lat        || '';
-    document.getElementById('ed-lng').value       = loc.lng        || '';
-    document.getElementById('ed-desccorta').value = loc.descCorta  || '';
-    document.getElementById('ed-color').value     = loc.colorBrand || '#d9232d';
-    document.getElementById('ed-mapaurl').value   = loc.mapaUrl    || '';
-    document.getElementById('ed-duenoemail').value = loc.dueno_email || '';
-    document.getElementById('modal-edicion').classList.add('open');
-  }
-
-  function cerrarModal() {
-    document.getElementById('modal-edicion').classList.remove('open');
-  }
-
-  async function guardarEdicion() {
-    const id  = document.getElementById('ed-id').value;
-    const btn = document.getElementById('btn-guardar-edicion');
-    if (!id) return;
-
-    btn.disabled = true; btn.textContent = 'Guardando...';
-
-    const datos = {
-      nombre:     document.getElementById('ed-nombre').value.trim(),
-      tipo:       document.getElementById('ed-tipo').value,
-      direccion:  document.getElementById('ed-direccion').value.trim(),
-      whatsapp:   document.getElementById('ed-whatsapp').value.trim(),
-      zona:       document.getElementById('ed-zona').value,
-      estado:     document.getElementById('ed-estado').value,
-      lat:        parseFloat(document.getElementById('ed-lat').value) || null,
-      lng:        parseFloat(document.getElementById('ed-lng').value) || null,
-      descCorta:  document.getElementById('ed-desccorta').value.trim(),
-      colorBrand: document.getElementById('ed-color').value.trim() || '#d9232d',
-      mapaUrl:    document.getElementById('ed-mapaurl').value.trim(),
-      dueno_email: document.getElementById('ed-duenoemail').value.trim().toLowerCase(),
-    };
-
-    try {
-      await db.collection('locales').doc(id).update(datos);
-      toast('Local actualizado.', 'ok');
-      cerrarModal();
-    } catch(e) {
-      console.error(e);
-      toast('Error al guardar.', 'err');
-    }
-
-    btn.disabled = false; btn.textContent = 'Guardar cambios';
-  }
-
-  // Cerrar modal clickando afuera
-  document.getElementById('modal-edicion').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
   });
 
-  // ════════════════════════════════════════════════════════════
-  // ── GESTION DE LOCAL (modal grande: datos + menu + grupos) ──
-  // Permite al admin editar un local completo sin necesitar
-  // las credenciales del dueño. Mismo destino en Firestore que
-  // dueno.html, pero usando el localId fijo del local elegido.
-  // ════════════════════════════════════════════════════════════
+  // ── LOGIN ──
+  document.getElementById('btn-ingresar').addEventListener('click', async () => {
+    const email = document.getElementById('l-email').value.trim();
+    const pass  = document.getElementById('l-pass').value.trim();
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('btn-ingresar');
 
-  let gLocalId    = null;
-  let gLocalData  = null;
-  let gCatActiva  = null;
+    errEl.classList.remove('show');
 
-  async function abrirGestion(id) {
-    const loc = todosLosLocales.find(l => l.id === id);
-    if (!loc) return;
+    if (!email || !pass) {
+      errEl.textContent = 'Completá email y contraseña.';
+      errEl.classList.add('show');
+      return;
+    }
 
-    gLocalId   = id;
-    gLocalData = JSON.parse(JSON.stringify(loc)); // copia local de trabajo
-    if (!gLocalData.categoriasOrden) gLocalData.categoriasOrden = Object.keys(gLocalData.menu || {});
-    if (!gLocalData.grupos) gLocalData.grupos = [];
-    gCatActiva = null;
+    btn.disabled = true;
+    btn.textContent = 'Ingresando...';
 
-    document.getElementById('gestion-nombre-local').textContent = loc.nombre || id;
-    gRellenarForm(gLocalData);
-    gRenderMenu(gLocalData.menu || {});
-    gRenderGrupos();
-
-    document.getElementById('modal-gestion').classList.add('open');
-  }
-
-  function cerrarGestion() {
-    document.getElementById('modal-gestion').classList.remove('open');
-    gLocalId   = null;
-    gLocalData = null;
-    gCatActiva = null;
-  }
-
-  // Cerrar clickeando afuera
-  document.getElementById('modal-gestion').addEventListener('click', function(e) {
-    if (e.target === this) cerrarGestion();
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch(e) {
+      console.error('Error login:', e.code, e.message);
+      const msgs = {
+        'auth/user-not-found':    'No existe cuenta con ese correo.',
+        'auth/wrong-password':    'Contraseña incorrecta.',
+        'auth/invalid-email':     'Correo inválido.',
+        'auth/invalid-credential':'Email o contraseña incorrectos.',
+        'auth/too-many-requests': 'Demasiados intentos. Esperá un momento.',
+        'auth/network-request-failed': 'Error de red. Revisá tu conexión.',
+      };
+      errEl.textContent = msgs[e.code] || `Error: ${e.code}`;
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Ingresar';
+    }
   });
 
-  // ── FORMULARIO DATOS DEL LOCAL ──
-  function gRellenarForm(d) {
-    document.getElementById('am-f-nombre').value    = d.nombre    || '';
-    document.getElementById('am-f-direccion').value = d.direccion || '';
-    document.getElementById('am-f-whatsapp').value  = d.whatsapp  || '';
-    document.getElementById('am-f-tipo').value      = d.tipo      || 'Otro';
-    document.getElementById('am-f-estado').value    = d.estado    || 'cerrado';
-    document.getElementById('am-f-horarios').value  = d.horariosTxt
+  document.getElementById('l-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
+  });
+
+  document.getElementById('btn-salir').addEventListener('click', () => auth.signOut());
+
+  // ── OBSERVER ──
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      document.getElementById('pantalla-login').style.display  = 'none';
+      document.getElementById('pantalla-portal').style.display = 'block';
+      document.getElementById('topbar-email').textContent = user.email;
+      await cargarLocal(user.uid);
+    } else {
+      document.getElementById('pantalla-login').style.display  = 'flex';
+      document.getElementById('pantalla-portal').style.display = 'none';
+    }
+  });
+
+  // ── CARGAR LOCAL ──
+  // Reintenta hasta MAX_INTENTOS veces con espera creciente.
+  // Necesario cuando el dueno se registra por primera vez: el write de dueno_uid
+  // en Firestore puede no estar disponible inmediatamente al dispararse onAuthStateChanged.
+  const MAX_INTENTOS = 5;
+  const ESPERA_BASE_MS = 800; // primer reintento a 800 ms, luego 1600, 2400…
+
+  async function cargarLocal(uid, intento = 1) {
+    try {
+      let snap = null;
+
+      // 1. Buscar por dueno_uid (camino normal para dueños ya vinculados)
+      const q = await db.collection('locales').where('dueno_uid', '==', uid).limit(1).get();
+
+      if (!q.empty) {
+        snap = q.docs[0];
+      } else {
+        // 2. Fallback por email: cubre el caso de primera vez donde el write
+        //    de dueno_uid aún no propagó cuando se dispara onAuthStateChanged.
+        const user = auth.currentUser;
+        if (user && user.email) {
+          const q2 = await db.collection('locales')
+            .where('dueno_email', '==', user.email.toLowerCase())
+            .limit(1)
+            .get();
+          if (!q2.empty) {
+            snap = q2.docs[0];
+            // Vincular el uid ahora que lo encontramos por email
+            await db.collection('locales').doc(snap.id).update({ dueno_uid: uid });
+          }
+        }
+      }
+
+      if (snap) {
+        localId   = snap.id;
+        localData = snap.data();
+        localData.dueno_uid = uid;
+        if (!localData.categoriasOrden) {
+          localData.categoriasOrden = Object.keys(localData.menu || {});
+        }
+        if (!localData.grupos) localData.grupos = [];
+        rellenarForm(localData);
+        renderMenu(localData.menu || {});
+        renderGrupos();
+        renderPreview(localData);
+      } else {
+        // 3. Si no encontramos nada y quedan reintentos, esperamos y volvemos a intentar.
+        //    Esto cubre el caso extremo donde la escritura aún no fue visible.
+        if (intento < MAX_INTENTOS) {
+          const espera = ESPERA_BASE_MS * intento;
+          console.warn(`cargarLocal: local no encontrado, reintento ${intento}/${MAX_INTENTOS - 1} en ${espera}ms`);
+          await new Promise(res => setTimeout(res, espera));
+          return cargarLocal(uid, intento + 1);
+        }
+        // Agotamos los reintentos
+        localData = { menu: {}, grupos: [] };
+        renderMenu({});
+        renderGrupos();
+        toast('No hay un local asociado a tu cuenta. Contacta al administrador.', 'err');
+      }
+    } catch(e) {
+      console.error('Error cargarLocal:', e);
+      // Reintentar también ante errores de red transitorios
+      if (intento < MAX_INTENTOS) {
+        const espera = ESPERA_BASE_MS * intento;
+        console.warn(`cargarLocal: error de red, reintento ${intento}/${MAX_INTENTOS - 1} en ${espera}ms`);
+        await new Promise(res => setTimeout(res, espera));
+        return cargarLocal(uid, intento + 1);
+      }
+      toast('Error al cargar el local. Revisa tu conexion.', 'err');
+    }
+  }
+
+  // ── FORMULARIO LOCAL ──
+  function rellenarForm(d) {
+    document.getElementById('f-nombre').value    = d.nombre    || '';
+    document.getElementById('f-direccion').value = d.direccion || '';
+    document.getElementById('f-whatsapp').value  = d.whatsapp  || '';
+    document.getElementById('f-tipo').value      = d.tipo      || 'Sandwichería';
+    document.getElementById('f-estado').value    = d.estado    || 'abierto';
+    document.getElementById('f-horarios').value  = d.horariosTxt
       ? d.horariosTxt.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
       : '';
-    document.getElementById('am-f-tags').value      = d.tags ? d.tags.join(', ') : '';
-    document.getElementById('am-f-desccorta').value = d.descCorta || '';
-    document.getElementById('am-f-zona').value      = d.zona      || 'Centro';
-    document.getElementById('am-f-mapaurl').value   = d.mapaUrl   || '';
-    document.getElementById('am-f-lat').value       = d.lat       || '';
-    document.getElementById('am-f-lng').value       = d.lng       || '';
+    document.getElementById('f-tags').value      = d.tags ? d.tags.join(', ') : '';
+    document.getElementById('f-desccorta').value = d.descCorta || '';
+    document.getElementById('f-zona').value      = d.zona      || 'Centro';
+    document.getElementById('f-mapaurl').value   = d.mapaUrl   || '';
+    document.getElementById('f-lat').value       = d.lat       || '';
+    document.getElementById('f-lng').value       = d.lng       || '';
     const color = d.colorBrand || '#d9232d';
-    document.getElementById('am-f-color').value     = color;
-    document.getElementById('am-f-color-hex').value = color;
+    document.getElementById('f-color').value     = color;
+    document.getElementById('f-color-hex').value = color;
   }
 
-  document.getElementById('am-f-color').addEventListener('input', function() {
-    document.getElementById('am-f-color-hex').value = this.value;
-  });
-  document.getElementById('am-f-color-hex').addEventListener('input', function() {
-    const val = this.value.trim();
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) document.getElementById('am-f-color').value = val;
-  });
-
-  document.getElementById('am-btn-guardar-local').addEventListener('click', async () => {
-    if (!gLocalId) return;
-    const btn    = document.getElementById('am-btn-guardar-local');
-    const nombre = document.getElementById('am-f-nombre').value.trim();
+  document.getElementById('btn-guardar-local').addEventListener('click', async () => {
+    const btn    = document.getElementById('btn-guardar-local');
+    const nombre = document.getElementById('f-nombre').value.trim();
 
     if (!nombre) { toast('El nombre del local es obligatorio.', 'err'); return; }
 
-    const horariosRaw = document.getElementById('am-f-horarios').value.trim();
+    const horariosRaw = document.getElementById('f-horarios').value.trim();
     const horariosTxt = horariosRaw
       ? horariosRaw.split('\n').map(l => `🕒 <b>${l.trim()}</b>`).join(' <br> ')
       : '';
 
-    const tagsRaw = document.getElementById('am-f-tags').value.trim();
+    const tagsRaw = document.getElementById('f-tags').value.trim();
     const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [];
 
     const datos = {
       nombre,
-      direccion:  document.getElementById('am-f-direccion').value.trim(),
-      whatsapp:   document.getElementById('am-f-whatsapp').value.trim(),
-      tipo:       document.getElementById('am-f-tipo').value,
-      estado:     document.getElementById('am-f-estado').value,
+      direccion:   document.getElementById('f-direccion').value.trim(),
+      whatsapp:    document.getElementById('f-whatsapp').value.trim(),
+      tipo:        document.getElementById('f-tipo').value,
+      estado:      document.getElementById('f-estado').value,
       horariosTxt,
       tags,
-      descCorta:  document.getElementById('am-f-desccorta').value.trim(),
-      zona:       document.getElementById('am-f-zona').value,
-      colorBrand: document.getElementById('am-f-color-hex').value.trim() || document.getElementById('am-f-color').value,
-      mapaUrl:    document.getElementById('am-f-mapaurl').value.trim(),
-      lat:        parseFloat(document.getElementById('am-f-lat').value) || null,
-      lng:        parseFloat(document.getElementById('am-f-lng').value) || null,
+      descCorta:   document.getElementById('f-desccorta').value.trim(),
+      zona:        document.getElementById('f-zona').value,
+      colorBrand:  document.getElementById('f-color-hex').value.trim() || document.getElementById('f-color').value,
+      mapaUrl:     document.getElementById('f-mapaurl').value.trim(),
+      lat:         parseFloat(document.getElementById('f-lat').value) || null,
+      lng:         parseFloat(document.getElementById('f-lng').value) || null,
+      dueno_uid:   auth.currentUser.uid,
+      menu:        localData?.menu || {}
     };
 
     btn.disabled    = true;
     btn.textContent = 'Guardando...';
 
     try {
-      await db.collection('locales').doc(gLocalId).update(datos);
-      gLocalData = { ...gLocalData, ...datos };
-      document.getElementById('gestion-nombre-local').textContent = nombre;
-      toast('✅ Datos del local guardados.');
+      if (localId) {
+        await db.collection('locales').doc(localId).update(datos);
+      } else {
+        localId = slugify(nombre);
+        await db.collection('locales').doc(localId).set(datos);
+      }
+      localData = { ...datos };
+      toast('✅ Local guardado.');
+      renderPreview(localData);
     } catch(e) {
-      console.error('Error guardar local (gestion):', e);
+      console.error('Error guardar local:', e);
       toast('Error al guardar. Revisá tu conexión.', 'err');
     }
 
@@ -1376,14 +1145,14 @@
     btn.textContent = 'Guardar datos del local';
   });
 
-  // ── MENU ──
-  function gRenderMenu(menu) {
-    const orden = gLocalData.categoriasOrden || [];
+  // ── MENÚ ──
+  function renderMenu(menu) {
+    const orden = localData.categoriasOrden || [];
     const keysMenu = Object.keys(menu);
     const cats = orden.filter(c => keysMenu.includes(c))
       .concat(keysMenu.filter(c => !orden.includes(c)));
-    const tabsCont = document.getElementById('am-tabs-categorias');
-    const lista    = document.getElementById('am-lista-productos');
+    const tabsCont = document.getElementById('tabs-categorias');
+    const lista    = document.getElementById('lista-productos');
 
     tabsCont.innerHTML = '';
 
@@ -1392,67 +1161,74 @@
       return;
     }
 
-    if (!gCatActiva || !menu[gCatActiva]) gCatActiva = cats[0];
+    if (!catActiva || !menu[catActiva]) catActiva = cats[0];
 
-    cats.forEach((cat) => {
+    // ── TABS con botones de orden y acciones ──
+    cats.forEach((cat, catIdx) => {
       const tab = document.createElement('button');
-      tab.className = 'tab' + (cat === gCatActiva ? ' active' : '');
+      tab.className = 'tab' + (cat === catActiva ? ' active' : '');
       tab.textContent = cat;
-      tab.addEventListener('click', () => { gCatActiva = cat; gRenderMenu(gLocalData.menu || {}); });
+      tab.addEventListener('click', () => { catActiva = cat; renderMenu(localData.menu || {}); });
       tabsCont.appendChild(tab);
     });
 
+    // ── HEADER DE CATEGORÍA CON ACCIONES ──
     lista.innerHTML = '';
     const catHeader = document.createElement('div');
     catHeader.className = 'cat-header';
-    const catIdx = cats.indexOf(gCatActiva);
+    const catIdx = cats.indexOf(catActiva);
     catHeader.innerHTML = `
-      <span style="font-weight:600; font-size:0.9rem; color:var(--muted);">${gCatActiva}</span>
+      <span style="font-weight:600; font-size:0.9rem; color:var(--muted);">${catActiva}</span>
       <div class="cat-acciones">
-        <button class="btn-cat" title="Subir categoría" id="am-btn-cat-subir">⬆️</button>
-        <button class="btn-cat" title="Bajar categoría" id="am-btn-cat-bajar">⬇️</button>
-        <button class="btn-cat" title="Renombrar categoría" id="am-btn-cat-renombrar">✏️</button>
-        <button class="btn-cat danger" title="Eliminar categoría completa" id="am-btn-cat-eliminar">🗑️</button>
+        <button class="btn-cat" title="Subir categoría" id="btn-cat-subir">⬆️</button>
+        <button class="btn-cat" title="Bajar categoría" id="btn-cat-bajar">⬇️</button>
+        <button class="btn-cat" title="Renombrar categoría" id="btn-cat-renombrar">✏️</button>
+        <button class="btn-cat danger" title="Eliminar categoría completa" id="btn-cat-eliminar">🗑️</button>
       </div>`;
     lista.appendChild(catHeader);
 
-    catHeader.querySelector('#am-btn-cat-subir').addEventListener('click', async () => {
+    // Subir categoría
+    catHeader.querySelector('#btn-cat-subir').addEventListener('click', async () => {
       if (catIdx === 0) return;
-      const { menu: m, orden } = gReordenarCat(menu, gCatActiva, -1);
-      await gGuardarMenu(m, orden);
+      const { menu: m, orden } = reordenarCat(menu, catActiva, -1);
+      await guardarMenu(m, orden);
     });
 
-    catHeader.querySelector('#am-btn-cat-bajar').addEventListener('click', async () => {
+    // Bajar categoría
+    catHeader.querySelector('#btn-cat-bajar').addEventListener('click', async () => {
       if (catIdx === cats.length - 1) return;
-      const { menu: m, orden } = gReordenarCat(menu, gCatActiva, 1);
-      await gGuardarMenu(m, orden);
+      const { menu: m, orden } = reordenarCat(menu, catActiva, 1);
+      await guardarMenu(m, orden);
     });
 
-    catHeader.querySelector('#am-btn-cat-renombrar').addEventListener('click', async () => {
-      const nuevoNombre = prompt(`Nuevo nombre para "${gCatActiva}":`, gCatActiva);
-      if (!nuevoNombre || nuevoNombre.trim() === gCatActiva) return;
+    // Renombrar categoría
+    catHeader.querySelector('#btn-cat-renombrar').addEventListener('click', async () => {
+      const nuevoNombre = prompt(`Nuevo nombre para "${catActiva}":`, catActiva);
+      if (!nuevoNombre || nuevoNombre.trim() === catActiva) return;
       const nuevoMenu = {};
       for (let c in menu) {
-        nuevoMenu[c === gCatActiva ? nuevoNombre.trim() : c] = menu[c];
+        nuevoMenu[c === catActiva ? nuevoNombre.trim() : c] = menu[c];
       }
-      const nuevoOrden = (gLocalData.categoriasOrden || Object.keys(menu))
-        .map(c => c === gCatActiva ? nuevoNombre.trim() : c);
-      gCatActiva = nuevoNombre.trim();
-      await gGuardarMenu(nuevoMenu, nuevoOrden);
+      const nuevoOrden = (localData.categoriasOrden || Object.keys(menu))
+        .map(c => c === catActiva ? nuevoNombre.trim() : c);
+      catActiva = nuevoNombre.trim();
+      await guardarMenu(nuevoMenu, nuevoOrden);
     });
 
-    catHeader.querySelector('#am-btn-cat-eliminar').addEventListener('click', async () => {
-      const cant = (menu[gCatActiva] || []).length;
-      if (!confirm(`¿Eliminar la categoría "${gCatActiva}" con ${cant} producto${cant !== 1 ? 's' : ''}?`)) return;
+    // Eliminar categoría completa
+    catHeader.querySelector('#btn-cat-eliminar').addEventListener('click', async () => {
+      const cant = (menu[catActiva] || []).length;
+      if (!confirm(`¿Eliminar la categoría "${catActiva}" con ${cant} producto${cant !== 1 ? 's' : ''}?`)) return;
       const nuevoMenu = { ...menu };
-      delete nuevoMenu[gCatActiva];
-      const nuevoOrden = (gLocalData.categoriasOrden || Object.keys(menu))
-        .filter(c => c !== gCatActiva);
-      gCatActiva = nuevoOrden[0] || null;
-      await gGuardarMenu(nuevoMenu, nuevoOrden);
+      delete nuevoMenu[catActiva];
+      const nuevoOrden = (localData.categoriasOrden || Object.keys(menu))
+        .filter(c => c !== catActiva);
+      catActiva = nuevoOrden[0] || null;
+      await guardarMenu(nuevoMenu, nuevoOrden);
     });
 
-    const productos = menu[gCatActiva] || [];
+    // ── PRODUCTOS ──
+    const productos = menu[catActiva] || [];
 
     if (productos.length === 0) {
       lista.innerHTML += '<p class="empty">No hay productos en esta categoría.</p>';
@@ -1460,7 +1236,7 @@
     }
 
     productos.forEach((p, idx) => {
-      const disponible = p.disponible !== false;
+      const disponible = p.disponible !== false; // true por defecto
       const wrapper = document.createElement('div');
 
       const item = document.createElement('div');
@@ -1479,17 +1255,19 @@
           <button class="btn-eliminar" title="Eliminar">🗑️</button>
         </div>`;
 
+      // Toggle disponibilidad
       item.querySelector('.toggle-disponible').addEventListener('click', async () => {
-        gLocalData.menu[gCatActiva][idx].disponible = !disponible;
-        await gGuardarMenu(gLocalData.menu);
+        localData.menu[catActiva][idx].disponible = !disponible;
+        await guardarMenu(localData.menu);
       });
 
       item.querySelector('.btn-editar').addEventListener('click', () => {
         formEd.classList.toggle('visible');
       });
 
-      item.querySelector('.btn-eliminar').addEventListener('click', () => gEliminarProducto(gCatActiva, idx));
+      item.querySelector('.btn-eliminar').addEventListener('click', () => eliminarProducto(catActiva, idx));
 
+      // Form edición inline
       const formEd = document.createElement('div');
       formEd.className = 'form-edicion';
       formEd.innerHTML = `
@@ -1508,7 +1286,7 @@
         </div>
         <div class="row-2">
           <button class="btn btn-green btn-guardar-edicion">Guardar cambios</button>
-          <button class="btn btn-outline btn-cancelar-edicion">Cancelar</button>
+          <button class="btn btn-secondary btn-cancelar-edicion">Cancelar</button>
         </div>`;
 
       formEd.querySelector('.btn-cancelar-edicion').addEventListener('click', () => {
@@ -1523,19 +1301,19 @@
 
         if (!nuevoNombre || !nuevoPrecio) { toast('Nombre y precio son obligatorios.', 'err'); return; }
 
-        gLocalData.menu[gCatActiva][idx] = {
-          ...gLocalData.menu[gCatActiva][idx],
+        localData.menu[catActiva][idx] = {
+          ...localData.menu[catActiva][idx],
           nombre: nuevoNombre,
           desc:   nuevaDesc,
           precio: nuevoPrecio,
           tipo:   nuevoTipo
         };
 
-        const btnE = formEd.querySelector('.btn-guardar-edicion');
-        btnE.disabled = true;
-        btnE.textContent = 'Guardando...';
+        const btn = formEd.querySelector('.btn-guardar-edicion');
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
 
-        await gGuardarMenu(gLocalData.menu);
+        await guardarMenu(localData.menu);
       });
 
       wrapper.appendChild(item);
@@ -1544,9 +1322,10 @@
     });
   }
 
-  function gReordenarCat(menu, cat, direccion) {
-    const orden = gLocalData.categoriasOrden && gLocalData.categoriasOrden.length
-      ? [...gLocalData.categoriasOrden]
+  // ── HELPERS MENU ──
+  function reordenarCat(menu, cat, direccion) {
+    const orden = localData.categoriasOrden && localData.categoriasOrden.length
+      ? [...localData.categoriasOrden]
       : Object.keys(menu);
     const idx  = orden.indexOf(cat);
     const nuevo = idx + direccion;
@@ -1555,13 +1334,13 @@
     return { menu, orden };
   }
 
-  async function gGuardarMenu(nuevoMenu, nuevoOrden) {
+  async function guardarMenu(nuevoMenu, nuevoOrden) {
     const orden = nuevoOrden || Object.keys(nuevoMenu);
     try {
-      await db.collection('locales').doc(gLocalId).update({ menu: nuevoMenu, categoriasOrden: orden });
-      gLocalData.menu = nuevoMenu;
-      gLocalData.categoriasOrden = orden;
-      gRenderMenu(nuevoMenu);
+      await db.collection('locales').doc(localId).update({ menu: nuevoMenu, categoriasOrden: orden });
+      localData.menu = nuevoMenu;
+      localData.categoriasOrden = orden;
+      renderMenu(nuevoMenu);
       toast('✅ Guardado.');
     } catch(e) {
       console.error(e);
@@ -1570,23 +1349,23 @@
   }
 
   // ── AGREGAR PRODUCTO ──
-  document.getElementById('am-btn-mostrar-form').addEventListener('click', () => {
-    const form = document.getElementById('am-form-producto');
+  document.getElementById('btn-mostrar-form').addEventListener('click', () => {
+    const form = document.getElementById('form-producto');
     form.classList.toggle('visible');
-    if (gCatActiva) document.getElementById('am-p-categoria').value = gCatActiva;
+    if (catActiva) document.getElementById('p-categoria').value = catActiva;
   });
 
-  document.getElementById('am-btn-cancelar-producto').addEventListener('click', () => {
-    document.getElementById('am-form-producto').classList.remove('visible');
-    gLimpiarFormProducto();
+  document.getElementById('btn-cancelar-producto').addEventListener('click', () => {
+    document.getElementById('form-producto').classList.remove('visible');
+    limpiarFormProducto();
   });
 
-  document.getElementById('am-btn-confirmar-producto').addEventListener('click', async () => {
-    if (!gLocalId) return;
+  document.getElementById('btn-confirmar-producto').addEventListener('click', async () => {
+    if (!localId) { toast('Primero guardá los datos del local.', 'err'); return; }
 
-    const nombre = document.getElementById('am-p-nombre').value.trim();
-    const precio = parseInt(document.getElementById('am-p-precio').value);
-    const cat    = document.getElementById('am-p-categoria').value.trim();
+    const nombre = document.getElementById('p-nombre').value.trim();
+    const precio = parseInt(document.getElementById('p-precio').value);
+    const cat    = document.getElementById('p-categoria').value.trim();
 
     if (!nombre || !precio || !cat) {
       toast('Nombre, precio y categoría son obligatorios.', 'err');
@@ -1595,32 +1374,32 @@
 
     const producto = {
       nombre,
-      desc:  document.getElementById('am-p-desc').value.trim(),
+      desc:  document.getElementById('p-desc').value.trim(),
       precio,
-      tipo:  document.getElementById('am-p-tipo').value
+      tipo:  document.getElementById('p-tipo').value
     };
 
-    if (!gLocalData.menu) gLocalData.menu = {};
-    const catNueva = !gLocalData.menu[cat];
-    if (!gLocalData.menu[cat]) gLocalData.menu[cat] = [];
-    gLocalData.menu[cat].push(producto);
+    if (!localData.menu) localData.menu = {};
+    const catNueva = !localData.menu[cat];
+    if (!localData.menu[cat]) localData.menu[cat] = [];
+    localData.menu[cat].push(producto);
     if (catNueva) {
-      gLocalData.categoriasOrden = [...(gLocalData.categoriasOrden || Object.keys(gLocalData.menu).filter(c => c !== cat)), cat];
+      localData.categoriasOrden = [...(localData.categoriasOrden || Object.keys(localData.menu).filter(c => c !== cat)), cat];
     }
 
-    const btn = document.getElementById('am-btn-confirmar-producto');
+    const btn = document.getElementById('btn-confirmar-producto');
     btn.disabled    = true;
     btn.textContent = 'Guardando...';
 
     try {
-      await db.collection('locales').doc(gLocalId).update({ menu: gLocalData.menu, categoriasOrden: gLocalData.categoriasOrden || Object.keys(gLocalData.menu) });
-      gCatActiva = cat;
-      gRenderMenu(gLocalData.menu);
-      document.getElementById('am-form-producto').classList.remove('visible');
-      gLimpiarFormProducto();
+      await db.collection('locales').doc(localId).update({ menu: localData.menu, categoriasOrden: localData.categoriasOrden || Object.keys(localData.menu) });
+      catActiva = cat;
+      renderMenu(localData.menu);
+      document.getElementById('form-producto').classList.remove('visible');
+      limpiarFormProducto();
       toast('✅ Producto agregado.');
     } catch(e) {
-      console.error('Error agregar producto (gestion):', e);
+      console.error('Error agregar producto:', e);
       toast('Error al guardar el producto.', 'err');
     }
 
@@ -1628,26 +1407,26 @@
     btn.textContent = 'Guardar producto';
   });
 
-  function gLimpiarFormProducto() {
-    ['am-p-nombre','am-p-desc','am-p-precio','am-p-categoria'].forEach(id => {
+  function limpiarFormProducto() {
+    ['p-nombre','p-desc','p-precio','p-categoria'].forEach(id => {
       document.getElementById(id).value = '';
     });
   }
 
   // ── ELIMINAR PRODUCTO ──
-  async function gEliminarProducto(cat, idx) {
+  async function eliminarProducto(cat, idx) {
     if (!confirm('¿Eliminás este producto?')) return;
 
-    gLocalData.menu[cat].splice(idx, 1);
-    if (gLocalData.menu[cat].length === 0) {
-      delete gLocalData.menu[cat];
-      gLocalData.categoriasOrden = (gLocalData.categoriasOrden || []).filter(c => c !== cat);
-      gCatActiva = gLocalData.categoriasOrden[0] || null;
+    localData.menu[cat].splice(idx, 1);
+    if (localData.menu[cat].length === 0) {
+      delete localData.menu[cat];
+      localData.categoriasOrden = (localData.categoriasOrden || []).filter(c => c !== cat);
+      catActiva = localData.categoriasOrden[0] || null;
     }
 
     try {
-      await db.collection('locales').doc(gLocalId).update({ menu: gLocalData.menu, categoriasOrden: gLocalData.categoriasOrden || Object.keys(gLocalData.menu) });
-      gRenderMenu(gLocalData.menu);
+      await db.collection('locales').doc(localId).update({ menu: localData.menu, categoriasOrden: localData.categoriasOrden || Object.keys(localData.menu) });
+      renderMenu(localData.menu);
       toast('Producto eliminado.');
     } catch(e) {
       toast('Error al eliminar.', 'err');
@@ -1655,9 +1434,11 @@
   }
 
   // ── GRUPOS DE OPCIONES ──
-  function gRenderGrupos() {
-    const grupos = gLocalData.grupos || [];
-    const cont   = document.getElementById('am-lista-grupos');
+
+  // Renderiza todos los grupos del local
+  function renderGrupos() {
+    const grupos = localData.grupos || [];
+    const cont   = document.getElementById('lista-grupos');
     cont.innerHTML = '';
 
     if (grupos.length === 0) {
@@ -1673,7 +1454,7 @@
       const grupoOn    = grupo.activo !== false;
 
       card.innerHTML = `
-        <div class="grupo-header" id="am-gh-${gi}">
+        <div class="grupo-header" id="gh-${gi}">
           <div class="grupo-header-left">
             <span style="font-size:1rem;">▾</span>
             <div>
@@ -1682,63 +1463,69 @@
             </div>
           </div>
           <div class="grupo-acciones">
-            <button class="toggle-grupo ${grupoOn ? 'on' : 'off'}" id="am-tg-${gi}">${grupoOn ? 'Activo' : 'Inactivo'}</button>
-            <button class="btn-cat" id="am-btn-renombrar-grupo-${gi}" title="Renombrar">✏️</button>
-            <button class="btn-cat danger" id="am-btn-eliminar-grupo-${gi}" title="Eliminar grupo">🗑️</button>
+            <button class="toggle-grupo ${grupoOn ? 'on' : 'off'}" id="tg-${gi}">${grupoOn ? 'Activo' : 'Inactivo'}</button>
+            <button class="btn-cat" id="btn-renombrar-grupo-${gi}" title="Renombrar">✏️</button>
+            <button class="btn-cat danger" id="btn-eliminar-grupo-${gi}" title="Eliminar grupo">🗑️</button>
           </div>
         </div>
-        <div class="grupo-body abierto" id="am-gb-${gi}">
-          <div id="am-items-grupo-${gi}"></div>
-          <button class="btn-agregar-item" id="am-btn-add-item-${gi}">+ Agregar opcion</button>
+        <div class="grupo-body abierto" id="gb-${gi}">
+          <div id="items-grupo-${gi}"></div>
+          <button class="btn-agregar-item" id="btn-add-item-${gi}">+ Agregar opcion</button>
         </div>`;
 
       cont.appendChild(card);
 
-      document.getElementById(`am-gh-${gi}`).addEventListener('click', (e) => {
+      // Toggle abrir/cerrar cuerpo del grupo
+      document.getElementById(`gh-${gi}`).addEventListener('click', (e) => {
         if (e.target.closest('.grupo-acciones')) return;
-        const body  = document.getElementById(`am-gb-${gi}`);
-        const arrow = document.getElementById(`am-gh-${gi}`).querySelector('span');
+        const body  = document.getElementById(`gb-${gi}`);
+        const arrow = document.getElementById(`gh-${gi}`).querySelector('span');
         body.classList.toggle('abierto');
         arrow.textContent = body.classList.contains('abierto') ? '▾' : '▸';
       });
 
-      document.getElementById(`am-tg-${gi}`).addEventListener('click', async (e) => {
+      // Toggle activo/inactivo del grupo completo
+      document.getElementById(`tg-${gi}`).addEventListener('click', async (e) => {
         e.stopPropagation();
-        gLocalData.grupos[gi].activo = !grupoOn;
-        await gGuardarGrupos();
+        localData.grupos[gi].activo = !grupoOn;
+        await guardarGrupos();
       });
 
-      document.getElementById(`am-btn-renombrar-grupo-${gi}`).addEventListener('click', async (e) => {
+      // Renombrar grupo
+      document.getElementById(`btn-renombrar-grupo-${gi}`).addEventListener('click', async (e) => {
         e.stopPropagation();
         const nuevo = prompt(`Nuevo nombre para "${grupo.nombre}":`, grupo.nombre);
         if (!nuevo || nuevo.trim() === grupo.nombre) return;
-        gLocalData.grupos[gi].nombre = nuevo.trim();
-        await gGuardarGrupos();
+        localData.grupos[gi].nombre = nuevo.trim();
+        await guardarGrupos();
       });
 
-      document.getElementById(`am-btn-eliminar-grupo-${gi}`).addEventListener('click', async (e) => {
+      // Eliminar grupo
+      document.getElementById(`btn-eliminar-grupo-${gi}`).addEventListener('click', async (e) => {
         e.stopPropagation();
         if (!confirm(`Eliminar el grupo "${grupo.nombre}" con todos sus items?`)) return;
-        gLocalData.grupos.splice(gi, 1);
-        await gGuardarGrupos();
+        localData.grupos.splice(gi, 1);
+        await guardarGrupos();
       });
 
-      document.getElementById(`am-btn-add-item-${gi}`).addEventListener('click', () => {
+      // Agregar item al grupo
+      document.getElementById(`btn-add-item-${gi}`).addEventListener('click', () => {
         const nombre  = prompt('Nombre de la opcion (ej: Mayonesa, Fria, Bacon):');
         if (!nombre || !nombre.trim()) return;
         const precioStr = prompt('Precio adicional en $ (0 si es gratis):', '0');
         const precio = parseInt(precioStr) || 0;
-        if (!gLocalData.grupos[gi].items) gLocalData.grupos[gi].items = [];
-        gLocalData.grupos[gi].items.push({ nombre: nombre.trim(), precio, activo: true });
-        gGuardarGrupos();
+        if (!localData.grupos[gi].items) localData.grupos[gi].items = [];
+        localData.grupos[gi].items.push({ nombre: nombre.trim(), precio, activo: true });
+        guardarGrupos();
       });
 
-      gRenderItemsGrupo(gi, grupo.items || []);
+      // Renderizar items del grupo
+      renderItemsGrupo(gi, grupo.items || []);
     });
   }
 
-  function gRenderItemsGrupo(gi, items) {
-    const cont = document.getElementById(`am-items-grupo-${gi}`);
+  function renderItemsGrupo(gi, items) {
+    const cont = document.getElementById(`items-grupo-${gi}`);
     if (!cont) return;
     cont.innerHTML = '';
 
@@ -1751,6 +1538,8 @@
       const on  = item.activo !== false;
       const div = document.createElement('div');
       div.className = 'item-opcion';
+
+      const tienePrice = localData.grupos[gi].conPrecio !== false;
 
       div.innerHTML = `
         <div class="item-opcion-info">
@@ -1765,34 +1554,38 @@
 
       cont.appendChild(div);
 
+      // Editar nombre con debounce
       div.querySelector('.item-nombre-input').addEventListener('change', async function() {
-        gLocalData.grupos[gi].items[ii].nombre = this.value.trim();
-        await gGuardarGrupos(true);
+        localData.grupos[gi].items[ii].nombre = this.value.trim();
+        await guardarGrupos(true);
       });
 
+      // Editar precio con debounce
       div.querySelector('.item-precio-input').addEventListener('change', async function() {
-        gLocalData.grupos[gi].items[ii].precio = parseInt(this.value) || 0;
-        await gGuardarGrupos(true);
+        localData.grupos[gi].items[ii].precio = parseInt(this.value) || 0;
+        await guardarGrupos(true);
       });
 
+      // Toggle activo item
       div.querySelector('.toggle-item').addEventListener('click', async function() {
-        gLocalData.grupos[gi].items[ii].activo = !on;
-        await gGuardarGrupos();
+        localData.grupos[gi].items[ii].activo = !on;
+        await guardarGrupos();
       });
 
+      // Eliminar item
       div.querySelector('.btn-del-item').addEventListener('click', async function() {
         if (!confirm(`Eliminar "${item.nombre}"?`)) return;
-        gLocalData.grupos[gi].items.splice(ii, 1);
-        await gGuardarGrupos();
+        localData.grupos[gi].items.splice(ii, 1);
+        await guardarGrupos();
       });
     });
   }
 
-  async function gGuardarGrupos(silencioso = false) {
-    if (!gLocalId) return;
+  async function guardarGrupos(silencioso = false) {
+    if (!localId) { toast('Primero guarda los datos del local.', 'err'); return; }
     try {
-      await db.collection('locales').doc(gLocalId).update({ grupos: gLocalData.grupos || [] });
-      gRenderGrupos();
+      await db.collection('locales').doc(localId).update({ grupos: localData.grupos || [] });
+      renderGrupos();
       if (!silencioso) toast('Grupos guardados.');
     } catch(e) {
       console.error(e);
@@ -1800,40 +1593,76 @@
     }
   }
 
-  document.getElementById('am-btn-nuevo-grupo').addEventListener('click', () => {
-    document.getElementById('am-form-nuevo-grupo').classList.toggle('visible');
+  // Form nuevo grupo
+  document.getElementById('btn-nuevo-grupo').addEventListener('click', () => {
+    document.getElementById('form-nuevo-grupo').classList.toggle('visible');
   });
 
-  document.getElementById('am-btn-cancelar-grupo').addEventListener('click', () => {
-    document.getElementById('am-form-nuevo-grupo').classList.remove('visible');
-    document.getElementById('am-ng-nombre').value = '';
+  document.getElementById('btn-cancelar-grupo').addEventListener('click', () => {
+    document.getElementById('form-nuevo-grupo').classList.remove('visible');
+    document.getElementById('ng-nombre').value = '';
   });
 
-  document.getElementById('am-btn-confirmar-grupo').addEventListener('click', async () => {
-    const nombre = document.getElementById('am-ng-nombre').value.trim();
+  document.getElementById('btn-confirmar-grupo').addEventListener('click', async () => {
+    const nombre = document.getElementById('ng-nombre').value.trim();
     if (!nombre) { toast('El nombre del grupo es obligatorio.', 'err'); return; }
 
-    const tipos = [...document.querySelectorAll('.am-ng-tipo:checked')].map(cb => cb.value);
+    const tipos = [...document.querySelectorAll('.ng-tipo:checked')].map(cb => cb.value);
     if (tipos.length === 0) { toast('Selecciona al menos un tipo de producto.', 'err'); return; }
 
-    if (!gLocalData.grupos) gLocalData.grupos = [];
-    gLocalData.grupos.push({ nombre, tipos, activo: true, items: [] });
+    if (!localData.grupos) localData.grupos = [];
+    localData.grupos.push({ nombre, tipos, activo: true, items: [] });
 
-    document.getElementById('am-ng-nombre').value = '';
-    document.querySelectorAll('.am-ng-tipo').forEach(cb => cb.checked = cb.value === 'comida');
-    document.getElementById('am-form-nuevo-grupo').classList.remove('visible');
+    document.getElementById('ng-nombre').value = '';
+    document.querySelectorAll('.ng-tipo').forEach(cb => cb.checked = cb.value === 'comida');
+    document.getElementById('form-nuevo-grupo').classList.remove('visible');
 
-    await gGuardarGrupos();
+    await guardarGrupos();
   });
 
-  // ── TOAST ──
-  let toastTimer;
-  function toast(msg, tipo = 'ok') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `show ${tipo}`;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.className = '', 3000);
+
+  function sincronizarColor(origen) {
+    const picker = document.getElementById('f-color');
+    const hex    = document.getElementById('f-color-hex');
+    if (!picker || !hex) return;
+    if (origen === 'hex') {
+      const val = hex.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) picker.value = val;
+    } else {
+      hex.value = picker.value;
+    }
+  }
+
+  document.getElementById('f-color').addEventListener('input', () => sincronizarColor('picker'));
+
+  function renderPreview(d) {
+    const badge = d.estado === 'abierto'
+      ? '<span class="badge badge-ok">Abierto</span>'
+      : '<span class="badge badge-off">Cerrado</span>';
+
+    const totalProductos = d.menu ? Object.values(d.menu).reduce((a, arr) => a + arr.length, 0) : 0;
+    const totalCats      = d.menu ? Object.keys(d.menu).length : 0;
+    const color          = d.colorBrand || '#d9232d';
+
+    document.getElementById('preview-local').innerHTML = `
+      <div style="border-left:5px solid ${color}; padding-left:0.75rem; margin-bottom:.75rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;">${d.nombre || '—'}</div>
+            <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${d.descCorta || d.tipo || ''} · ${d.tipo || ''}</div>
+            <div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">📍 ${d.direccion || '—'} · Zona: ${d.zona || '—'}</div>
+          </div>
+          ${badge}
+        </div>
+      </div>
+      <div style="font-size:0.8rem; color:var(--muted); display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+        <span>WhatsApp: ${d.whatsapp || '—'}</span>
+        <span>·</span>
+        <span>${totalProductos} productos en ${totalCats} categorías</span>
+        <span>·</span>
+        <span style="display:inline-flex; align-items:center; gap:4px;">Color: <span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:${color}; border:1px solid #ccc;"></span></span>
+        ${d.lat && d.lng ? `<span>· GPS: ${d.lat}, ${d.lng}</span>` : '<span style="color:#dc2626;">· ⚠️ Sin coordenadas GPS</span>'}
+      </div>`;
   }
 </script>
 </body>
