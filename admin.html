@@ -523,6 +523,88 @@
     }
     .btn-agregar-item:hover { background: #fff0f0; }
 
+    /* ── HORARIOS AUTOMATICOS ── */
+    .horario-dia {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .horario-dia-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .horario-dia-nombre { font-weight: 600; font-size: 0.9rem; }
+
+    .horario-dia-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .horario-dia-toggle input { width: 17px; height: 17px; cursor: pointer; }
+
+    .horario-franja {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .horario-franja input[type="time"] {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .horario-franja input[type="time"]:focus { border-color: var(--accent); }
+
+    .horario-franja-sep { font-size: 0.8rem; color: var(--muted); }
+
+    .toggle-auto-horarios {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .toggle-auto-horarios input { width: 18px; height: 18px; cursor: pointer; }
+
+    .badge-estado-auto {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+    }
+
+    .badge-estado-auto.abierto { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .badge-estado-auto.cerrado { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    .badge-auto-tabla {
+      background: #e0e7ff; color: #3730a3;
+    }
+
     @media (max-width: 700px) {
       .stats-grid  { grid-template-columns: 1fr 1fr; }
       .alta-grid   { grid-template-columns: 1fr; }
@@ -805,6 +887,10 @@
         </div>
       </div>
 
+      <p id="am-nota-estado-auto" style="display:none; font-size:0.75rem; color:var(--muted); margin:-0.5rem 0 1rem 0; line-height:1.5;">
+        🕒 El estado se controla automáticamente según los horarios configurados en la sección "Horarios automáticos" más abajo.
+      </p>
+
       <div class="field">
         <label>Horarios (se muestra en la app al cliente)</label>
         <textarea id="am-f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
@@ -935,6 +1021,26 @@
       </div>
     </div>
 
+    <!-- HORARIOS AUTOMATICOS -->
+    <div class="gestion-section">
+      <div class="gestion-section-title">🕒 Horarios automáticos</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1rem; line-height:1.5;">
+        Días y horarios en que el local atiende. Si el control automático está activo, el estado abierto/cerrado que ven los clientes se calcula solo según estos horarios.
+      </p>
+
+      <label class="toggle-auto-horarios">
+        <input type="checkbox" id="am-h-auto"> Activar control automático de horarios
+      </label>
+
+      <div id="am-badge-estado-auto-wrap" style="display:none; margin-bottom:1rem;">
+        <span class="badge-estado-auto" id="am-badge-estado-auto">—</span>
+      </div>
+
+      <div id="am-lista-horarios-dias"></div>
+
+      <button class="btn btn-primary" id="am-btn-guardar-horarios" style="margin-top:0.5rem; width:100%;">Guardar horarios</button>
+    </div>
+
     <button class="btn btn-outline" onclick="cerrarGestion()" style="width:100%;">Cerrar</button>
   </div>
 </div>
@@ -953,6 +1059,57 @@
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db   = firebase.firestore();
+
+  // ── HORARIOS AUTOMATICOS: HELPERS ──
+  const DIAS_UI       = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+  const DIAS_LABEL    = { lunes:'Lunes', martes:'Martes', miercoles:'Miércoles', jueves:'Jueves', viernes:'Viernes', sabado:'Sábado', domingo:'Domingo' };
+  const DIAS_SEMANA_IDX = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']; // indice = getDay()
+
+  function horariosConfigVacio() {
+    const cfg = {};
+    DIAS_UI.forEach(d => cfg[d] = { activo: false, franjas: [] });
+    return cfg;
+  }
+
+  function horaAMinutos(hhmm) {
+    if (!hhmm) return 0;
+    const partes = hhmm.split(':');
+    return (parseInt(partes[0]) || 0) * 60 + (parseInt(partes[1]) || 0);
+  }
+
+  // Calcula si el local esta abierto ahora segun horariosConfig (dias y franjas, con soporte para pasar la medianoche)
+  function calcularAbiertoAhora(horariosConfig) {
+    if (!horariosConfig) return false;
+    const ahora = new Date();
+    const diaActual    = DIAS_SEMANA_IDX[ahora.getDay()];
+    const diaAnterior  = DIAS_SEMANA_IDX[(ahora.getDay() + 6) % 7];
+    const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+
+    const cfgHoy = horariosConfig[diaActual];
+    if (cfgHoy && cfgHoy.activo) {
+      for (const f of (cfgHoy.franjas || [])) {
+        const ap = horaAMinutos(f.apertura);
+        const ci = horaAMinutos(f.cierre);
+        if (ci > ap) {
+          if (minutosAhora >= ap && minutosAhora < ci) return true;
+        } else {
+          if (minutosAhora >= ap) return true;
+        }
+      }
+    }
+
+    const cfgAyer = horariosConfig[diaAnterior];
+    if (cfgAyer && cfgAyer.activo) {
+      for (const f of (cfgAyer.franjas || [])) {
+        const ap = horaAMinutos(f.apertura);
+        const ci = horaAMinutos(f.cierre);
+        if (ci <= ap && minutosAhora < ci) return true;
+      }
+    }
+
+    return false;
+  }
+
 
   // ── VERIFICACION DE ADMIN VIA FIRESTORE ──
   // Tu uid va en la coleccion "admins" en Firestore, no en el codigo
@@ -1076,9 +1233,22 @@
       const badgeAlta = vinculado
         ? '<span class="badge badge-vinculado">Vinculado</span>'
         : '<span class="badge badge-pendiente">Pendiente</span>';
-      const badgeEstado = loc.estado === 'abierto'
+
+      const esAuto = !!loc.horariosAuto;
+      const estadoActual = esAuto
+        ? (calcularAbiertoAhora(loc.horariosConfig) ? 'abierto' : 'cerrado')
+        : loc.estado;
+
+      const badgeEstado = (estadoActual === 'abierto'
         ? '<span class="badge badge-abierto">Abierto</span>'
-        : '<span class="badge badge-cerrado">Cerrado</span>';
+        : '<span class="badge badge-cerrado">Cerrado</span>')
+        + (esAuto ? ' <span class="badge badge-auto-tabla">🕒 Auto</span>' : '');
+
+      const btnEstado = esAuto
+        ? `<button class="btn btn-outline" disabled title="El estado lo maneja el horario automático">🕒 Auto</button>`
+        : `<button class="btn ${loc.estado === 'abierto' ? 'btn-warning' : 'btn-green'}" onclick="toggleEstado('${loc.id}','${loc.estado}')">
+            ${loc.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
+          </button>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -1094,9 +1264,7 @@
         <td class="acciones">
           <button class="btn btn-dark" onclick="abrirGestion('${loc.id}')">🍽️ Gestionar</button>
           <button class="btn btn-outline" onclick="abrirModal('${loc.id}')">✏️ Editar</button>
-          <button class="btn ${loc.estado === 'abierto' ? 'btn-warning' : 'btn-green'}" onclick="toggleEstado('${loc.id}','${loc.estado}')">
-            ${loc.estado === 'abierto' ? 'Cerrar' : 'Abrir'}
-          </button>
+          ${btnEstado}
           <button class="btn btn-danger" onclick="eliminarLocal('${loc.id}','${loc.nombre}')">🗑️</button>
         </td>`;
       tbody.appendChild(tr);
@@ -1277,12 +1445,17 @@
     gLocalData = JSON.parse(JSON.stringify(loc)); // copia local de trabajo
     if (!gLocalData.categoriasOrden) gLocalData.categoriasOrden = Object.keys(gLocalData.menu || {});
     if (!gLocalData.grupos) gLocalData.grupos = [];
+    if (!gLocalData.horariosConfig) gLocalData.horariosConfig = horariosConfigVacio();
+    if (typeof gLocalData.horariosAuto !== 'boolean') gLocalData.horariosAuto = false;
     gCatActiva = null;
 
     document.getElementById('gestion-nombre-local').textContent = loc.nombre || id;
     gRellenarForm(gLocalData);
     gRenderMenu(gLocalData.menu || {});
     gRenderGrupos();
+    document.getElementById('am-h-auto').checked = gLocalData.horariosAuto;
+    gRenderHorarios();
+    gActualizarUIEstadoAuto();
 
     document.getElementById('modal-gestion').classList.add('open');
   }
@@ -1348,7 +1521,7 @@
       direccion:  document.getElementById('am-f-direccion').value.trim(),
       whatsapp:   document.getElementById('am-f-whatsapp').value.trim(),
       tipo:       document.getElementById('am-f-tipo').value,
-      estado:     document.getElementById('am-f-estado').value,
+      estado:     gLocalData?.horariosAuto ? (calcularAbiertoAhora(gLocalData.horariosConfig) ? 'abierto' : 'cerrado') : document.getElementById('am-f-estado').value,
       horariosTxt,
       tags,
       descCorta:  document.getElementById('am-f-desccorta').value.trim(),
@@ -1824,6 +1997,138 @@
     document.getElementById('am-form-nuevo-grupo').classList.remove('visible');
 
     await gGuardarGrupos();
+  });
+
+  // ── HORARIOS AUTOMATICOS (gestion admin) ──
+  function gRenderHorarios() {
+    const cont = document.getElementById('am-lista-horarios-dias');
+    cont.innerHTML = '';
+
+    if (!gLocalData.horariosConfig) gLocalData.horariosConfig = horariosConfigVacio();
+    const cfg = gLocalData.horariosConfig;
+
+    DIAS_UI.forEach(dia => {
+      if (!cfg[dia]) cfg[dia] = { activo: false, franjas: [] };
+      const d = cfg[dia];
+
+      const card = document.createElement('div');
+      card.className = 'horario-dia';
+
+      const header = document.createElement('div');
+      header.className = 'horario-dia-header';
+      header.innerHTML = `
+        <span class="horario-dia-nombre">${DIAS_LABEL[dia]}</span>
+        <label class="horario-dia-toggle">
+          <input type="checkbox" class="am-h-dia-activo" ${d.activo ? 'checked' : ''}> Atiende este día
+        </label>`;
+      card.appendChild(header);
+
+      header.querySelector('.am-h-dia-activo').addEventListener('change', function() {
+        cfg[dia].activo = this.checked;
+        gActualizarBadgeEstadoAuto();
+      });
+
+      const franjasCont = document.createElement('div');
+      card.appendChild(franjasCont);
+
+      function renderFranjas() {
+        franjasCont.innerHTML = '';
+        if ((cfg[dia].franjas || []).length === 0) {
+          franjasCont.innerHTML = '<p style="font-size:0.78rem; color:var(--muted); margin-bottom:0.4rem;">Sin horarios cargados.</p>';
+        }
+        (cfg[dia].franjas || []).forEach((f, fi) => {
+          const row = document.createElement('div');
+          row.className = 'horario-franja';
+          row.innerHTML = `
+            <input type="time" class="am-h-apertura" value="${f.apertura || ''}">
+            <span class="horario-franja-sep">a</span>
+            <input type="time" class="am-h-cierre" value="${f.cierre || ''}">
+            <button class="btn-cat danger" title="Eliminar horario" type="button">🗑️</button>`;
+
+          row.querySelector('.am-h-apertura').addEventListener('change', function() {
+            cfg[dia].franjas[fi].apertura = this.value;
+            gActualizarBadgeEstadoAuto();
+          });
+          row.querySelector('.am-h-cierre').addEventListener('change', function() {
+            cfg[dia].franjas[fi].cierre = this.value;
+            gActualizarBadgeEstadoAuto();
+          });
+          row.querySelector('button').addEventListener('click', () => {
+            cfg[dia].franjas.splice(fi, 1);
+            renderFranjas();
+            gActualizarBadgeEstadoAuto();
+          });
+
+          franjasCont.appendChild(row);
+        });
+      }
+      renderFranjas();
+
+      const btnAdd = document.createElement('button');
+      btnAdd.className = 'btn-agregar-item';
+      btnAdd.type = 'button';
+      btnAdd.textContent = '+ Agregar horario';
+      btnAdd.addEventListener('click', () => {
+        if (!cfg[dia].franjas) cfg[dia].franjas = [];
+        cfg[dia].franjas.push({ apertura: '09:00', cierre: '18:00' });
+        renderFranjas();
+        gActualizarBadgeEstadoAuto();
+      });
+      card.appendChild(btnAdd);
+
+      cont.appendChild(card);
+    });
+  }
+
+  document.getElementById('am-h-auto').addEventListener('change', function() {
+    if (!gLocalData) return;
+    gLocalData.horariosAuto = this.checked;
+    gActualizarUIEstadoAuto();
+  });
+
+  function gActualizarUIEstadoAuto() {
+    const auto = !!(gLocalData && gLocalData.horariosAuto);
+    document.getElementById('am-badge-estado-auto-wrap').style.display = auto ? 'block' : 'none';
+    document.getElementById('am-nota-estado-auto').style.display       = auto ? 'block' : 'none';
+    document.getElementById('am-f-estado').disabled = auto;
+    if (auto) gActualizarBadgeEstadoAuto();
+  }
+
+  function gActualizarBadgeEstadoAuto() {
+    if (!gLocalData) return;
+    const badge   = document.getElementById('am-badge-estado-auto');
+    const abierto = calcularAbiertoAhora(gLocalData.horariosConfig);
+    badge.textContent = abierto ? '✅ Abierto ahora' : '❌ Cerrado ahora';
+    badge.className   = 'badge-estado-auto ' + (abierto ? 'abierto' : 'cerrado');
+  }
+
+  document.getElementById('am-btn-guardar-horarios').addEventListener('click', async () => {
+    if (!gLocalId) return;
+    const btn = document.getElementById('am-btn-guardar-horarios');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    const horariosAuto   = gLocalData.horariosAuto || false;
+    const horariosConfig = gLocalData.horariosConfig || horariosConfigVacio();
+    const datosExtra = { horariosAuto, horariosConfig };
+
+    if (horariosAuto) {
+      datosExtra.estado = calcularAbiertoAhora(horariosConfig) ? 'abierto' : 'cerrado';
+    }
+
+    try {
+      await db.collection('locales').doc(gLocalId).update(datosExtra);
+      gLocalData.estado = datosExtra.estado || gLocalData.estado;
+      if (datosExtra.estado) document.getElementById('am-f-estado').value = datosExtra.estado;
+      toast('✅ Horarios guardados.');
+      gActualizarUIEstadoAuto();
+    } catch(e) {
+      console.error('Error guardar horarios (gestion):', e);
+      toast('Error al guardar horarios.', 'err');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Guardar horarios';
   });
 
   // ── TOAST ──
