@@ -259,6 +259,60 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // ── HORARIOS AUTOMATICOS: HELPERS ──
+  const DIAS_SEMANA_IDX = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']; // indice = getDay()
+
+  function horaAMinutos(hhmm) {
+    if (!hhmm) return 0;
+    const partes = hhmm.split(':');
+    return (parseInt(partes[0]) || 0) * 60 + (parseInt(partes[1]) || 0);
+  }
+
+  // Calcula si un local esta abierto ahora segun su horariosConfig (dias y franjas, con soporte para pasar la medianoche)
+  function calcularAbiertoAhora(horariosConfig) {
+    if (!horariosConfig) return false;
+    const ahora = new Date();
+    const diaActual    = DIAS_SEMANA_IDX[ahora.getDay()];
+    const diaAnterior  = DIAS_SEMANA_IDX[(ahora.getDay() + 6) % 7];
+    const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+
+    const cfgHoy = horariosConfig[diaActual];
+    if (cfgHoy && cfgHoy.activo) {
+      for (const f of (cfgHoy.franjas || [])) {
+        const ap = horaAMinutos(f.apertura);
+        const ci = horaAMinutos(f.cierre);
+        if (ci > ap) {
+          if (minutosAhora >= ap && minutosAhora < ci) return true;
+        } else {
+          // la franja pasa la medianoche (cierre <= apertura)
+          if (minutosAhora >= ap) return true;
+        }
+      }
+    }
+
+    // franjas de ayer que pasaron la medianoche y siguen vigentes hoy de madrugada
+    const cfgAyer = horariosConfig[diaAnterior];
+    if (cfgAyer && cfgAyer.activo) {
+      for (const f of (cfgAyer.franjas || [])) {
+        const ap = horaAMinutos(f.apertura);
+        const ci = horaAMinutos(f.cierre);
+        if (ci <= ap && minutosAhora < ci) return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Funcion comun para todos los locales: si tiene horarios automaticos activados,
+  // calcula abierto/cerrado en base al horario. Si no, usa el campo "estado" manual.
+  function estaAbiertoLocal() {
+    if (this.horariosAuto && this.horariosConfig) {
+      return calcularAbiertoAhora(this.horariosConfig);
+    }
+    return this.estado === 'abierto';
+  }
+
+
   // ── ESTADO ──
   let localesFirestore = {};
   let todosLosLocales  = {};
@@ -305,9 +359,11 @@
           whatsapp:   d.whatsapp   || '',
           mapaUrl:    d.mapaUrl    || '',
           estado:     d.estado     || 'abierto',
+          horariosAuto:   d.horariosAuto   || false,
+          horariosConfig: d.horariosConfig || null,
           tags:       d.tags       || [],
           menu:       d.menu       || {},
-          estaAbierto: function() { return this.estado === 'abierto'; }
+          estaAbierto: estaAbiertoLocal
         };
       });
     } catch(e) {
@@ -492,7 +548,9 @@
           categoriasOrden:  d.categoriasOrden  || [],
           grupos:           d.grupos           || [],
           estado:           d.estado           || 'abierto',
-          estaAbierto: function() { return this.estado === 'abierto'; }
+          horariosAuto:     d.horariosAuto     || false,
+          horariosConfig:   d.horariosConfig   || null,
+          estaAbierto: estaAbiertoLocal
         };
         todosLosLocales[id] = loc;
       }
