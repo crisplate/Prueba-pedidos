@@ -346,6 +346,7 @@
       const snap = await db.collection('locales').get();
       snap.forEach(doc => {
         const d = doc.data();
+        if (d.visible === false) return;
         localesFirestore[doc.id] = {
           id:         doc.id,
           nombre:     d.nombre     || doc.id,
@@ -544,12 +545,13 @@
         const d = snap.data();
         loc = {
           ...localesFirestore[id],
-          menu:             d.menu             || {},
-          categoriasOrden:  d.categoriasOrden  || [],
-          grupos:           d.grupos           || [],
-          estado:           d.estado           || 'abierto',
-          horariosAuto:     d.horariosAuto     || false,
-          horariosConfig:   d.horariosConfig   || null,
+          menu:              d.menu              || {},
+          categoriasOrden:   d.categoriasOrden   || [],
+          categoriasOcultas: d.categoriasOcultas || [],
+          grupos:            d.grupos            || [],
+          estado:            d.estado            || 'abierto',
+          horariosAuto:      d.horariosAuto      || false,
+          horariosConfig:    d.horariosConfig    || null,
           estaAbierto: estaAbiertoLocal
         };
         todosLosLocales[id] = loc;
@@ -577,9 +579,10 @@
   cont.innerHTML = '';
 
   const menu = loc.menu || {};
+  const ocultas = loc.categoriasOcultas || [];
   const orden = (loc.categoriasOrden && loc.categoriasOrden.length)
-    ? loc.categoriasOrden.filter(c => menu[c])
-    : Object.keys(menu);
+    ? loc.categoriasOrden.filter(c => menu[c] && !ocultas.includes(c))
+    : Object.keys(menu).filter(c => !ocultas.includes(c));
   orden.forEach(cat => {
     const h2 = document.createElement('h2');
     h2.className = 'categoria-titulo';
