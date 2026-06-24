@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal Dueño — Dale pué</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f4f0; --white: #ffffff; --border: #e2e0d8; --text: #1a1a18;
+      --muted: #7a7870; --accent: #d9232d; --yellow: #ffb800; --green: #1a9e5a; --radius: 12px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* LOGIN */
+    #pantalla-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: #111; }
+    .login-card { background: #1a1a1f; border: 1px solid #2e2e36; border-radius: 20px; padding: 2rem; width: 100%; max-width: 360px; }
+    .login-logo { color: var(--yellow); font-size: 1.6rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .login-sub  { color: #666; font-size: 0.85rem; margin-bottom: 2rem; }
+    .login-label { display: block; font-size: 0.78rem; color: #888; margin-bottom: 0.35rem; font-weight: 500; }
+    .login-input { width: 100%; background: #0f0f11; border: 1px solid #2e2e36; border-radius: 10px; color: #f0eff4; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.75rem 1rem; outline: none; margin-bottom: 1rem; transition: border-color 0.2s; }
+    .login-input:focus { border-color: var(--yellow); }
+    .btn-login { width: 100%; background: var(--yellow); color: #111; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; padding: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
+    .btn-login:hover { opacity: 0.88; } .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #f76c6c; font-size: 0.82rem; margin-top: 0.75rem; display: none; text-align: center; }
+    .login-error.show { display: block; }
+
+    /* PORTAL */
+    #pantalla-portal { display: none; padding-bottom: 3rem; }
+    .topbar { background: #111; color: #fff; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-brand { font-size: 1.1rem; font-weight: 700; color: var(--yellow); }
+    .topbar-email { font-size: 0.75rem; color: #888; margin-top: 2px; }
+    .btn-salir { background: #333; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; }
+    .main { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+    /* PREVIEW */
+    .preview-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+    .preview-title { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.75rem; }
+
+    /* SOLAPAS PRINCIPALES */
+    .main-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .main-tab { padding: 0.65rem 1.1rem; border-radius: 10px 10px 0 0; font-size: 0.88rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; background: transparent; cursor: pointer; color: var(--muted); transition: all 0.15s; position: relative; bottom: -2px; font-family: 'DM Sans', sans-serif; }
+    .main-tab:hover { color: var(--text); background: var(--white); }
+    .main-tab.active { background: var(--white); color: var(--text); border-color: var(--border); border-bottom-color: var(--white); }
+    .main-panel { display: none; } .main-panel.active { display: block; }
+
+    /* SECCION */
+    .section { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-bottom: 0.35rem; }
+    .field input, .field select, .field textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.7rem 1rem; outline: none; transition: border-color 0.2s; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .field textarea { resize: vertical; min-height: 70px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 1.2rem; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; width: 100%; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary   { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-green     { background: var(--green); color: #fff; }
+    .btn-danger    { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* TABS CATEGORIAS */
+    .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .tab { padding: 0.4rem 0.9rem; border-radius: 999px; font-size: 0.82rem; font-weight: 500; border: 1px solid var(--border); background: var(--white); cursor: pointer; transition: all 0.15s; }
+    .tab.active { background: #111; color: #fff; border-color: #111; }
+
+    /* PRODUCTOS */
+    .producto-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .producto-info {
+      flex: 1;
+      min-width: 0;
+      min-width: 120px;
+      word-break: break-word;
+    }
+    .producto-nombre { font-weight: 600; font-size: 0.9rem; white-space: normal; }
+    .producto-meta   { font-size: 0.78rem; color: var(--muted); margin-top: 2px; white-space: normal; word-break: break-word; }
+    .producto-precio { font-weight: 600; color: var(--green); font-size: 0.95rem; white-space: nowrap; }
+    .producto-item.no-disponible { opacity: 0.55; }
+    .producto-acciones {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .cat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 0.5rem; }
+    .cat-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; flex-wrap: wrap; }
+    .btn-cat { height: 30px; min-width: 30px; padding: 0 6px; border-radius: 7px; border: 1px solid var(--border); background: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: background 0.15s; white-space: nowrap; gap: 3px; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text); }
+    .btn-cat:hover { background: var(--bg); }
+    .btn-cat.danger:hover { background: #fee2e2; border-color: #fecaca; }
+    .btn-cat.cat-visible { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .btn-cat.cat-oculta  { background: #f3f4f6; color: #6b7280; border-color: #d1d5db; }
+
+    .toggle-disponible { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--white); white-space: nowrap; transition: all 0.2s; }
+    .toggle-disponible.activo   { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-disponible.inactivo { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+    .btn-editar, .btn-eliminar { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.15s; flex-shrink: 0; }
+    .btn-editar:hover   { background: #fef9c3; border-color: #fde047; }
+    .btn-eliminar:hover { background: #fee2e2; border-color: #fecaca; }
+
+    .form-edicion { display: none; background: #f0fdf4; border: 1px dashed var(--green); border-radius: var(--radius); padding: 1rem; margin-top: 0.5rem; }
+    .form-edicion.visible { display: block; }
+    .form-edicion-title { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-bottom: 0.75rem; }
+
+    .form-producto { background: #fffbf0; border: 1px dashed var(--yellow); border-radius: var(--radius); padding: 1.2rem; margin-top: 1rem; display: none; }
+    .form-producto.visible { display: block; }
+    .form-producto-title { font-size: 0.85rem; font-weight: 600; color: #b38000; margin-bottom: 1rem; }
+
+    .empty { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.88rem; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .badge-ok  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    /* GRUPOS */
+    .grupo-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden; }
+    .grupo-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; gap: 0.5rem; cursor: pointer; }
+    .grupo-header-left { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+    .grupo-nombre { font-weight: 600; font-size: 0.9rem; }
+    .grupo-tipos  { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .grupo-acciones { display: flex; gap: 0.3rem; flex-shrink: 0; }
+    .grupo-body { border-top: 1px solid var(--border); padding: 0.75rem 1rem; display: none; }
+    .grupo-body.abierto { display: block; }
+    .item-opcion { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); gap: 0.5rem; }
+    .item-opcion:last-child { border-bottom: none; }
+    .item-opcion-info { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+    .item-nombre-input { background: transparent; border: none; border-bottom: 1px dashed var(--border); border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--text); outline: none; width: 130px; }
+    .item-nombre-input:focus { border-bottom-color: var(--accent); }
+    .item-precio-input { background: transparent; border: none; border-bottom: 1px dashed var(--border); border-radius: 0; padding: 0.2rem 0.3rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--green); font-weight: 600; outline: none; width: 70px; text-align: right; }
+    .item-precio-input:focus { border-bottom-color: var(--green); }
+    .toggle-item { font-size: 0.72rem; font-weight: 600; padding: 3px 7px; border-radius: 999px; border: 1px solid var(--border); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .toggle-item.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-item.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .toggle-grupo { font-size: 0.75rem; font-weight: 600; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+    .toggle-grupo.on  { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .toggle-grupo.off { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .btn-agregar-item { font-size: 0.8rem; font-weight: 600; color: var(--accent); background: none; border: 1px dashed var(--accent); border-radius: 8px; padding: 0.4rem 0.75rem; cursor: pointer; margin-top: 0.5rem; transition: background 0.15s; }
+
+    /* IMAGEN PRODUCTO */
+    .prod-img-wrap { position: relative; flex-shrink: 0; }
+    .prod-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); display: block; }
+    .prod-img-placeholder { width: 64px; height: 64px; border-radius: 10px; background: var(--bg); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+    .prod-img-placeholder:hover { background: #ede8e0; }
+    .btn-cambiar-img { position: absolute; bottom: -4px; right: -4px; background: var(--accent); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .upload-spinner { font-size: 0.7rem; color: var(--muted); margin-top: 2px; text-align: center; display: none; }
+    .upload-spinner.show { display: block; }
+    .btn-agregar-item:hover { background: #fff0f0; }
+
+    /* HORARIOS */
+    .horario-dia { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 0.6rem; }
+    .horario-dia-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+    .horario-dia-nombre { font-weight: 600; font-size: 0.9rem; }
+    .horario-dia-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
+    .horario-dia-toggle input { width: 17px; height: 17px; cursor: pointer; }
+    .horario-franja { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+    .horario-franja input[type="time"] { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; outline: none; }
+    .horario-franja input[type="time"]:focus { border-color: var(--accent); }
+    .horario-franja-sep { font-size: 0.8rem; color: var(--muted); }
+    .toggle-auto-horarios { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; cursor: pointer; }
+    .toggle-auto-horarios input { width: 18px; height: 18px; cursor: pointer; }
+    .badge-estado-auto { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 600; padding: 0.5rem 0.9rem; border-radius: 999px; }
+    .badge-estado-auto.abierto { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .badge-estado-auto.cerrado { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* FOOTER SOLAPA */
+    .solapa-footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; align-items: center; }
+    .cambios-pendientes { font-size: 0.78rem; color: var(--accent); font-weight: 500; display: none; }
+    .cambios-pendientes.show { display: block; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: #fff; padding: 0.75rem 1.4rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500; transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.ok  { background: var(--green); }
+    .toast.err { background: var(--accent); }
+
+    @media (max-width: 480px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+      .main-tab { font-size: 0.8rem; padding: 0.55rem 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pantalla-login">
+  <div class="login-card">
+    <div class="login-logo">Dale pué 🛵</div>
+    <div class="login-sub">Portal dueños / encargados</div>
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#ffb800; color:#111;">Ingresar</button>
+      <button id="tab-registro" onclick="switchTab('registro')" style="flex:1; padding:0.5rem; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer; background:#2e2e36; color:#888;">Primera vez</button>
+    </div>
+    <div id="panel-login">
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="l-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña</label>
+      <input type="password" id="l-pass" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    </div>
+    <div id="panel-registro" style="display:none;">
+      <div style="background:#1f1f2e; border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.78rem; color:#aaa; line-height:1.5;">Si es tu primera vez, creá tu cuenta con el email que te indicó el administrador.</div>
+      <label class="login-label">Correo electrónico</label>
+      <input type="email" id="r-email" class="login-input" placeholder="tu@correo.com" autocomplete="email"/>
+      <label class="login-label">Contraseña (mínimo 6 caracteres)</label>
+      <input type="password" id="r-pass" class="login-input" placeholder="••••••••"/>
+      <label class="login-label">Repetir contraseña</label>
+      <input type="password" id="r-pass2" class="login-input" placeholder="••••••••"/>
+      <button class="btn-login" id="btn-registrar">Crear cuenta</button>
+    </div>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="pantalla-portal">
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">Dale pué 🛵</div>
+      <div class="topbar-email" id="topbar-email">—</div>
+    </div>
+    <button class="btn-salir" id="btn-salir">Salir</button>
+  </div>
+
+  <div class="main">
+
+    <!-- VISTA PREVIA arriba de las solapas -->
+    <div class="preview-card">
+      <div class="preview-title">Vista previa del local</div>
+      <div id="preview-local"><p class="empty" style="padding:0.5rem 0;">Guardá los datos para ver la vista previa.</p></div>
+    </div>
+
+    <!-- SOLAPAS PRINCIPALES -->
+    <div class="main-tabs">
+      <button class="main-tab active" data-panel="panel-datos">🏪 Datos del local</button>
+      <button class="main-tab" data-panel="panel-menu">🍽️ Menú</button>
+      <button class="main-tab" data-panel="panel-horarios">🕒 Horarios</button>
+    </div>
+
+    <!-- PANEL DATOS -->
+    <div id="panel-datos" class="main-panel active">
+      <div class="section">
+        <div class="field"><label>Nombre del local</label><input type="text" id="f-nombre" placeholder="Ej: El Oeste"/></div>
+        <div class="row-2">
+          <div class="field"><label>Dirección</label><input type="text" id="f-direccion" placeholder="Ej: Leguizamón 1594"/></div>
+          <div class="field"><label>WhatsApp (con código de país)</label><input type="tel" id="f-whatsapp" placeholder="5493874123456"/></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Tipo de local</label>
+            <select id="f-tipo">
+              <option>Sandwichería</option><option>Pizzería</option><option>Parrilla</option>
+              <option>Minutas</option><option>Rotisería</option><option>Heladería</option>
+              <option>Café / Cafetería</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="field"><label>Estado</label>
+            <select id="f-estado">
+              <option value="abierto">Abierto ✅</option>
+              <option value="cerrado">Cerrado ❌</option>
+            </select>
+          </div>
+        </div>
+        <p id="nota-estado-auto" style="display:none; font-size:0.75rem; color:var(--muted); margin:-0.5rem 0 1rem 0; line-height:1.5;">🕒 El estado se controla automáticamente según los horarios configurados.</p>
+        <div class="field">
+          <label>Horarios (se muestra en la app al cliente)</label>
+          <textarea id="f-horarios" rows="3" placeholder="Ej: Lun a Jue y Dom: 12:00 a 04:00 AM&#10;Vie y Sab: 12:00 a 07:00 AM"></textarea>
+          <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Escribí cada línea por separado.</small>
+        </div>
+        <div class="field">
+          <label>Palabras clave (separadas por coma)</label>
+          <input type="text" id="f-tags" placeholder="Ej: milanesa, lomo, papas fritas, gaseosa"/>
+          <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Ayudan a que los clientes encuentren tu local al buscar.</small>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Descripción corta</label><input type="text" id="f-desccorta" placeholder="Ej: Sandwiches y minutas"/></div>
+          <div class="field"><label>Zona</label>
+            <select id="f-zona">
+              <option value="Centro">Centro</option><option value="Norte">Norte</option>
+              <option value="Sur">Sur</option><option value="Este">Este</option>
+              <option value="Oeste">Oeste</option><option value="Sureste">Sureste</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Color de marca</label>
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <input type="color" id="f-color" value="#d9232d" style="width:48px; height:42px; padding:2px; border-radius:8px; border:1px solid var(--border); cursor:pointer;"/>
+            <input type="text" id="f-color-hex" placeholder="#d9232d" style="flex:1;" oninput="sincronizarColor('hex')"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Link de Google Maps</label>
+          <input type="text" id="f-mapaurl" placeholder="Ej: https://maps.app.goo.gl/..."/>
+          <small style="color:var(--muted); font-size:0.75rem; margin-top:4px; display:block;">Abrí Google Maps, buscá tu local, hacé clic en Compartir y copiá el link.</small>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Latitud (para el radar GPS)</label><input type="number" id="f-lat" placeholder="-24.7821" step="0.0001"/></div>
+          <div class="field"><label>Longitud (para el radar GPS)</label><input type="number" id="f-lng" placeholder="-65.4232" step="0.0001"/></div>
+        </div>
+        <div style="background:#fffbf0; border:1px solid #ffe08a; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.78rem; color:#7a6000; line-height:1.6;">
+          💡 Para las coordenadas: abrí <a href="https://www.google.com/maps" target="_blank" style="color:var(--accent);">Google Maps</a>, buscá tu local, hacé clic derecho y copiá los números.
+        </div>
+        <div class="solapa-footer">
+          <button class="btn btn-primary" id="btn-guardar-local">Guardar datos del local</button>
+          <span class="cambios-pendientes" id="dirty-datos">● Cambios sin guardar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL MENU -->
+    <div id="panel-menu" class="main-panel">
+      <div class="section">
+        <div class="tabs" id="tabs-categorias"></div>
+        <div id="lista-productos"><p class="empty">Cargando...</p></div>
+        <button class="btn btn-secondary" id="btn-mostrar-form" style="margin-top:1rem;">+ Agregar producto</button>
+        <div class="form-producto" id="form-producto">
+          <div class="form-producto-title">Nuevo producto</div>
+          <div class="field"><label>Nombre</label><input type="text" id="p-nombre" placeholder="Ej: Milanesa clásica"/></div>
+          <div class="field"><label>Descripción (opcional)</label><textarea id="p-desc" placeholder="Ej: Con lechuga, tomate y papas"></textarea></div>
+          <div class="row-3">
+            <div class="field"><label>Precio ($)</label><input type="number" id="p-precio" placeholder="12000"/></div>
+            <div class="field"><label>Categoría</label><input type="text" id="p-categoria" placeholder="Sandwiches"/></div>
+            <div class="field"><label>Tipo</label>
+              <select id="p-tipo">
+                <option value="comida">Comida 🍔</option>
+                <option value="bebida">Bebida 🥤</option>
+                <option value="alcohol">Alcohol 🍺</option>
+              </select>
+            </div>
+          </div>
+          <div class="row-2">
+            <button class="btn btn-green" id="btn-confirmar-producto">Agregar al borrador</button>
+            <button class="btn btn-secondary" id="btn-cancelar-producto">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPOS -->
+      <div class="section">
+        <div class="section-title">⚙️ Opciones para los productos</div>
+        <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.5;">Creá grupos de opciones que se muestran al cliente cuando agrega un producto.</p>
+        <div id="lista-grupos"></div>
+        <button class="btn btn-secondary" id="btn-nuevo-grupo" style="margin-top:0.5rem;">+ Nuevo grupo de opciones</button>
+        <div class="form-producto" id="form-nuevo-grupo" style="margin-top:1rem;">
+          <div class="form-producto-title">Nuevo grupo</div>
+          <div class="row-2">
+            <div class="field"><label>Nombre del grupo</label><input type="text" id="ng-nombre" placeholder="Ej: Aderezos, Temperatura, Extras"/></div>
+            <div class="field"><label>Aplica a</label>
+              <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:0.1rem;">
+                <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="comida" checked> Comida</label>
+                <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="bebida"> Bebida</label>
+                <label style="font-size:0.85rem; font-weight:400; color:var(--text); margin:0; display:flex; align-items:center; gap:0.4rem;"><input type="checkbox" class="ng-tipo" value="alcohol"> Alcohol</label>
+              </div>
+            </div>
+          </div>
+          <div class="row-2">
+            <button class="btn btn-green" id="btn-confirmar-grupo">Agregar al borrador</button>
+            <button class="btn btn-secondary" id="btn-cancelar-grupo">Cancelar</button>
+          </div>
+        </div>
+        <div class="solapa-footer">
+          <button class="btn btn-primary" id="btn-guardar-menu">Guardar menú y opciones</button>
+          <span class="cambios-pendientes" id="dirty-menu">● Cambios sin guardar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL HORARIOS -->
+    <div id="panel-horarios" class="main-panel">
+      <div class="section">
+        <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1rem; line-height:1.5;">Configurá los días y horarios en que tu local atiende. Si activás el control automático, el estado abierto/cerrado se calcula solo sin que tengas que cambiarlo a mano.</p>
+        <label class="toggle-auto-horarios"><input type="checkbox" id="h-auto"> Activar control automático de horarios</label>
+        <div id="badge-estado-auto-wrap" style="display:none; margin-bottom:1rem;">
+          <span class="badge-estado-auto" id="badge-estado-auto">—</span>
+        </div>
+        <div id="lista-horarios-dias"></div>
+        <div class="solapa-footer">
+          <button class="btn btn-primary" id="btn-guardar-horarios">Guardar horarios</button>
+          <span class="cambios-pendientes" id="dirty-horarios">● Cambios sin guardar</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // CLOUDINARY CONFIG
+  const CLOUDINARY_CLOUD = 'dlqg8ezsr';
+  const CLOUDINARY_PRESET = 'dalepue_productos';
+
+  async function subirImagenCloudinary(file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Error subiendo imagen');
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCwfVFtJxYIa6I1R624IRmF0SoE1o1-RPE",
+    authDomain: "dale-pue.firebaseapp.com",
+    projectId: "dale-pue",
+    storageBucket: "dale-pue.firebasestorage.app",
+    messagingSenderId: "137759081638",
+    appId: "1:137759081638:web:0816dd9327837d4dc46067"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  const DIAS_UI    = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+  const DIAS_LABEL = { lunes:'Lunes', martes:'Martes', miercoles:'Miércoles', jueves:'Jueves', viernes:'Viernes', sabado:'Sábado', domingo:'Domingo' };
+  const DIAS_IDX   = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+
+  function horariosConfigVacio() { const c={}; DIAS_UI.forEach(d=>c[d]={activo:false,franjas:[]}); return c; }
+  function horaAMin(hhmm) { if(!hhmm) return 0; const p=hhmm.split(':'); return (parseInt(p[0])||0)*60+(parseInt(p[1])||0); }
+  function calcularAbiertoAhora(cfg) {
+    if (!cfg) return false;
+    const ahora=new Date(), hoy=DIAS_IDX[ahora.getDay()], ayer=DIAS_IDX[(ahora.getDay()+6)%7], min=ahora.getHours()*60+ahora.getMinutes();
+    const cfgHoy=cfg[hoy];
+    if (cfgHoy&&cfgHoy.activo) { for (const f of (cfgHoy.franjas||[])) { const ap=horaAMin(f.apertura),ci=horaAMin(f.cierre); if(ci>ap){if(min>=ap&&min<ci)return true;}else{if(min>=ap)return true;} } }
+    const cfgAyer=cfg[ayer];
+    if (cfgAyer&&cfgAyer.activo) { for (const f of (cfgAyer.franjas||[])) { const ap=horaAMin(f.apertura),ci=horaAMin(f.cierre); if(ci<=ap&&min<ci)return true; } }
+    return false;
+  }
+
+  let localId=null, localData=null, catActiva=null;
+
+  function toast(msg,tipo='ok') {
+    const t=document.getElementById('toast'); t.textContent=msg; t.className=`toast ${tipo} show`;
+    setTimeout(()=>t.classList.remove('show'),3000);
+  }
+  function marcarDirty(id) { const el=document.getElementById(id); if(el) el.classList.add('show'); }
+  function limpiarDirty(id) { const el=document.getElementById(id); if(el) el.classList.remove('show'); }
+
+  function switchTab(tab) {
+    document.getElementById('login-error').classList.remove('show');
+    if (tab==='login') {
+      document.getElementById('panel-login').style.display='block';
+      document.getElementById('panel-registro').style.display='none';
+      document.getElementById('tab-login').style.cssText='flex:1;padding:0.5rem;border-radius:8px;border:none;font-family:DM Sans,sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;background:#ffb800;color:#111;';
+      document.getElementById('tab-registro').style.cssText='flex:1;padding:0.5rem;border-radius:8px;border:none;font-family:DM Sans,sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;background:#2e2e36;color:#888;';
+    } else {
+      document.getElementById('panel-login').style.display='none';
+      document.getElementById('panel-registro').style.display='block';
+      document.getElementById('tab-login').style.cssText='flex:1;padding:0.5rem;border-radius:8px;border:none;font-family:DM Sans,sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;background:#2e2e36;color:#888;';
+      document.getElementById('tab-registro').style.cssText='flex:1;padding:0.5rem;border-radius:8px;border:none;font-family:DM Sans,sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;background:#ffb800;color:#111;';
+    }
+  }
+
+  // SOLAPAS PRINCIPALES
+  document.querySelectorAll('.main-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const panelActivo = document.querySelector('.main-panel.active');
+      if (panelActivo) {
+        const dirtyMap = { 'panel-datos':'dirty-datos', 'panel-menu':'dirty-menu', 'panel-horarios':'dirty-horarios' };
+        const dirtyId  = dirtyMap[panelActivo.id];
+        const dirty    = dirtyId && document.getElementById(dirtyId);
+        if (dirty && dirty.classList.contains('show')) {
+          if (!confirm('Tenés cambios sin guardar en esta sección. ¿Descartarlos y continuar?')) return;
+          dirty.classList.remove('show');
+        }
+      }
+      document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.main-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // REGISTRO
+  document.getElementById('btn-registrar').addEventListener('click', async () => {
+    const email=document.getElementById('r-email').value.trim();
+    const pass=document.getElementById('r-pass').value.trim();
+    const pass2=document.getElementById('r-pass2').value.trim();
+    const errEl=document.getElementById('login-error');
+    const btn=document.getElementById('btn-registrar');
+    errEl.classList.remove('show');
+    if (!email||!pass||!pass2) { errEl.textContent='Completá todos los campos.'; errEl.classList.add('show'); return; }
+    if (pass.length<6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.classList.add('show'); return; }
+    if (pass!==pass2) { errEl.textContent='Las contraseñas no coinciden.'; errEl.classList.add('show'); return; }
+    btn.disabled=true; btn.textContent='Verificando...';
+    try {
+      const q=await db.collection('locales').where('dueno_email','==',email.toLowerCase()).limit(1).get();
+      if (q.empty) { errEl.textContent='Este email no está autorizado. Contactá al administrador.'; errEl.classList.add('show'); btn.disabled=false; btn.textContent='Crear cuenta'; return; }
+      const snap=q.docs[0], localDoc=snap.data();
+      if (localDoc.dueno_uid&&localDoc.dueno_uid!=='pendiente'&&localDoc.dueno_uid!=='') { errEl.textContent='Este email ya tiene una cuenta creada. Usá la opción Ingresar.'; errEl.classList.add('show'); btn.disabled=false; btn.textContent='Crear cuenta'; return; }
+      const cred=await auth.createUserWithEmailAndPassword(email,pass);
+      await db.collection('locales').doc(snap.id).update({ dueno_uid:cred.user.uid });
+    } catch(e) {
+      const msgs={'auth/email-already-in-use':'Ya existe una cuenta con ese email. Usá Ingresar.','auth/invalid-email':'El correo no es válido.','auth/weak-password':'La contraseña es muy débil.','auth/network-request-failed':'Error de red.'};
+      errEl.textContent=msgs[e.code]||`Error: ${e.code}`; errEl.classList.add('show'); btn.disabled=false; btn.textContent='Crear cuenta';
+    }
+  });
+
+  // LOGIN
+  document.getElementById('btn-ingresar').addEventListener('click', async () => {
+    const email=document.getElementById('l-email').value.trim();
+    const pass=document.getElementById('l-pass').value.trim();
+    const errEl=document.getElementById('login-error');
+    const btn=document.getElementById('btn-ingresar');
+    errEl.classList.remove('show');
+    if (!email||!pass) { errEl.textContent='Completá email y contraseña.'; errEl.classList.add('show'); return; }
+    btn.disabled=true; btn.textContent='Ingresando...';
+    try { await auth.signInWithEmailAndPassword(email,pass); }
+    catch(e) {
+      const msgs={'auth/user-not-found':'No existe cuenta con ese correo.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-email':'Correo inválido.','auth/invalid-credential':'Email o contraseña incorrectos.','auth/too-many-requests':'Demasiados intentos.','auth/network-request-failed':'Error de red.'};
+      errEl.textContent=msgs[e.code]||`Error: ${e.code}`; errEl.classList.add('show'); btn.disabled=false; btn.textContent='Ingresar';
+    }
+  });
+  document.getElementById('l-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('btn-ingresar').click(); });
+  document.getElementById('btn-salir').addEventListener('click',()=>auth.signOut());
+
+  // OBSERVER
+  const MAX_INTENTOS=5, ESPERA_BASE=800;
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      document.getElementById('pantalla-login').style.display='none';
+      document.getElementById('pantalla-portal').style.display='block';
+      document.getElementById('topbar-email').textContent=user.email;
+      await cargarLocal(user.uid);
+    } else {
+      document.getElementById('pantalla-login').style.display='flex';
+      document.getElementById('pantalla-portal').style.display='none';
+    }
+  });
+
+  async function cargarLocal(uid, intento=1) {
+    try {
+      let snap=null;
+      const q=await db.collection('locales').where('dueno_uid','==',uid).limit(1).get();
+      if (!q.empty) { snap=q.docs[0]; }
+      else {
+        const user=auth.currentUser;
+        if (user&&user.email) {
+          const q2=await db.collection('locales').where('dueno_email','==',user.email.toLowerCase()).limit(1).get();
+          if (!q2.empty) { snap=q2.docs[0]; await db.collection('locales').doc(snap.id).update({dueno_uid:uid}); }
+        }
+      }
+      if (snap) {
+        localId=snap.id; localData=snap.data(); localData.dueno_uid=uid;
+        if (!localData.categoriasOrden) localData.categoriasOrden=Object.keys(localData.menu||{});
+        if (!localData.grupos) localData.grupos=[];
+        if (!localData.horariosConfig) localData.horariosConfig=horariosConfigVacio();
+        if (typeof localData.horariosAuto!=='boolean') localData.horariosAuto=false;
+        if (!localData.categoriasOcultas) localData.categoriasOcultas=[];
+        rellenarForm(localData);
+        renderMenu(localData.menu||{});
+        renderGrupos();
+        renderPreview(localData);
+        document.getElementById('h-auto').checked=localData.horariosAuto;
+        renderHorarios();
+        actualizarUIEstadoAuto();
+      } else {
+        if (intento<MAX_INTENTOS) { await new Promise(r=>setTimeout(r,ESPERA_BASE*intento)); return cargarLocal(uid,intento+1); }
+        localData={menu:{},grupos:[],categoriasOcultas:[]}; renderMenu({}); renderGrupos();
+        toast('No hay un local asociado a tu cuenta. Contactá al administrador.','err');
+      }
+    } catch(e) {
+      if (intento<MAX_INTENTOS) { await new Promise(r=>setTimeout(r,ESPERA_BASE*intento)); return cargarLocal(uid,intento+1); }
+      toast('Error al cargar el local.','err');
+    }
+  }
+
+  function rellenarForm(d) {
+    document.getElementById('f-nombre').value    = d.nombre    || '';
+    document.getElementById('f-direccion').value = d.direccion || '';
+    document.getElementById('f-whatsapp').value  = d.whatsapp  || '';
+    document.getElementById('f-tipo').value      = d.tipo      || 'Sandwichería';
+    document.getElementById('f-estado').value    = d.estado    || 'abierto';
+    document.getElementById('f-horarios').value  = d.horariosTxt ? d.horariosTxt.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'') : '';
+    document.getElementById('f-tags').value      = d.tags ? d.tags.join(', ') : '';
+    document.getElementById('f-desccorta').value = d.descCorta || '';
+    document.getElementById('f-zona').value      = d.zona      || 'Centro';
+    document.getElementById('f-mapaurl').value   = d.mapaUrl   || '';
+    document.getElementById('f-lat').value       = d.lat       || '';
+    document.getElementById('f-lng').value       = d.lng       || '';
+    const color=d.colorBrand||'#d9232d';
+    document.getElementById('f-color').value     = color;
+    document.getElementById('f-color-hex').value = color;
+
+    // Marcar dirty en cualquier cambio
+    ['f-nombre','f-direccion','f-whatsapp','f-tipo','f-estado','f-horarios','f-tags','f-desccorta','f-zona','f-mapaurl','f-lat','f-lng'].forEach(id => {
+      const el=document.getElementById(id);
+      if (el && !el.dataset.listenerSet) { el.addEventListener('input',()=>marcarDirty('dirty-datos')); el.dataset.listenerSet='1'; }
+    });
+  }
+
+  function sincronizarColor(origen) {
+    const picker=document.getElementById('f-color'), hex=document.getElementById('f-color-hex');
+    if (!picker||!hex) return;
+    if (origen==='hex') { const val=hex.value.trim(); if(/^#[0-9a-fA-F]{6}$/.test(val)) picker.value=val; }
+    else { hex.value=picker.value; }
+    marcarDirty('dirty-datos');
+  }
+  document.getElementById('f-color').addEventListener('input',()=>sincronizarColor('picker'));
+
+  document.getElementById('btn-guardar-local').addEventListener('click', async () => {
+    const btn=document.getElementById('btn-guardar-local');
+    const nombre=document.getElementById('f-nombre').value.trim();
+    if (!nombre) { toast('El nombre del local es obligatorio.','err'); return; }
+    const horariosRaw=document.getElementById('f-horarios').value.trim();
+    const horariosTxt=horariosRaw ? horariosRaw.split('\n').map(l=>`🕒 <b>${l.trim()}</b>`).join(' <br> ') : '';
+    const tagsRaw=document.getElementById('f-tags').value.trim();
+    const tags=tagsRaw ? tagsRaw.split(',').map(t=>t.trim().toLowerCase()).filter(t=>t) : [];
+    const datos = {
+      nombre, horariosTxt, tags,
+      direccion:  document.getElementById('f-direccion').value.trim(),
+      whatsapp:   document.getElementById('f-whatsapp').value.trim(),
+      tipo:       document.getElementById('f-tipo').value,
+      estado:     localData?.horariosAuto ? (calcularAbiertoAhora(localData.horariosConfig)?'abierto':'cerrado') : document.getElementById('f-estado').value,
+      descCorta:  document.getElementById('f-desccorta').value.trim(),
+      zona:       document.getElementById('f-zona').value,
+      colorBrand: document.getElementById('f-color-hex').value.trim()||document.getElementById('f-color').value,
+      mapaUrl:    document.getElementById('f-mapaurl').value.trim(),
+      lat:        parseFloat(document.getElementById('f-lat').value)||null,
+      lng:        parseFloat(document.getElementById('f-lng').value)||null,
+      dueno_uid:  auth.currentUser.uid,
+      menu:       localData?.menu||{}
+    };
+    btn.disabled=true; btn.textContent='Guardando...';
+    try {
+      if (localId) { await db.collection('locales').doc(localId).update(datos); }
+      else { localId=nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'').replace(/[^a-z0-9]/g,''); await db.collection('locales').doc(localId).set(datos); }
+      localData={...localData,...datos};
+      limpiarDirty('dirty-datos');
+      toast('✅ Local guardado.');
+      renderPreview(localData);
+    } catch(e) { toast('Error al guardar.','err'); }
+    btn.disabled=false; btn.textContent='Guardar datos del local';
+  });
+
+  // MENU BORRADOR
+  function renderMenu(menu) {
+    const orden=localData.categoriasOrden||[], keysMenu=Object.keys(menu);
+    const cats=orden.filter(c=>keysMenu.includes(c)).concat(keysMenu.filter(c=>!orden.includes(c)));
+    const ocultas=localData.categoriasOcultas||[];
+    const tabsCont=document.getElementById('tabs-categorias'), lista=document.getElementById('lista-productos');
+    tabsCont.innerHTML='';
+    if (!cats.length) { lista.innerHTML='<p class="empty">No hay productos aún. Agregá el primero 👇</p>'; return; }
+    if (!catActiva||!menu[catActiva]) catActiva=cats[0];
+    cats.forEach(cat => {
+      const tab=document.createElement('button');
+      tab.className='tab'+(cat===catActiva?' active':'');
+      if (ocultas.includes(cat)) tab.style.opacity='0.5';
+      tab.textContent=cat;
+      tab.addEventListener('click',()=>{ catActiva=cat; renderMenu(localData.menu||{}); });
+      tabsCont.appendChild(tab);
+    });
+    lista.innerHTML='';
+    const catIdx=cats.indexOf(catActiva), esOculta=ocultas.includes(catActiva);
+    const catHeader=document.createElement('div'); catHeader.className='cat-header';
+    catHeader.innerHTML=`
+      <span style="font-weight:600;font-size:0.9rem;color:var(--muted);">${catActiva}${esOculta?' <span style="font-size:0.72rem;color:#6b7280;">(oculta)</span>':''}</span>
+      <div class="cat-acciones">
+        <button class="btn-cat" id="c-sub">⬆️</button>
+        <button class="btn-cat" id="c-baj">⬇️</button>
+        <button class="btn-cat ${esOculta?'cat-oculta':'cat-visible'}" id="c-vis">👁 ${esOculta?'Oculta':'Visible'}</button>
+        <button class="btn-cat" id="c-ren">✏️</button>
+        <button class="btn-cat danger" id="c-del">🗑️</button>
+      </div>`;
+    lista.appendChild(catHeader);
+    catHeader.querySelector('#c-sub').addEventListener('click',()=>{ if(catIdx===0) return; const ord=[...(localData.categoriasOrden||cats)]; [ord[catIdx],ord[catIdx-1]]=[ord[catIdx-1],ord[catIdx]]; localData.categoriasOrden=ord; renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+    catHeader.querySelector('#c-baj').addEventListener('click',()=>{ if(catIdx===cats.length-1) return; const ord=[...(localData.categoriasOrden||cats)]; [ord[catIdx],ord[catIdx+1]]=[ord[catIdx+1],ord[catIdx]]; localData.categoriasOrden=ord; renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+    catHeader.querySelector('#c-vis').addEventListener('click',()=>{ if(!localData.categoriasOcultas) localData.categoriasOcultas=[]; if(esOculta){localData.categoriasOcultas=localData.categoriasOcultas.filter(c=>c!==catActiva);}else{localData.categoriasOcultas.push(catActiva);} renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+    catHeader.querySelector('#c-ren').addEventListener('click',()=>{ const n=prompt(`Nuevo nombre para "${catActiva}":`,catActiva); if(!n||n.trim()===catActiva) return; const nm={}; for(let c in menu) nm[c===catActiva?n.trim():c]=menu[c]; const no=(localData.categoriasOrden||cats).map(c=>c===catActiva?n.trim():c); localData.categoriasOcultas=(localData.categoriasOcultas||[]).map(c=>c===catActiva?n.trim():c); catActiva=n.trim(); localData.menu=nm; localData.categoriasOrden=no; renderMenu(nm); marcarDirty('dirty-menu'); });
+    catHeader.querySelector('#c-del').addEventListener('click',()=>{ const cant=(menu[catActiva]||[]).length; if(!confirm(`¿Eliminar "${catActiva}" con ${cant} producto${cant!==1?'s':''}?`)) return; const nm={...menu}; delete nm[catActiva]; const no=(localData.categoriasOrden||cats).filter(c=>c!==catActiva); localData.categoriasOcultas=(localData.categoriasOcultas||[]).filter(c=>c!==catActiva); catActiva=no[0]||null; localData.menu=nm; localData.categoriasOrden=no; renderMenu(nm); marcarDirty('dirty-menu'); });
+
+    const productos=menu[catActiva]||[];
+    if (!productos.length) { lista.innerHTML+='<p class="empty">No hay productos en esta categoría.</p>'; return; }
+    productos.forEach((p,idx)=>{
+      const disponible=p.disponible!==false;
+      const wrapper=document.createElement('div');
+      // Imagen del producto
+      const imgWrap = document.createElement('div'); imgWrap.className='prod-img-wrap';
+      if (p.imagenUrl) {
+        imgWrap.innerHTML=`<img src="${p.imagenUrl}" class="prod-img" alt="${p.nombre}"><button class="btn-cambiar-img" title="Cambiar foto">📷</button>`;
+      } else {
+        imgWrap.innerHTML=`<div class="prod-img-placeholder" title="Agregar foto">📷</div>`;
+      }
+      const spinnerEl=document.createElement('div'); spinnerEl.className='upload-spinner'; spinnerEl.textContent='Subiendo...'; imgWrap.appendChild(spinnerEl);
+
+      const triggerUpload = () => {
+        const input=document.createElement('input'); input.type='file'; input.accept='image/*';
+        input.onchange=async()=>{
+          const file=input.files[0]; if(!file) return;
+          spinnerEl.classList.add('show');
+          try {
+            const url=await subirImagenCloudinary(file);
+            localData.menu[catActiva][idx].imagenUrl=url;
+            renderMenu(localData.menu); marcarDirty('dirty-menu');
+          } catch(e){ toast('Error al subir la imagen.','err'); spinnerEl.classList.remove('show'); }
+        };
+        input.click();
+      };
+      imgWrap.querySelector('.prod-img-placeholder, .btn-cambiar-img')?.addEventListener('click', triggerUpload);
+
+      const item=document.createElement('div'); item.className='producto-item'+(disponible?'':' no-disponible');
+      item.innerHTML=`
+        <div class="producto-info">
+          <div class="producto-nombre">${p.nombre}</div>
+          <div class="producto-meta">${p.desc||'—'} · ${p.tipo}</div>
+          <div class="producto-precio" style="margin-top:4px;">$${p.precio}</div>
+        </div>
+        <div class="producto-acciones">
+          <button class="toggle-disponible ${disponible?'activo':'inactivo'}">${disponible?'✅ Disponible':'❌ No disponible'}</button>
+          <button class="btn-editar">✏️</button>
+          <button class="btn-eliminar">🗑️</button>
+        </div>`;
+      item.insertBefore(imgWrap, item.firstChild);
+      item.querySelector('.toggle-disponible').addEventListener('click',()=>{ localData.menu[catActiva][idx].disponible=!disponible; renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+      item.querySelector('.btn-eliminar').addEventListener('click',()=>{ if(!confirm('¿Eliminar este producto del borrador?')) return; localData.menu[catActiva].splice(idx,1); if(!localData.menu[catActiva].length){delete localData.menu[catActiva]; localData.categoriasOrden=(localData.categoriasOrden||[]).filter(c=>c!==catActiva); catActiva=localData.categoriasOrden[0]||null;} renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+      const formEd=document.createElement('div'); formEd.className='form-edicion';
+      formEd.innerHTML=`<div class="form-edicion-title">✏️ Editando: ${p.nombre}</div><div class="field"><label>Nombre</label><input type="text" class="en" value="${p.nombre}"/></div><div class="field"><label>Descripción</label><textarea class="ed">${p.desc||''}</textarea></div><div class="row-2"><div class="field"><label>Precio ($)</label><input type="number" class="ep" value="${p.precio}"/></div><div class="field"><label>Tipo</label><select class="et"><option value="comida" ${p.tipo==='comida'?'selected':''}>Comida 🍔</option><option value="bebida" ${p.tipo==='bebida'?'selected':''}>Bebida 🥤</option><option value="alcohol" ${p.tipo==='alcohol'?'selected':''}>Alcohol 🍺</option></select></div></div><div class="row-2"><button class="btn btn-green bge">Guardar en borrador</button><button class="btn btn-secondary bce">Cancelar</button></div>`;
+      formEd.querySelector('.bce').addEventListener('click',()=>formEd.classList.remove('visible'));
+      formEd.querySelector('.bge').addEventListener('click',()=>{ const n=formEd.querySelector('.en').value.trim(),pr=parseInt(formEd.querySelector('.ep').value); if(!n||!pr){toast('Nombre y precio son obligatorios.','err');return;} localData.menu[catActiva][idx]={...localData.menu[catActiva][idx],nombre:n,desc:formEd.querySelector('.ed').value.trim(),precio:pr,tipo:formEd.querySelector('.et').value,imagenUrl:localData.menu[catActiva][idx].imagenUrl||null}; renderMenu(localData.menu); marcarDirty('dirty-menu'); });
+      item.querySelector('.btn-editar').addEventListener('click',()=>formEd.classList.toggle('visible'));
+      wrapper.appendChild(item); wrapper.appendChild(formEd); lista.appendChild(wrapper);
+    });
+  }
+
+  document.getElementById('btn-mostrar-form').addEventListener('click',()=>{ document.getElementById('form-producto').classList.toggle('visible'); if(catActiva) document.getElementById('p-categoria').value=catActiva; });
+  document.getElementById('btn-cancelar-producto').addEventListener('click',()=>{ document.getElementById('form-producto').classList.remove('visible'); limpiarFormProd(); });
+  document.getElementById('btn-confirmar-producto').addEventListener('click',()=>{
+    if(!localId){toast('Primero guardá los datos del local.','err');return;}
+    const nombre=document.getElementById('p-nombre').value.trim(),precio=parseInt(document.getElementById('p-precio').value),cat=document.getElementById('p-categoria').value.trim();
+    if(!nombre||!precio||!cat){toast('Nombre, precio y categoría son obligatorios.','err');return;}
+    const prod={nombre,desc:document.getElementById('p-desc').value.trim(),precio,tipo:document.getElementById('p-tipo').value};
+    if(!localData.menu) localData.menu={};
+    const catNueva=!localData.menu[cat];
+    if(!localData.menu[cat]) localData.menu[cat]=[];
+    localData.menu[cat].push(prod);
+    if(catNueva) localData.categoriasOrden=[...(localData.categoriasOrden||Object.keys(localData.menu).filter(c=>c!==cat)),cat];
+    catActiva=cat;
+    document.getElementById('form-producto').classList.remove('visible');
+    limpiarFormProd(); renderMenu(localData.menu); marcarDirty('dirty-menu');
+  });
+  function limpiarFormProd(){['p-nombre','p-desc','p-precio','p-categoria'].forEach(id=>document.getElementById(id).value='');}
+
+  document.getElementById('btn-guardar-menu').addEventListener('click', async ()=>{
+    if(!localId){toast('Primero guardá los datos del local.','err');return;}
+    const btn=document.getElementById('btn-guardar-menu'); btn.disabled=true; btn.textContent='Guardando...';
+    try {
+      await db.collection('locales').doc(localId).update({ menu:localData.menu, categoriasOrden:localData.categoriasOrden||Object.keys(localData.menu), grupos:localData.grupos||[], categoriasOcultas:localData.categoriasOcultas||[] });
+      limpiarDirty('dirty-menu'); toast('✅ Menú y opciones guardados.'); renderPreview(localData);
+    } catch(e){toast('Error al guardar.','err');}
+    btn.disabled=false; btn.textContent='Guardar menú y opciones';
+  });
+
+  // GRUPOS BORRADOR
+  function renderGrupos() {
+    const grupos=localData.grupos||[], cont=document.getElementById('lista-grupos');
+    cont.innerHTML='';
+    if(!grupos.length){cont.innerHTML='<p class="empty" style="padding:1rem 0;">No hay grupos. Crea el primero.</p>';return;}
+    grupos.forEach((grupo,gi)=>{
+      const card=document.createElement('div'); card.className='grupo-card';
+      const grupoOn=grupo.activo!==false, tiposLabel=(grupo.tipos||[]).join(', ')||'todos';
+      card.innerHTML=`<div class="grupo-header" id="gh-${gi}"><div class="grupo-header-left"><span>▾</span><div><div class="grupo-nombre">${grupo.nombre}</div><div class="grupo-tipos">Aplica a: ${tiposLabel}</div></div></div><div class="grupo-acciones"><button class="toggle-grupo ${grupoOn?'on':'off'}" id="tg-${gi}">${grupoOn?'Activo':'Inactivo'}</button><button class="btn-cat" id="rg-${gi}">✏️</button><button class="btn-cat danger" id="dg-${gi}">🗑️</button></div></div><div class="grupo-body abierto" id="gb-${gi}"><div id="ig-${gi}"></div><button class="btn-agregar-item" id="ai-${gi}">+ Agregar opción</button></div>`;
+      cont.appendChild(card);
+      document.getElementById(`gh-${gi}`).addEventListener('click',e=>{if(e.target.closest('.grupo-acciones'))return;const b=document.getElementById(`gb-${gi}`),a=document.getElementById(`gh-${gi}`).querySelector('span');b.classList.toggle('abierto');a.textContent=b.classList.contains('abierto')?'▾':'▸';});
+      document.getElementById(`tg-${gi}`).addEventListener('click',e=>{e.stopPropagation();localData.grupos[gi].activo=!grupoOn;renderGrupos();marcarDirty('dirty-menu');});
+      document.getElementById(`rg-${gi}`).addEventListener('click',e=>{e.stopPropagation();const n=prompt(`Nuevo nombre para "${grupo.nombre}":`,grupo.nombre);if(!n||n.trim()===grupo.nombre)return;localData.grupos[gi].nombre=n.trim();renderGrupos();marcarDirty('dirty-menu');});
+      document.getElementById(`dg-${gi}`).addEventListener('click',e=>{e.stopPropagation();if(!confirm(`Eliminar "${grupo.nombre}"?`))return;localData.grupos.splice(gi,1);renderGrupos();marcarDirty('dirty-menu');});
+      document.getElementById(`ai-${gi}`).addEventListener('click',()=>{const n=prompt('Nombre de la opción:');if(!n||!n.trim())return;const p=parseInt(prompt('Precio adicional en $ (0 si es gratis):','0'))||0;if(!localData.grupos[gi].items)localData.grupos[gi].items=[];localData.grupos[gi].items.push({nombre:n.trim(),precio:p,activo:true});renderGrupos();marcarDirty('dirty-menu');});
+      renderItemsGrupo(gi,grupo.items||[]);
+    });
+  }
+
+  function renderItemsGrupo(gi,items){
+    const cont=document.getElementById(`ig-${gi}`);if(!cont)return;cont.innerHTML='';
+    if(!items.length){cont.innerHTML='<p style="font-size:0.8rem;color:var(--muted);padding:0.3rem 0;">Sin opciones todavía.</p>';return;}
+    items.forEach((item,ii)=>{
+      const on=item.activo!==false,div=document.createElement('div');div.className='item-opcion';
+      div.innerHTML=`<div class="item-opcion-info"><input type="text" class="item-nombre-input" value="${item.nombre}"/><span style="font-size:0.75rem;color:var(--muted);">$</span><input type="number" class="item-precio-input" value="${item.precio||0}"/></div><div style="display:flex;gap:0.3rem;align-items:center;"><button class="toggle-item ${on?'on':'off'}">${on?'Sí':'No'}</button><button class="btn-cat danger btn-del-item">🗑️</button></div>`;
+      cont.appendChild(div);
+      div.querySelector('.item-nombre-input').addEventListener('change',function(){localData.grupos[gi].items[ii].nombre=this.value.trim();marcarDirty('dirty-menu');});
+      div.querySelector('.item-precio-input').addEventListener('change',function(){localData.grupos[gi].items[ii].precio=parseInt(this.value)||0;marcarDirty('dirty-menu');});
+      div.querySelector('.toggle-item').addEventListener('click',function(){localData.grupos[gi].items[ii].activo=!on;renderGrupos();marcarDirty('dirty-menu');});
+      div.querySelector('.btn-del-item').addEventListener('click',function(){if(!confirm(`Eliminar "${item.nombre}"?`))return;localData.grupos[gi].items.splice(ii,1);renderGrupos();marcarDirty('dirty-menu');});
+    });
+  }
+
+  document.getElementById('btn-nuevo-grupo').addEventListener('click',()=>document.getElementById('form-nuevo-grupo').classList.toggle('visible'));
+  document.getElementById('btn-cancelar-grupo').addEventListener('click',()=>{document.getElementById('form-nuevo-grupo').classList.remove('visible');document.getElementById('ng-nombre').value='';});
+  document.getElementById('btn-confirmar-grupo').addEventListener('click',()=>{
+    const nombre=document.getElementById('ng-nombre').value.trim();
+    if(!nombre){toast('El nombre del grupo es obligatorio.','err');return;}
+    const tipos=[...document.querySelectorAll('.ng-tipo:checked')].map(cb=>cb.value);
+    if(!tipos.length){toast('Seleccioná al menos un tipo.','err');return;}
+    if(!localData.grupos) localData.grupos=[];
+    localData.grupos.push({nombre,tipos,activo:true,items:[]});
+    document.getElementById('ng-nombre').value='';
+    document.querySelectorAll('.ng-tipo').forEach(cb=>cb.checked=cb.value==='comida');
+    document.getElementById('form-nuevo-grupo').classList.remove('visible');
+    renderGrupos(); marcarDirty('dirty-menu');
+  });
+
+  // HORARIOS
+  function renderHorarios(){
+    const cont=document.getElementById('lista-horarios-dias');cont.innerHTML='';
+    if(!localData.horariosConfig) localData.horariosConfig=horariosConfigVacio();
+    const cfg=localData.horariosConfig;
+    DIAS_UI.forEach(dia=>{
+      if(!cfg[dia]) cfg[dia]={activo:false,franjas:[]};
+      const d=cfg[dia],card=document.createElement('div');card.className='horario-dia';
+      const header=document.createElement('div');header.className='horario-dia-header';
+      header.innerHTML=`<span class="horario-dia-nombre">${DIAS_LABEL[dia]}</span><label class="horario-dia-toggle"><input type="checkbox" class="h-dia-activo" ${d.activo?'checked':''}> Atiende este día</label>`;
+      card.appendChild(header);
+      header.querySelector('.h-dia-activo').addEventListener('change',function(){cfg[dia].activo=this.checked;actualizarBadgeEstadoAuto();marcarDirty('dirty-horarios');});
+      const franjasCont=document.createElement('div');card.appendChild(franjasCont);
+      function renderFranjas(){
+        franjasCont.innerHTML='';
+        if(!(cfg[dia].franjas||[]).length){franjasCont.innerHTML='<p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.4rem;">Sin horarios cargados.</p>';}
+        (cfg[dia].franjas||[]).forEach((f,fi)=>{
+          const row=document.createElement('div');row.className='horario-franja';
+          row.innerHTML=`<input type="time" class="h-ap" value="${f.apertura||''}"><span class="horario-franja-sep">a</span><input type="time" class="h-ci" value="${f.cierre||''}"><button class="btn-cat danger" type="button">🗑️</button>`;
+          row.querySelector('.h-ap').addEventListener('change',function(){cfg[dia].franjas[fi].apertura=this.value;actualizarBadgeEstadoAuto();marcarDirty('dirty-horarios');});
+          row.querySelector('.h-ci').addEventListener('change',function(){cfg[dia].franjas[fi].cierre=this.value;actualizarBadgeEstadoAuto();marcarDirty('dirty-horarios');});
+          row.querySelector('button').addEventListener('click',()=>{cfg[dia].franjas.splice(fi,1);renderFranjas();actualizarBadgeEstadoAuto();marcarDirty('dirty-horarios');});
+          franjasCont.appendChild(row);
+        });
+      }
+      renderFranjas();
+      const btnAdd=document.createElement('button');btnAdd.className='btn-agregar-item';btnAdd.type='button';btnAdd.textContent='+ Agregar horario';
+      btnAdd.addEventListener('click',()=>{if(!cfg[dia].franjas)cfg[dia].franjas=[];cfg[dia].franjas.push({apertura:'09:00',cierre:'18:00'});renderFranjas();actualizarBadgeEstadoAuto();marcarDirty('dirty-horarios');});
+      card.appendChild(btnAdd);cont.appendChild(card);
+    });
+  }
+
+  document.getElementById('h-auto').addEventListener('change',function(){if(!localData)return;localData.horariosAuto=this.checked;actualizarUIEstadoAuto();marcarDirty('dirty-horarios');});
+
+  function actualizarUIEstadoAuto(){
+    const auto=!!(localData&&localData.horariosAuto);
+    document.getElementById('badge-estado-auto-wrap').style.display=auto?'block':'none';
+    document.getElementById('nota-estado-auto').style.display=auto?'block':'none';
+    document.getElementById('f-estado').disabled=auto;
+    if(auto) actualizarBadgeEstadoAuto();
+  }
+
+  function actualizarBadgeEstadoAuto(){
+    if(!localData)return;
+    const badge=document.getElementById('badge-estado-auto'),abierto=calcularAbiertoAhora(localData.horariosConfig);
+    badge.textContent=abierto?'✅ Abierto ahora':'❌ Cerrado ahora';
+    badge.className='badge-estado-auto '+(abierto?'abierto':'cerrado');
+  }
+
+  setInterval(()=>{if(localData&&localData.horariosAuto)actualizarBadgeEstadoAuto();},30000);
+
+  document.getElementById('btn-guardar-horarios').addEventListener('click', async ()=>{
+    if(!localId){toast('Primero guardá los datos del local.','err');return;}
+    const btn=document.getElementById('btn-guardar-horarios');btn.disabled=true;btn.textContent='Guardando...';
+    const horariosAuto=localData.horariosAuto||false,horariosConfig=localData.horariosConfig||horariosConfigVacio();
+    const datosExtra={horariosAuto,horariosConfig};
+    if(horariosAuto) datosExtra.estado=calcularAbiertoAhora(horariosConfig)?'abierto':'cerrado';
+    try {
+      await db.collection('locales').doc(localId).update(datosExtra);
+      localData.estado=datosExtra.estado||localData.estado;
+      if(datosExtra.estado) document.getElementById('f-estado').value=datosExtra.estado;
+      limpiarDirty('dirty-horarios');toast('✅ Horarios guardados.');actualizarUIEstadoAuto();renderPreview(localData);
+    } catch(e){toast('Error al guardar horarios.','err');}
+    btn.disabled=false;btn.textContent='Guardar horarios';
+  });
+
+  function renderPreview(d){
+    const estadoEfectivo=d.horariosAuto?(calcularAbiertoAhora(d.horariosConfig)?'abierto':'cerrado'):d.estado;
+    const badge=estadoEfectivo==='abierto'?`<span class="badge badge-ok">Abierto${d.horariosAuto?' (auto)':''}</span>`:`<span class="badge badge-off">Cerrado${d.horariosAuto?' (auto)':''}</span>`;
+    const totalProd=d.menu?Object.values(d.menu).reduce((a,arr)=>a+arr.length,0):0;
+    const totalCats=d.menu?Object.keys(d.menu).length:0;
+    const color=d.colorBrand||'#d9232d';
+    document.getElementById('preview-local').innerHTML=`
+      <div style="border-left:5px solid ${color};padding-left:0.75rem;margin-bottom:0.75rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-weight:700;font-size:1.1rem;">${d.nombre||'—'}</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">${d.descCorta||d.tipo||''} · ${d.tipo||''}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">📍 ${d.direccion||'—'} · Zona: ${d.zona||'—'}</div>
+          </div>
+          ${badge}
+        </div>
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+        <span>WhatsApp: ${d.whatsapp||'—'}</span><span>·</span>
+        <span>${totalProd} productos en ${totalCats} categorías</span><span>·</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">Color: <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${color};border:1px solid #ccc;"></span></span>
+        ${d.lat&&d.lng?`<span>· GPS: ${d.lat}, ${d.lng}</span>`:'<span style="color:#dc2626;">· ⚠️ Sin coordenadas GPS</span>'}
+      </div>`;
+  }
+</script>
+</body>
+</html>
