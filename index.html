@@ -356,30 +356,51 @@
     body.dark #txt-titulo { color: var(--crema); }
 
     /* ── VISTA MENÚ ── */
-    .header-local {
-      background: var(--color-brand, var(--bordo-dark));
-      color: var(--crema);
-      padding: 20px;
-      border-radius: var(--radius-lg);
-      margin-bottom: 20px;
-      position: relative;
-      text-align: center;
+    .barra-volver-menu {
+      padding: 10px 0 8px 0;
+      margin-bottom: 6px;
     }
-    .btn-volver {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      background: rgba(244,237,226,0.15);
-      color: var(--crema);
-      border: 1px solid rgba(244,237,226,0.3);
-      padding: 7px 12px;
+    .btn-volver-menu {
+      background: var(--crema-dark);
+      color: var(--texto);
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 8px 16px;
       border-radius: 999px;
       font-family: 'Manrope', sans-serif;
       font-weight: 600;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       cursor: pointer;
+      transition: background 0.2s;
     }
-    .horarios-texto { background: rgba(255,255,255,0.1); color: var(--crema); font-size: 0.85rem; margin-top: 10px; padding: 8px 12px; border-radius: 8px; text-align: left; display: block; }
+    .btn-volver-menu:hover { background: #ddd5c8; }
+    body.dark .btn-volver-menu { background: #2a2a2a; color: #e8e8e8; border-color: #444; }
+    body.dark .btn-volver-menu:hover { background: #333; }
+    .header-local {
+      background: var(--color-brand, var(--bordo-dark));
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .header-local-inner {
+      background: rgba(0,0,0,0.45);
+      padding: 22px 20px 20px;
+      text-align: center;
+    }
+    .header-local-inner h1 {
+      color: #ffffff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .horarios-texto {
+      color: rgba(255,255,255,0.92);
+      font-size: 0.85rem;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      text-align: left;
+      display: block;
+      line-height: 1.6;
+    }
     .cartel-cerrado { background: #dc2626; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: 700; margin-bottom: 15px; }
 
     .categoria-titulo {
@@ -430,7 +451,7 @@
       white-space: normal;
       word-break: break-word;
     }
-    body.dark .info-producto h3 { color: #f0f0f0; }
+    body.dark .info-producto h3 { color: #ffffff; }
     .info-producto .desc {
       margin: 5px 0;
       color: #555;
@@ -439,7 +460,7 @@
       white-space: normal;
       word-break: break-word;
     }
-    body.dark .info-producto .desc { color: #bbb; }
+    body.dark .info-producto .desc { color: #d4d4d4; }
     .info-producto .precio {
       margin: 6px 0 0 0;
       color: #1a8a4a;
@@ -447,6 +468,7 @@
       font-size: 1rem;
       white-space: nowrap;
     }
+    body.dark .info-producto .precio { color: #4ade80; }
     .btn-agregar {
       background: var(--color-brand, var(--bordo-dark));
       color: var(--crema);
@@ -560,10 +582,14 @@
 
   <!-- PANTALLA MENÚ -->
   <div id="vista-menu" style="display:none;">
+    <div class="barra-volver-menu">
+      <button class="btn-volver-menu" onclick="volverNav()">⬅ Volver</button>
+    </div>
     <div class="header-local" id="menu-header">
-      <button class="btn-volver" onclick="volverNav()">⬅ Volver</button>
-      <h1 id="menu-nombre" style="margin-bottom:5px; font-size:1.5rem;">...</h1>
-      <div id="menu-horarios" class="horarios-texto"></div>
+      <div class="header-local-inner">
+        <h1 id="menu-nombre" style="margin-bottom:5px; font-size:1.5rem;">...</h1>
+        <div id="menu-horarios" class="horarios-texto"></div>
+      </div>
     </div>
     <div id="contenedor-categorias"></div>
 
@@ -660,6 +686,14 @@
     return false;
   }
   function estaAbiertoLocal() { if (this.horariosAuto && this.horariosConfig) return calcularAbiertoAhora(this.horariosConfig); return this.estado === 'abierto'; }
+
+  // LIMPIAR HORARIOS (saca emoji reloj y etiquetas b del texto guardado)
+  function limpiarHorarios(txt) {
+    return txt
+      .replace(/🕒\s*/g, '')
+      .replace(/<b>/gi, '')
+      .replace(/<\/b>/gi, '');
+  }
 
   // ESTADO
   let localesFirestore={}, todosLosLocales={}, firestoreListo=false, localActivo=null, carrito=[], prodTemp=null, linkGPS="", mapaInstance=null, marcador=null, coordsTemp=null;
@@ -872,7 +906,7 @@
     if (cg && (Date.now()-cg.tiempo<300000) && cg.localId===id) { carrito=cg.items; } else { carrito=[]; localStorage.removeItem('dp_carrito'); }
     renderCarrito();
     document.getElementById('menu-nombre').innerText = loc.nombre;
-    document.getElementById('menu-horarios').innerHTML = loc.horariosTxt||'';
+    document.getElementById('menu-horarios').innerHTML = limpiarHorarios(loc.horariosTxt||'');
     // Aplicar colorBrand del local
     document.documentElement.style.setProperty('--color-brand', loc.colorBrand || 'var(--bordo-dark)');
     const cont = document.getElementById('contenedor-categorias');
