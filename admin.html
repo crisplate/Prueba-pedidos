@@ -731,7 +731,7 @@
     const nombre = document.getElementById('ed-nombre').value.trim();
     if (!nombre) { toast('El nombre es obligatorio.', 'err'); return; }
     const horariosRaw = document.getElementById('ed-horarios-txt').value.trim();
-    const horariosTxt = horariosRaw ? horariosRaw.split('\n').map(l => `🕒 <b>${l.trim()}</b>`).join(' <br> ') : '';
+    const horariosTxt = horariosRaw ? horariosRaw.split('\n').map(l => l.trim()).filter(l => l).join(' | ') : '';
     const tagsRaw = document.getElementById('ed-tags').value.trim();
     const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [];
     const datos = {
