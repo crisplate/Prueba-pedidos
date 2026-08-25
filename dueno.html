@@ -7,6 +7,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -197,6 +199,18 @@
       .row-2, .row-3 { grid-template-columns: 1fr; }
       .main-tab { font-size: 0.8rem; padding: 0.55rem 0.7rem; }
     }
+
+    /* CROPPER MODAL */
+    .crop-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:3000;padding:1rem;}
+    .crop-overlay.show{display:flex;}
+    .crop-box{background:var(--white);border-radius:16px;padding:1.2rem;width:100%;max-width:420px;}
+    .crop-title{font-weight:600;font-size:.95rem;margin-bottom:.8rem;}
+    .crop-img-wrap{max-height:60vh;overflow:hidden;background:#000;border-radius:8px;}
+    .crop-img-wrap img{display:block;max-width:100%;}
+    .crop-actions{display:flex;gap:.6rem;margin-top:1rem;}
+    .crop-actions button{flex:1;padding:.7rem;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;}
+    .btn-crop-ok{background:var(--accent);color:#fff;}
+    .btn-crop-cancel{background:var(--bg);color:var(--text);border:1px solid var(--border)!important;}
   </style>
 </head>
 <body>
@@ -405,6 +419,17 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-box">
+    <div class="crop-title">Ajustá la foto</div>
+    <div class="crop-img-wrap"><img id="crop-image" src=""></div>
+    <div class="crop-actions">
+      <button class="btn-crop-ok" id="btn-crop-confirmar">Usar esta foto</button>
+      <button class="btn-crop-cancel" id="btn-crop-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // CLOUDINARY CONFIG
   const CLOUDINARY_CLOUD = 'dlqg8ezsr';
@@ -412,7 +437,7 @@
 
   async function subirImagenCloudinary(file) {
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', file, 'producto.jpg');
     fd.append('upload_preset', CLOUDINARY_PRESET);
     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd });
     if (!res.ok) throw new Error('Error subiendo imagen');
@@ -456,6 +481,33 @@
   }
   function marcarDirty(id) { const el=document.getElementById(id); if(el) el.classList.add('show'); }
   function limpiarDirty(id) { const el=document.getElementById(id); if(el) el.classList.remove('show'); }
+
+  // CROPPER
+  let cropper=null, cropCallback=null;
+  function abrirCropper(file, callback) {
+    cropCallback=callback;
+    const img=document.getElementById('crop-image');
+    const reader=new FileReader();
+    reader.onload=e=>{
+      img.src=e.target.result;
+      document.getElementById('crop-overlay').classList.add('show');
+      if(cropper) cropper.destroy();
+      cropper=new Cropper(img,{aspectRatio:1,viewMode:1,background:false,autoCropArea:1});
+    };
+    reader.readAsDataURL(file);
+  }
+  function cerrarCropper() {
+    document.getElementById('crop-overlay').classList.remove('show');
+    if(cropper){cropper.destroy();cropper=null;}
+    cropCallback=null;
+  }
+  document.getElementById('btn-crop-cancelar').addEventListener('click',cerrarCropper);
+  document.getElementById('btn-crop-confirmar').addEventListener('click',()=>{
+    if(!cropper||!cropCallback) return;
+    cropper.getCroppedCanvas({width:800,height:800,imageSmoothingQuality:'high'}).toBlob(blob=>{
+      const cb=cropCallback; cerrarCropper(); cb(blob);
+    },'image/jpeg',0.88);
+  });
 
   function switchTab(tab) {
     document.getElementById('login-error').classList.remove('show');
@@ -706,14 +758,16 @@
 
       const triggerUpload = () => {
         const input=document.createElement('input'); input.type='file'; input.accept='image/*';
-        input.onchange=async()=>{
+        input.onchange=()=>{
           const file=input.files[0]; if(!file) return;
-          spinnerEl.classList.add('show');
-          try {
-            const url=await subirImagenCloudinary(file);
-            localData.menu[catActiva][idx].imagenUrl=url;
-            renderMenu(localData.menu); marcarDirty('dirty-menu');
-          } catch(e){ toast('Error al subir la imagen.','err'); spinnerEl.classList.remove('show'); }
+          abrirCropper(file, async(blob)=>{
+            spinnerEl.classList.add('show');
+            try {
+              const url=await subirImagenCloudinary(blob);
+              localData.menu[catActiva][idx].imagenUrl=url;
+              renderMenu(localData.menu); marcarDirty('dirty-menu');
+            } catch(e){ toast('Error al subir la imagen.','err'); spinnerEl.classList.remove('show'); }
+          });
         };
         input.click();
       };
